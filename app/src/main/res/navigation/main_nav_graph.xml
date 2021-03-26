@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main_nav_graph"
+    app:startDestination="@id/dictionaryHomeFragment">
+
+    <fragment
+        android:id="@+id/dictionaryHomeFragment"
+        android:name="com.example.nala.ui.dictionary.DictionaryHomeFragment"
+        android:label="DictionaryHomeFragment" >
+        <action
+            android:id="@+id/show_details"
+            app:destination="@id/dictionaryDetailFragment" />
+        <action
+            android:id="@+id/show_reviews"
+            app:destination="@id/reviewFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/dictionaryDetailFragment"
+        android:name="com.example.nala.ui.dictionary.DictionaryDetailFragment"
+        android:label="DictionaryDetailFragment" >
+        <action
+            android:id="@+id/show_kanji_detail"
+            app:destination="@id/kanjiDetailFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/kanjiDetailFragment"
+        android:name="com.example.nala.ui.dictionary.KanjiDetailFragment"
+        android:label="KanjiDetailFragment" />
+    <fragment
+        android:id="@+id/reviewFragment"
+        android:name="com.example.nala.ui.review.ReviewFragment"
+        android:label="ReviewFragment" >
+        <action
+            android:id="@+id/show_home"
+            app:destination="@id/dictionaryHomeFragment" />
+        <action
+            android:id="@+id/show_review_detail"
+            app:destination="@id/dictionaryDetailFragment" />
+    </fragment>
+</navigation>
