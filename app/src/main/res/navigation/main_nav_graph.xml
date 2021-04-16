@@ -14,6 +14,12 @@
         <action
             android:id="@+id/show_reviews"
             app:destination="@id/reviewFragment" />
+        <action
+            android:id="@+id/show_study"
+            app:destination="@id/studyScreenFragment" />
+        <action
+            android:id="@+id/show_sentence_form"
+            app:destination="@id/sentenceFormFragment" />
     </fragment>
     <fragment
         android:id="@+id/dictionaryDetailFragment"
@@ -37,5 +43,24 @@
         <action
             android:id="@+id/show_review_detail"
             app:destination="@id/dictionaryDetailFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/studyScreenFragment"
+        android:name="com.example.nala.ui.study.StudyScreenFragment"
+        android:label="StudyScreenFragment" >
+        <action
+            android:id="@+id/from_study_to_kanji"
+            app:destination="@id/kanjiDetailFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/sentenceFormFragment"
+        android:name="com.example.nala.ui.study.SentenceFormFragment"
+        android:label="SentenceFormFragment" >
+        <action
+            android:id="@+id/sentence_form_to_home"
+            app:destination="@id/dictionaryHomeFragment" />
+        <action
+            android:id="@+id/from_sentence_form_to_study"
+            app:destination="@id/studyScreenFragment" />
     </fragment>
 </navigation>

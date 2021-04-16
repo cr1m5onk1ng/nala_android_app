@@ -17,23 +17,26 @@ class ReviewFragment : Fragment() {
 
     private val viewModel: DictionaryViewModel by activityViewModels()
 
+    private val reviewViewModel: ReviewViewModel by activityViewModels()
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        viewModel.onTriggerEvent(DictionaryEvent.LoadReviewsEvent)
+        reviewViewModel.loadReviewItems()
         return ComposeView(requireContext()).apply {
             setContent {
                 AppTheme(darkTheme = false) {
                     ReviewListScreen(
-                        isLoading = viewModel.reviewsLoading.value,
-                        reviewItems = viewModel.reviewItems.value ,
-                        setStudyItem = viewModel::setCurrentWord,
+                        isLoading = reviewViewModel.reviewsLoading.value,
+                        reviewItems = reviewViewModel.reviewItems.value ,
+                        setStudyItem = viewModel::setCurrentWordFromReview,
                         isHomeSelected = viewModel.isHomeSelected.value,
                         isReviewsSelected = viewModel.isReviewSelected.value,
                         toggleHome = viewModel::toggleHome,
                         toggleReviews = viewModel::toggleReviews,
+                        updateReviewItem = reviewViewModel::updateReviewItem,
                         navController = findNavController())
                 }
             }

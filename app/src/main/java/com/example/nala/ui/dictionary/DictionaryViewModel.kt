@@ -6,12 +6,14 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.nala.db.models.review.WordReviewModelDto
 import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.domain.model.kanji.KanjiCollection
 import com.example.nala.domain.model.kanji.KanjiModel
 import com.example.nala.domain.model.kanji.StoriesCollection
 import com.example.nala.repository.DictionaryRepository
 import com.example.nala.repository.KanjiRepository
+import com.example.nala.repository.ReviewRepository
 import com.example.nala.utils.TAG
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -22,10 +24,14 @@ import javax.inject.Inject
 class DictionaryViewModel @Inject constructor(
     private val dictRepository: DictionaryRepository,
     private val kanjiRepository: KanjiRepository,
+    private val reviewRepository: ReviewRepository,
     @ApplicationContext appContext: Context,
 ) : ViewModel() {
 
+    // HOME SCREEN STATE
     val textReceived: MutableState<Boolean> = mutableStateOf(false)
+
+    val sentenceReceived: MutableState<Boolean> = mutableStateOf(false)
 
     val currentWordModel: MutableState<DictionaryModel> = mutableStateOf(
         DictionaryModel(
@@ -35,22 +41,22 @@ class DictionaryViewModel @Inject constructor(
 
     val query: MutableState<String> = mutableStateOf("")
 
+    val sharedSentence: MutableState<String> = mutableStateOf("")
+
     val searchLoading: MutableState<Boolean> = mutableStateOf(false)
 
-    val reviewsLoading: MutableState<Boolean> = mutableStateOf(false)
+    //val mightForgetItems: MutableState<List<WordReviewModelDto>> = mutableStateOf(listOf())
+
+    val isHomeSelected: MutableState<Boolean> = mutableStateOf(true)
+
+    val isReviewSelected: MutableState<Boolean> = mutableStateOf(false)
+
+    // DICTIONARY STATE
 
     val currentKanji: MutableState<KanjiModel> = mutableStateOf(
         KanjiModel.Empty())
 
     val currentStory: MutableState<String> = mutableStateOf("")
-
-    val reviewItems: MutableState<List<DictionaryModel>> = mutableStateOf(listOf())
-
-    val mightForgetItems: MutableState<List<DictionaryModel>> = mutableStateOf(listOf())
-
-    val isHomeSelected: MutableState<Boolean> = mutableStateOf(true)
-
-    val isReviewSelected: MutableState<Boolean> = mutableStateOf(false)
 
     lateinit var kanjiDict: KanjiCollection
 
@@ -61,7 +67,6 @@ class DictionaryViewModel @Inject constructor(
             kanjiDict = kanjiRepository.getKanjiDict(appContext)
             storiesDict = kanjiRepository.getKanjiStories(appContext)
         }
-        getNReviews(20)
     }
 
     fun toggleHome(value: Boolean) {
@@ -76,13 +81,32 @@ class DictionaryViewModel @Inject constructor(
         currentWordModel.value = word
     }
 
+    fun setCurrentWordFromReview(word: WordReviewModelDto){
+        viewModelScope.launch{
+            searchLoading.value = true
+            currentWordModel.value = reviewRepository.mapReviewToDomain(word)
+            searchLoading.value = false
+        }
+    }
+
     fun setSharedText(text: String?) {
         query.value = text ?: ""
         textReceived.value = true
     }
 
+    fun setSharedSentence(text: String?) {
+        sentenceReceived.value = false
+        sharedSentence.value = text ?: ""
+        sentenceReceived.value = true
+    }
+
     fun unsetSharedText() {
         textReceived.value = false
+        query.value = ""
+    }
+
+    fun unsetSharedSentence() {
+        sentenceReceived.value = false
     }
 
     fun setCurrentKanji(kanji: String)  {
@@ -100,14 +124,6 @@ class DictionaryViewModel @Inject constructor(
                     is DictionaryEvent.SearchWordEvent -> {
                         searchWord()
                     }
-
-                    is DictionaryEvent.LoadReviewsEvent -> {
-                        loadReviewItems()
-                    }
-
-                    is DictionaryEvent.AddReviewEvent -> {
-                        addWordToReview()
-                    }
                 }
             } catch(e: Exception) {
                 Log.d(TAG, "Something wrong happened: ${e.cause}")
@@ -115,35 +131,27 @@ class DictionaryViewModel @Inject constructor(
         }
     }
 
-    private suspend fun searchWord() {
-        searchLoading.value = true
-        val result = dictRepository.search(query.value)
-        currentWordModel.value = result
-        searchLoading.value = false
-    }
-
     fun onQueryChanged(value: String) {
         query.value = value
     }
 
+    /*
     fun getNReviews(n: Int){
         viewModelScope.launch {
-            mightForgetItems.value = dictRepository.getNReviewItems(n)
+            mightForgetItems.value = reviewRepository.getNReviewItems(n)
         }
-    }
+    }*/
 
-    private fun addWordToReview() {
+    fun addWordToReview() {
         viewModelScope.launch{
-            dictRepository.addToReview(currentWordModel.value)
+            reviewRepository.addToReview(currentWordModel.value)
         }
     }
 
-    private fun loadReviewItems() {
-        viewModelScope.launch {
-            reviewsLoading.value = true
-            reviewItems.value = dictRepository.getReviewItems()
-            reviewsLoading.value = false
-        }
+    private suspend fun searchWord() {
+        searchLoading.value = true
+        val result = dictRepository.search(query.value.toLowerCase())
+        currentWordModel.value = result
+        searchLoading.value = false
     }
-
 }

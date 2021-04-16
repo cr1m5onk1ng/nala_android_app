@@ -1,9 +1,11 @@
 package com.example.nala.di
 
+import com.example.nala.db.models.review.WordReviewDbDtoMapper
 import com.example.nala.network.model.dictionary.DictionaryModelDtoMapper
 import com.example.nala.network.model.kanji.KanjiCollectionDtoMapper
 import com.example.nala.network.model.kanji.StoriesCollectionDtoMapper
 import com.example.nala.network.services.DictionaryService
+import com.example.nala.network.services.SearchApiService
 import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
@@ -43,6 +45,16 @@ object NetworkModule {
     @Provides
     fun provideStoriesMapper() : StoriesCollectionDtoMapper {
         return StoriesCollectionDtoMapper()
+    }
+
+    @Singleton
+    @Provides
+    fun provideSearchApiService() : SearchApiService {
+        return Retrofit.Builder()
+            .baseUrl("SEARCH APIN BASE URL")
+            .addConverterFactory(GsonConverterFactory.create(GsonBuilder().create()))
+            .build()
+            .create(SearchApiService::class.java)
     }
 
 }

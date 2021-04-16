@@ -6,10 +6,7 @@ import com.example.nala.network.model.dictionary.DictionaryModelDtoMapper
 import com.example.nala.network.model.kanji.KanjiCollectionDtoMapper
 import com.example.nala.network.model.kanji.StoriesCollectionDtoMapper
 import com.example.nala.network.services.DictionaryService
-import com.example.nala.repository.DictionaryRepository
-import com.example.nala.repository.DictionaryRepositoryImpl
-import com.example.nala.repository.KanjiRepository
-import com.example.nala.repository.KanjiRepositoryImpl
+import com.example.nala.repository.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,15 +21,11 @@ object RepositoryModule {
     @Provides
     fun provideDictionaryRepository(
         dictionaryService : DictionaryService,
-        reviewDao: ReviewDao,
-         networkMapper : DictionaryModelDtoMapper,
-        dbMapper: WordReviewDbDtoMapper
+        networkMapper : DictionaryModelDtoMapper,
     ) : DictionaryRepository {
         return DictionaryRepositoryImpl(
             dictionaryService,
-            reviewDao,
-            networkMapper,
-            dbMapper
+            networkMapper
         )
     }
 
@@ -45,6 +38,18 @@ object RepositoryModule {
         return KanjiRepositoryImpl(
             kanjiMapper,
             storiesMapper
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideReviewRepository(
+        reviewDao: ReviewDao,
+        dbMapper: WordReviewDbDtoMapper
+    ) : ReviewRepository {
+        return ReviewRepositoryImpl(
+            reviewDao,
+            dbMapper,
         )
     }
 

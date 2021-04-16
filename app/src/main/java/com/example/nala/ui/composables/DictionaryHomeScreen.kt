@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.nala.R
+import com.example.nala.db.models.review.WordReviewModelDto
 import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.ui.theme.*
 import kotlin.random.Random
@@ -37,21 +38,30 @@ import kotlin.random.Random
 @Composable
 fun HomeScreen(
     query: String,
-    mightForgetItems: List<DictionaryModel>,
+    mightForgetItems: List<WordReviewModelDto>,
     onQueryChange: (String) -> Unit,
     onClick: () -> Unit,
     textReceived: Boolean,
+    sentenceReceived: Boolean,
     unsetSharedText: () -> Unit,
+    unsetSharedSentence: () -> Unit,
     isHomeSelected: Boolean,
     isReviewsSelected: Boolean,
     toggleHome: (Boolean) -> Unit,
     toggleReviews: (Boolean) -> Unit,
     navController: NavController
 ) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     if(textReceived){
         onClick()
         navController.navigate(R.id.show_details)
         unsetSharedText()
+    }
+
+    if(sentenceReceived){
+        navController.navigate(R.id.show_sentence_form)
+        unsetSharedSentence()
     }
 
     Scaffold(
@@ -81,7 +91,7 @@ fun HomeScreen(
             ) {
                 Text(
                     "NaLa",
-                    modifier = Modifier.padding(top = 32.dp),
+                    modifier = Modifier.padding(top = 45.dp),
                     textAlign = TextAlign.Center,
                     style = TextStyle(
                         fontFamily = Quicksand,
@@ -90,7 +100,7 @@ fun HomeScreen(
                         fontWeight = FontWeight.Bold
                     ),
                 )
-                Spacer(modifier = Modifier.height(60.dp))
+                Spacer(modifier = Modifier.height(40.dp))
                 Text(
                     "Words you might forget",
                     modifier = Modifier
@@ -109,7 +119,7 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ){
                     items(mightForgetItems.size) { index ->
-                        val word = mightForgetItems[index].data?.first()?.japanese?.first()?.word ?: ""
+                        val word = mightForgetItems[index].word?: ""
                         Card(
                             modifier = Modifier
                                 .padding(8.dp)
@@ -118,6 +128,7 @@ fun HomeScreen(
                                 .clickable {
                                     onQueryChange(word)
                                     onClick()
+                                    onQueryChange("")
                                     navController.navigate(R.id.show_details)
                                 },
                             shape = RoundedCornerShape(18.dp),
@@ -138,14 +149,14 @@ fun HomeScreen(
                     }
                 }
                 Spacer(
-                    modifier = Modifier.height(50.dp),
+                    modifier = Modifier.height(10.dp),
                 )
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp)
                 ){
-                    val keyboardController = LocalSoftwareKeyboardController.current
+
                     TextField(
                         value = query,
                         modifier = Modifier.alpha(0.6f),
@@ -171,6 +182,7 @@ fun HomeScreen(
                         keyboardActions = KeyboardActions (
                             onSearch = {
                                 onClick()
+                                onQueryChange("")
                                 keyboardController?.hideSoftwareKeyboard()
                                 navController.navigate(R.id.show_details)
                             }

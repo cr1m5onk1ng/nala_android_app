@@ -1,14 +1,15 @@
 package com.example.nala.di
 
-import com.example.nala.network.services.JapaneseTokenizer
-import com.github.wanasit.kotori.Tokenizer
-import com.github.wanasit.kotori.optimized.DefaultTermFeatures
+//import com.example.nala.network.services.JapaneseTokenizer
+//import com.github.wanasit.kotori.Tokenizer
+//import com.github.wanasit.kotori.optimized.DefaultTermFeatures
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
+/*
 @Module
 @InstallIn(SingletonComponent::class)
 object ServiceModule {
@@ -24,4 +25,4 @@ object ServiceModule {
     fun provideTokenizer() : Tokenizer<DefaultTermFeatures> {
         return Tokenizer.createDefaultTokenizer()
     }
-}
+}*/

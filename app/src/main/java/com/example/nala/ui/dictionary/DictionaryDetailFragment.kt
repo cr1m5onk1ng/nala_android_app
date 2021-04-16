@@ -11,6 +11,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import com.example.nala.ui.composables.DictionaryDetailScreen
+import com.example.nala.ui.review.ReviewViewModel
 import com.example.nala.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -19,7 +20,6 @@ import kotlinx.coroutines.launch
 class DictionaryDetailFragment : Fragment() {
 
     private val viewModel: DictionaryViewModel by activityViewModels()
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -37,7 +37,7 @@ class DictionaryDetailFragment : Fragment() {
                         kanjiDict = viewModel.kanjiDict,
                         setCurrentKanji = viewModel::setCurrentKanji,
                         setCurrentStory = viewModel::setCurrentStory,
-                        addToReview =  {viewModel.onTriggerEvent(DictionaryEvent.AddReviewEvent)},
+                        addToReview =  viewModel::addWordToReview,
                         scaffoldState = scaffoldState,
                         onShowSnackbar = {showSnackbar(scaffoldState)}
                     )

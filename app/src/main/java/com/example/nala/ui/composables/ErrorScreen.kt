@@ -19,7 +19,7 @@ import com.example.nala.ui.theme.Quicksand
 fun ErrorScreen(text: String, subtitle: String) {
     Column (
         modifier = Modifier
-            .padding(16.dp)
+            .padding(32.dp)
             .fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -28,7 +28,7 @@ fun ErrorScreen(text: String, subtitle: String) {
             text,
             style = TextStyle(
                 fontFamily = Quicksand,
-                fontSize = 26.sp,
+                fontSize = 22.sp,
                 fontWeight = FontWeight.W500,
                 color = Color.White
             )
@@ -38,7 +38,7 @@ fun ErrorScreen(text: String, subtitle: String) {
                 subtitle,
                 style = TextStyle(
                     fontFamily = Quicksand,
-                    fontSize = 24.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.W500,
                     color = Color.White
                 )

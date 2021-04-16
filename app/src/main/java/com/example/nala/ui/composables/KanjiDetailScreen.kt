@@ -52,6 +52,7 @@ fun KanjiDetailScreen(
                 }
 
                 // SECTIONS
+                Spacer(modifier = Modifier.padding(vertical = 16.dp))
                 BackButton(navController)
                 Spacer(modifier = Modifier.padding(vertical = 16.dp))
                 KanjiSection(kanji = kanji.kanji)

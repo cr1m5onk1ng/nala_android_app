@@ -26,10 +26,11 @@ fun BottomBar(
         BottomNavigationItem(
             selected = isHomeSelected,
             onClick = {
-                toggleHome(true)
-                toggleReviews(false)
-                navController.popBackStack()
-                      },
+                if (!isHomeSelected) {
+                    toggleHome(true)
+                    toggleReviews(false)
+                    navController.popBackStack()
+                }},
             icon = {Icon(
                 Icons.Rounded.Home,
                 contentDescription="home")
@@ -38,10 +39,11 @@ fun BottomBar(
         BottomNavigationItem(
             selected = isReviewsSelected,
             onClick = {
-                toggleHome(false)
-                toggleReviews(true)
-                navController.navigate(R.id.show_reviews)
-                      },
+                if(!isReviewsSelected) {
+                    toggleHome(false)
+                    toggleReviews(true)
+                    navController.navigate(R.id.show_reviews)
+                } },
             icon = {Icon(
                 Icons.Rounded.List,
                 contentDescription="home")

@@ -52,7 +52,7 @@ fun DictionaryDetailScreen(
         if(isLoading){
             LoadingIndicator()
         }
-        if(wordModel.data.isEmpty()) {
+        else if(wordModel.data.isEmpty()) {
             ErrorScreen(
                 text = "No word found in Jisho dictionary",
                 subtitle = "¯\\_(ツ)_/¯"
@@ -61,21 +61,14 @@ fun DictionaryDetailScreen(
         else {
             ConstraintLayout(
                 modifier = Modifier
-                    .background(
-                        color = LightBlue
-                    )
                     .fillMaxSize()
                     .padding(16.dp),
             ) {
-                val button = createRef()
+
                 BackButton(
                     navController = navController,
                     modifier = Modifier
-                        .padding(vertical = 16.dp)
-                        .constrainAs(button){
-                            top.linkTo(parent.top)
-                            start.linkTo(parent.start)
-                        },
+                        .padding(top = 22.dp, start = 22.dp)
                 )
                 LazyColumn{
                     item() {
@@ -142,7 +135,8 @@ fun DataSection(
         ButtonSection(addToReview, scaffoldState, onShowSnackbar)
         Spacer(modifier = Modifier.padding(vertical = 5.dp) )
         val isCommon: Boolean = data?.isCommon ?: false
-        val isCommonTag: String = if(isCommon) "isCommon" else ""
+
+        val isCommonTag: String = if(isCommon) "Common" else ""
         val jlpt: List<String> = data?.jlpt ?: listOf()
         val wordTags: MutableList<String> = mutableListOf()
         if (jlpt.isNotEmpty()) wordTags.add(jlpt.first())
@@ -162,6 +156,7 @@ fun WordSection(
     navController: NavController,
     setCurrentKanji: (String) -> Unit,
     setCurrentStory: (String) -> Unit,
+    fromStudy: Boolean = false,
 ) {
     Column(
         modifier = Modifier
@@ -179,7 +174,13 @@ fun WordSection(
         Spacer(
             modifier = Modifier.padding(vertical=2.dp)
         )
-        KanjiRow(word, kanjiDict, navController, setCurrentKanji, setCurrentStory)
+        KanjiRow(
+            word,
+            kanjiDict,
+            navController,
+            setCurrentKanji,
+            setCurrentStory,
+            fromStudy=fromStudy)
     }
 }
 
@@ -189,7 +190,8 @@ fun KanjiRow(
     kanjiDict: KanjiCollection,
     navController: NavController,
     setCurrentKanji: (String) -> Unit,
-    setCurrentStory: (String) -> Unit
+    setCurrentStory: (String) -> Unit,
+    fromStudy: Boolean = false,
 ) {
     Row() {
         for (kanji in kanjis) {
@@ -202,7 +204,11 @@ fun KanjiRow(
                         // SEND KANJI TO BUNDLE
                         setCurrentStory(kanjiString)
                         setCurrentKanji(kanjiString)
-                        navController.navigate(R.id.show_kanji_detail)
+                        if(fromStudy) {
+                            navController.navigate(R.id.from_study_to_kanji)
+                        } else{
+                            navController.navigate(R.id.show_kanji_detail)
+                        }
                     }),
                 style = TextStyle(
                     fontSize = 46.sp,

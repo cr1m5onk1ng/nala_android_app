@@ -11,7 +11,7 @@ import com.example.nala.db.models.review.WordTagDto
     WordReviewModelDto::class,
     WordDefinitionDto::class,
     WordTagDto::class],
-    version=1)
+    version=2)
 abstract class ReviewDatabase : RoomDatabase() {
     abstract  fun reviewDao() : ReviewDao
 

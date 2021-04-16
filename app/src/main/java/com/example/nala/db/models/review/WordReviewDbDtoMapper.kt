@@ -1,11 +1,14 @@
 package com.example.nala.db.models.review
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.example.nala.db.models.DatabaseModel
 import com.example.nala.domain.model.dictionary.Data
 import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.domain.model.dictionary.Japanese
 import com.example.nala.domain.model.dictionary.Sense
 import com.example.nala.domain.util.DomainMapper
+import java.time.LocalDate
 
 class WordReviewDbDtoMapper : DomainMapper<DatabaseModel, DictionaryModel> {
 
@@ -48,6 +51,7 @@ class WordReviewDbDtoMapper : DomainMapper<DatabaseModel, DictionaryModel> {
         TODO("Not yet implemented")
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun mapFromDomainModel(domainModel: DictionaryModel): WordReviewModelDto {
         val data = domainModel.data?.first()
         var word = data.slug ?: ""
@@ -64,7 +68,8 @@ class WordReviewDbDtoMapper : DomainMapper<DatabaseModel, DictionaryModel> {
             reading = reading,
             jlpt = jlptString,
             common = data?.isCommon ?: false,
-            pos = pos
+            pos = pos,
+            scheduledDate = LocalDate.now().toString()
         )
     }
 

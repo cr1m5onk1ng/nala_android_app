@@ -33,6 +33,9 @@ interface ReviewDao {
     @Query("DELETE FROM word_tag")
     suspend fun deleteAllTags()
 
+    @Query("SELECT * FROM word_review WHERE scheduled_date = :date")
+    suspend fun getReviewsAtScheduledDate(date: String) : List<WordReviewModelDto>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addReview(word: WordReviewModelDto)
 
@@ -50,5 +53,8 @@ interface ReviewDao {
 
     @Delete
     suspend fun deleteDefinition(definition: WordDefinitionDto)
+
+    @Update
+    suspend fun updateReviewItem(wordModel: WordReviewModelDto)
 
 }

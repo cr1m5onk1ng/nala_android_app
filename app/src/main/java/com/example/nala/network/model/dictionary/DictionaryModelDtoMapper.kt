@@ -4,7 +4,7 @@ import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.domain.util.DomainMapper
 
 class DictionaryModelDtoMapper : DomainMapper <DictionaryModelDto, DictionaryModel>  {
-    val dataDtoMapper = DataDtoMapper()
+    private val dataDtoMapper = DataDtoMapper()
 
     override fun mapToDomainModel(model: DictionaryModelDto): DictionaryModel {
         return DictionaryModel(

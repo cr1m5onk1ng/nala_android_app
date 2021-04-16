@@ -8,4 +8,4 @@ data class DictionaryModelDto (
     val data: List<DataDto>,
     @SerializedName("meta")
     val meta: Meta
-        )
+    )
