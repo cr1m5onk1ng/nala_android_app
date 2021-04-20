@@ -6,11 +6,17 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.nala.db.models.review.WordReviewModelDto
+import com.example.nala.db.models.review.*
+import com.example.nala.db.models.review.relations.WordReviewWithSenses
+import com.example.nala.db.models.review.relations.WordSenseWithDefinitions
+import com.example.nala.db.models.review.relations.WordSenseWithTags
+import com.example.nala.db.models.review.relations.WordWithTags
 import com.example.nala.domain.model.dictionary.DictionaryModel
+import com.example.nala.domain.model.dictionary.Sense
 import com.example.nala.domain.model.kanji.KanjiCollection
 import com.example.nala.domain.model.kanji.KanjiModel
 import com.example.nala.domain.model.kanji.StoriesCollection
+import com.example.nala.domain.model.review.SentenceReviewModel
 import com.example.nala.repository.DictionaryRepository
 import com.example.nala.repository.KanjiRepository
 import com.example.nala.repository.ReviewRepository
@@ -33,11 +39,16 @@ class DictionaryViewModel @Inject constructor(
 
     val sentenceReceived: MutableState<Boolean> = mutableStateOf(false)
 
+    val mightForgetItemsLoaded: MutableState<Boolean> = mutableStateOf(false)
+
+    val addedToReview: MutableState<Boolean> = mutableStateOf(false)
+
     val currentWordModel: MutableState<DictionaryModel> = mutableStateOf(
-        DictionaryModel(
-            data = listOf()
-        )
+        DictionaryModel.Empty()
     )
+
+    val currentSentence: MutableState<String> = mutableStateOf("")
+
 
     val query: MutableState<String> = mutableStateOf("")
 
@@ -45,7 +56,7 @@ class DictionaryViewModel @Inject constructor(
 
     val searchLoading: MutableState<Boolean> = mutableStateOf(false)
 
-    //val mightForgetItems: MutableState<List<WordReviewModelDto>> = mutableStateOf(listOf())
+
 
     val isHomeSelected: MutableState<Boolean> = mutableStateOf(true)
 
@@ -58,15 +69,22 @@ class DictionaryViewModel @Inject constructor(
 
     val currentStory: MutableState<String> = mutableStateOf("")
 
+   val mightForgetItems: MutableState<List<WordReviewModel>> = mutableStateOf(listOf())
+
     lateinit var kanjiDict: KanjiCollection
 
     lateinit var storiesDict: StoriesCollection
 
+
     init{
+        mightForgetItemsLoaded.value = false
         viewModelScope.launch {
             kanjiDict = kanjiRepository.getKanjiDict(appContext)
             storiesDict = kanjiRepository.getKanjiStories(appContext)
+            val lastItems = reviewRepository.getWordReviews().takeLast(10)
+            mightForgetItems.value = lastItems
         }
+        mightForgetItemsLoaded.value = true
     }
 
     fun toggleHome(value: Boolean) {
@@ -75,18 +93,6 @@ class DictionaryViewModel @Inject constructor(
 
     fun toggleReviews(value: Boolean) {
         isReviewSelected.value = value
-    }
-
-    fun setCurrentWord(word: DictionaryModel) {
-        currentWordModel.value = word
-    }
-
-    fun setCurrentWordFromReview(word: WordReviewModelDto){
-        viewModelScope.launch{
-            searchLoading.value = true
-            currentWordModel.value = reviewRepository.mapReviewToDomain(word)
-            searchLoading.value = false
-        }
     }
 
     fun setSharedText(text: String?) {
@@ -135,23 +141,76 @@ class DictionaryViewModel @Inject constructor(
         query.value = value
     }
 
-    /*
-    fun getNReviews(n: Int){
-        viewModelScope.launch {
-            mightForgetItems.value = reviewRepository.getNReviewItems(n)
-        }
-    }*/
-
     fun addWordToReview() {
+        addedToReview.value = false
         viewModelScope.launch{
-            reviewRepository.addToReview(currentWordModel.value)
+            reviewRepository.addWordToReview(currentWordModel.value)
+            reviewRepository.addSensesToReview(
+                currentWordModel.value.senses,
+                word=currentWordModel.value.word)
+            reviewRepository.addWordTagsToReview(
+                currentWordModel.value.dataTags, currentWordModel.value.word)
         }
+        addedToReview.value = true
+    }
+
+    fun addSentenceToReview(word: String, sentence: String) {
+        addedToReview.value = false
+        viewModelScope.launch{
+            val reviewModel = SentenceReviewModel(
+                sentence = sentence,
+                targetWord = word,
+            )
+            reviewRepository.addSentenceToReview(reviewModel)
+        }
+        addedToReview.value = true
+    }
+
+    fun addKanjiToReview(kanji: String) {
+        addedToReview.value = false
+        viewModelScope.launch{
+            val kanjiModel = kanjiDict.kanjis[kanji]
+            val kanjiReview = KanjiReviewModel(
+                kanji = kanjiModel?.kanji ?: "",
+                freq = kanjiModel?.freq ?: "",
+                grade = kanjiModel?.grade ?: "",
+                jlpt = kanjiModel?.jlpt ?: "",
+                strokes = null,
+            )
+            val meanings = kanjiModel?.meaning ?: listOf()
+            val kunReadings = kanjiModel?.kunReadings ?: listOf()
+            val onReadings = kanjiModel?.onReadings ?: listOf()
+            reviewRepository.addKanjiMeaningsToReview(meanings, kanji)
+            reviewRepository.addKanjiKunReadingsToReview(kunReadings, kanji)
+            reviewRepository.addKanjiOnReadingsToReview(onReadings, kanji)
+        }
+        addedToReview.value = true
+    }
+
+    fun setCurrentWordFromReview(wordReviewModel: WordReviewModel) {
+        searchLoading.value = true
+        viewModelScope.launch {
+            val model = reviewRepository.getWordData(wordReviewModel)
+            currentWordModel.value = model
+            currentSentence.value = ""
+        }
+        searchLoading.value = false
+    }
+
+    fun setCurrentSentenceFromReview(word: String, sentence: String){
+        searchLoading.value = true
+        viewModelScope.launch {
+            val reviewModel = reviewRepository.getWordReview(word)
+            setCurrentWordFromReview(reviewModel)
+            currentSentence.value = sentence
+        }
+        searchLoading.value = false
     }
 
     private suspend fun searchWord() {
         searchLoading.value = true
-        val result = dictRepository.search(query.value.toLowerCase())
-        currentWordModel.value = result
+        val dictModel = dictRepository.search(query.value.toLowerCase())
+        currentWordModel.value = dictModel
         searchLoading.value = false
     }
 }

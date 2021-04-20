@@ -10,7 +10,8 @@ data class KanjiModel(
     val kanji: String,
     val meaning: List<String>?,
     val name_reading: List<String>?,
-    val reading: Reading?,
+    val kunReadings: List<String>,
+    val onReadings: List<String>,
     val strokes: String?
 ) : DomainModel() {
     companion object {
@@ -22,7 +23,8 @@ data class KanjiModel(
                 kanji = "",
                 meaning = null,
                 name_reading = null,
-                reading = null,
+                kunReadings = listOf(),
+                onReadings = listOf(),
                 strokes = null
             )
         }

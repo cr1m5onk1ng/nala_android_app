@@ -9,7 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.findNavController
 import com.example.nala.ui.composables.ReviewListScreen
-import com.example.nala.ui.dictionary.DictionaryEvent
 import com.example.nala.ui.dictionary.DictionaryViewModel
 import com.example.nala.ui.theme.AppTheme
 
@@ -24,19 +23,36 @@ class ReviewFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        reviewViewModel.loadReviewItems()
+        reviewViewModel.loadWordReviewItems()
         return ComposeView(requireContext()).apply {
             setContent {
                 AppTheme(darkTheme = false) {
                     ReviewListScreen(
                         isLoading = reviewViewModel.reviewsLoading.value,
-                        reviewItems = reviewViewModel.reviewItems.value ,
-                        setStudyItem = viewModel::setCurrentWordFromReview,
+                        selectedCategory = reviewViewModel.selectedCategory.value,
+                        setCategory = reviewViewModel::setCategory,
+                        wordReviewItems = reviewViewModel.wordReviewItems.value,
+                        sentenceReviewItems = reviewViewModel.sentenceReviewItems.value,
+                        kanjiReviewItems = reviewViewModel.kanjiReviewItems.value,
+                        loadWordReviews = reviewViewModel::loadWordReviewItems,
+                        loadSentenceReviews = reviewViewModel::loadSentenceReviewItems,
+                        loadKanjiReviews =reviewViewModel::loadKaniReviewItems,
+                        setWordItem = viewModel::setCurrentWordFromReview,
+                        setSentenceItem = viewModel::setCurrentSentenceFromReview,
+                        setKanjiItem = viewModel::setCurrentKanji,
+                        removeWordReview = reviewViewModel::removeWordReviewItem,
+                        removeSentenceReview = reviewViewModel::removeSentenceReviewItem,
+                        removeKanjiReview = reviewViewModel::removeKanjiReviewItem,
+                        dismissWordReview = reviewViewModel::dismissWordReviewItem,
+                        dismissSentenceReview = reviewViewModel::dismissSentenceReviewItem,
+                        dismissKanjiReview = reviewViewModel::dismissKanjiReviewItem,
                         isHomeSelected = viewModel.isHomeSelected.value,
                         isReviewsSelected = viewModel.isReviewSelected.value,
                         toggleHome = viewModel::toggleHome,
                         toggleReviews = viewModel::toggleReviews,
-                        updateReviewItem = reviewViewModel::updateReviewItem,
+                        updateWordReviewItem = reviewViewModel::updateWordReviewItem,
+                        updateSentenceReviewItem= reviewViewModel::updateSentenceReviewItem,
+                        updateKanjiReviewItem = reviewViewModel::updateKanjiReviewItem,
                         navController = findNavController())
                 }
             }

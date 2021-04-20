@@ -33,7 +33,8 @@ class StudyScreenFragment : Fragment() {
                     setCurrentKanji = viewModel::setCurrentKanji,
                     setCurrentStory = viewModel::setCurrentStory,
                     contextLoading = studyViewModel.contextLoading.value,
-                    wordLoading = studyViewModel.wordModelLoading.value
+                    wordLoading = studyViewModel.wordModelLoading.value,
+                    addSentenceToReview = viewModel::addSentenceToReview
                 )
             }
         }

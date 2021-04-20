@@ -40,7 +40,8 @@ class DictionaryHomeFragment : Fragment() {
                 AppTheme(darkTheme = false) {
                     HomeScreen(
                         query = viewModel.query.value,
-                        mightForgetItems = reviewViewModel.reviewItems.value.takeLast(10),
+                        mightForgetItems = viewModel.mightForgetItems.value,
+                        mightForgetItemsLoaded = viewModel.mightForgetItemsLoaded.value,
                         onQueryChange = viewModel::onQueryChanged,
                         onClick = {viewModel.onTriggerEvent(DictionaryEvent.SearchWordEvent)},
                         textReceived = viewModel.textReceived.value,

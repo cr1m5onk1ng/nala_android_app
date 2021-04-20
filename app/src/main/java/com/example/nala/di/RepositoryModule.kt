@@ -1,7 +1,8 @@
 package com.example.nala.di
 
 import com.example.nala.db.dao.ReviewDao
-import com.example.nala.db.models.review.WordReviewDbDtoMapper
+import com.example.nala.db.models.review.mappers.KanjiReviewDbDtoMapper
+import com.example.nala.db.models.review.mappers.SentenceReviewDbDtoMapper
 import com.example.nala.network.model.dictionary.DictionaryModelDtoMapper
 import com.example.nala.network.model.kanji.KanjiCollectionDtoMapper
 import com.example.nala.network.model.kanji.StoriesCollectionDtoMapper
@@ -45,11 +46,17 @@ object RepositoryModule {
     @Provides
     fun provideReviewRepository(
         reviewDao: ReviewDao,
-        dbMapper: WordReviewDbDtoMapper
+        //wordReviewMapper: WordReviewDbDtoMapper,
+        //wordSensesMapper: WordSenseDbDtoMapper,
+        //sentenceReviewMapper: SentenceReviewDbDtoMapper,
+        //kanjiReviewMapper: KanjiReviewDbDtoMapper
     ) : ReviewRepository {
         return ReviewRepositoryImpl(
             reviewDao,
-            dbMapper,
+            //wordReviewMapper,
+            //wordSensesMapper,
+            //sentenceReviewMapper,
+            //kanjiReviewMapper
         )
     }
 

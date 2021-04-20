@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.repository.DictionaryRepository
-import com.example.nala.repository.DictionaryRepositoryImpl
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -18,7 +17,7 @@ class StudyViewModel @Inject constructor(
 
     val currentStudyContext: MutableState<String> = mutableStateOf("")
     val currentStudyTargetWord: MutableState<DictionaryModel> = mutableStateOf(
-        DictionaryModel(data = listOf())
+        DictionaryModel.Empty()
     )
 
     val selectedWord: MutableState<String> = mutableStateOf("")

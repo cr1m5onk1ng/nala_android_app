@@ -4,7 +4,10 @@ import android.content.Context
 import androidx.room.Room
 import com.example.nala.db.ReviewDatabase
 import com.example.nala.db.dao.ReviewDao
-import com.example.nala.db.models.review.WordReviewDbDtoMapper
+import com.example.nala.db.models.review.mappers.KanjiReviewDbDtoMapper
+import com.example.nala.db.models.review.mappers.SentenceReviewDbDtoMapper
+import com.example.nala.db.models.review.mappers.WordReviewDbDtoMapper
+//import com.example.nala.db.models.review.mappers.WordSenseDbDtoMapper
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -36,5 +39,25 @@ object DatabaseModule {
     fun provideWordReviewMapper() : WordReviewDbDtoMapper {
         return WordReviewDbDtoMapper()
     }
+
+
+    @Singleton
+    @Provides
+    fun provideSentenceReviewMapper() : SentenceReviewDbDtoMapper {
+        return SentenceReviewDbDtoMapper()
+    }
+
+    @Singleton
+    @Provides
+    fun provideKanjiReviewMapper(reviewDao: ReviewDao) : KanjiReviewDbDtoMapper {
+        return KanjiReviewDbDtoMapper(reviewDao)
+    }
+
+    /*
+    @Singleton
+    @Provides
+    fun provideWordSenseMapper(reviewDao: ReviewDao) : WordSenseDbDtoMapper {
+        return WordSenseDbDtoMapper(reviewDao)
+    }*/
 
 }

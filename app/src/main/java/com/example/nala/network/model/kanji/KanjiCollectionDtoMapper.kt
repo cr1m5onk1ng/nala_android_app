@@ -3,6 +3,7 @@ package com.example.nala.network.model.kanji
 import com.example.nala.domain.model.kanji.KanjiCollection
 import com.example.nala.domain.model.kanji.KanjiModel
 import com.example.nala.domain.util.DomainMapper
+import java.util.*
 
 class KanjiCollectionDtoMapper() : DomainMapper<KanjiCollectionDto, KanjiCollection> {
     override fun mapToDomainModel(model: KanjiCollectionDto): KanjiCollection {

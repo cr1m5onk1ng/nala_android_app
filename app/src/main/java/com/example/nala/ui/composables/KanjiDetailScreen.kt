@@ -174,7 +174,7 @@ fun DetailsSection(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         DetailsColumn(details = kanji?.meaning ?: listOf(), title = "Meanings", 20.sp)
-        DetailsColumn(details = kanji?.reading?.kun ?: listOf(), title = "Kun", 16.sp)
-        DetailsColumn(details = kanji?.reading?.on ?: listOf(), title = "On", 16.sp)
+        DetailsColumn(details = kanji?.kunReadings ?: listOf(), title = "Kun", 16.sp)
+        DetailsColumn(details = kanji?.onReadings ?: listOf(), title = "On", 16.sp)
     }
 }

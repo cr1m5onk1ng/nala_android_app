@@ -5,7 +5,7 @@ import androidx.room.Entity
 import com.example.nala.db.models.DatabaseModel
 
 @Entity(tableName = "word_definition", primaryKeys = ["word", "definition"])
-data class WordDefinitionDto (
+data class WordDefinition (
     @ColumnInfo(name = "word")
     val word: String,
 

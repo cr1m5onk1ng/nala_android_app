@@ -52,7 +52,7 @@ fun DictionaryDetailScreen(
         if(isLoading){
             LoadingIndicator()
         }
-        else if(wordModel.data.isEmpty()) {
+        else if(wordModel.word.isEmpty()) {
             ErrorScreen(
                 text = "No word found in Jisho dictionary",
                 subtitle = "¯\\_(ツ)_/¯"
@@ -73,7 +73,7 @@ fun DictionaryDetailScreen(
                 LazyColumn{
                     item() {
                         DataSection(
-                            wordModel.data.first(),
+                            wordModel,
                             navController,
                             kanjiDict,
                             setCurrentKanji,
@@ -106,7 +106,7 @@ fun DictionaryDetailScreen(
 
 @Composable
 fun DataSection(
-    data: Data,
+    wordModel: DictionaryModel,
     navController: NavController,
     kanjiDict: KanjiCollection,
     setCurrentKanji: (String) -> Unit,
@@ -122,8 +122,8 @@ fun DataSection(
     ) {
         Spacer(modifier = Modifier.padding(vertical = 16.dp))
         WordSection(
-            reading = data.japanese?.first()?.reading ?: "",
-            word = data?.slug ?: "",
+            reading = wordModel.reading,
+            word = wordModel.word,
             kanjiDict = kanjiDict,
             navController,
             setCurrentKanji,
@@ -134,17 +134,16 @@ fun DataSection(
         )
         ButtonSection(addToReview, scaffoldState, onShowSnackbar)
         Spacer(modifier = Modifier.padding(vertical = 5.dp) )
-        val isCommon: Boolean = data?.isCommon ?: false
-
+        val isCommon: Boolean = wordModel?.common ?: false
         val isCommonTag: String = if(isCommon) "Common" else ""
-        val jlpt: List<String> = data?.jlpt ?: listOf()
+        val jlpt = wordModel?.jlpt ?: ""
         val wordTags: MutableList<String> = mutableListOf()
-        if (jlpt.isNotEmpty()) wordTags.add(jlpt.first())
+        if (jlpt.isNotEmpty()) wordTags.add(jlpt)
         if(isCommonTag.isNotEmpty()) wordTags.add(isCommonTag)
-        val tags = data?.tags ?: listOf()
+        val tags = wordModel?.dataTags ?: listOf()
         val allTags = tags + wordTags
         TagRow(tags = allTags)
-        SensesSection(data?.senses ?: listOf())
+        SensesSection(wordModel?.senses ?: listOf())
     }
 }
 

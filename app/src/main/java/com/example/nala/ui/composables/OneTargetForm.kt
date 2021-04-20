@@ -33,7 +33,9 @@ fun OneTargetForm(
 ) {
 
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = 48.dp)
     ){
         //Close Button
         Row(

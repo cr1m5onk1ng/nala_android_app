@@ -1,8 +1,8 @@
 package com.example.nala.domain.util
 
-interface DomainMapper <T, DomainModel>{
+interface DomainMapper <T, R>{
 
-    fun mapToDomainModel(model: T) : DomainModel
+    fun mapToDomainModel(model: T) : R
 
-    fun mapFromDomainModel(model: DomainModel) : T
+    fun mapFromDomainModel(model: R) : T
 }

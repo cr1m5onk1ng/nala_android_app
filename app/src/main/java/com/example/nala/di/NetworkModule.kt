@@ -1,6 +1,5 @@
 package com.example.nala.di
 
-import com.example.nala.db.models.review.WordReviewDbDtoMapper
 import com.example.nala.network.model.dictionary.DictionaryModelDtoMapper
 import com.example.nala.network.model.kanji.KanjiCollectionDtoMapper
 import com.example.nala.network.model.kanji.StoriesCollectionDtoMapper
@@ -51,7 +50,7 @@ object NetworkModule {
     @Provides
     fun provideSearchApiService() : SearchApiService {
         return Retrofit.Builder()
-            .baseUrl("SEARCH APIN BASE URL")
+            .baseUrl("SEARCH API BASE URL")
             .addConverterFactory(GsonConverterFactory.create(GsonBuilder().create()))
             .build()
             .create(SearchApiService::class.java)

@@ -1,17 +1,13 @@
 package com.example.nala.db.models.review
 
-import android.os.Build
-import androidx.annotation.RequiresApi
+
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.example.nala.db.models.DatabaseModel
-import java.time.LocalDate
-import java.time.LocalDate.now
-import java.util.*
 
 @Entity(tableName = "word_review")
-data class WordReviewModelDto constructor(
+data class WordReviewModel (
     @PrimaryKey(autoGenerate = false)
     @ColumnInfo(name="word")
     val word: String,
@@ -36,8 +32,4 @@ data class WordReviewModelDto constructor(
 
     @ColumnInfo(name="interval")
     val interval: Int = 0,
-
-    @ColumnInfo(name="scheduled_date")
-    val scheduledDate: String
-
-) : DatabaseModel()
+) : ReviewModel()

@@ -56,6 +56,7 @@ fun StudyScreen(
     wordLoading: Boolean,
     setCurrentKanji: (String) -> Unit,
     setCurrentStory: (String) -> Unit,
+    addSentenceToReview: (String, String) -> Unit,
 ) {
 
     val sentences = listOf(
@@ -72,15 +73,15 @@ fun StudyScreen(
         if(contextLoading || wordLoading){
             LoadingIndicator()
         }
-        else if(wordModel.data.isEmpty()) {
+        else if(wordModel.word.isEmpty()) {
             ErrorScreen(
                 text = "Target word not found in Jisho dictionary",
                 subtitle = "¯\\_(ツ)_/¯"
             )
         }
         else {
-            val word = wordModel.data?.first().slug ?: ""
-            val reading = wordModel.data?.first().japanese?.first()?.reading ?: ""
+            val word = wordModel.word
+            val reading = wordModel.reading
             val parts = context.split(Regex(word))
             assert(parts.size == 2)
             Column(
@@ -105,7 +106,9 @@ fun StudyScreen(
                     backgroundColor = MaterialTheme.colors.surface,
                     text = "Add to review",
                     icon = Icons.Rounded.Add,
-                    onCLick = {},
+                    onCLick = {
+                              addSentenceToReview(word, context)
+                    },
                     height = 50.dp,
                 )
                 Spacer(modifier = Modifier.padding(vertical=5.dp))
@@ -129,7 +132,8 @@ fun StudyScreen(
                     items(count = sentences.size) { index ->
                         SentenceCard(
                             sentence = sentences[index],
-                            category = "Music"
+                            category = "Music",
+                            addSentenceToReview = addSentenceToReview
                         )
                     }
                 }
@@ -142,7 +146,8 @@ fun StudyScreen(
 fun SentenceCard(
     sentence: String,
     category: String,
-    targetWord: String? = null
+    targetWord: String? = null,
+    addSentenceToReview: (String, String) -> Unit
 ) {
     // Examples may or may not contain the target word
     // This is configurable via an option
@@ -218,7 +223,7 @@ fun SentenceCard(
                 SmallerButton(
                     text = "Review",
                     backgroundColor = LightBlue,
-                    onCLick = { /*TODO*/ },
+                    onCLick = { addSentenceToReview(targetWord ?: "", sentence) },
                     height = 40.dp,
                     icon = Icons.Rounded.Add,
                 )
@@ -270,50 +275,3 @@ fun ContextSection(
     }
 }
 
-@Composable
-fun CustomAnnotatedString(
-    context_start: String,
-    context_end: String,
-    word: String,
-    textStyle: SpanStyle,
-    specialStyle: SpanStyle,
-) {
-    SelectionContainer{
-        Text(buildAnnotatedString {
-            withStyle(
-                style = textStyle
-            ) {
-                append(context_start)
-            }
-            withStyle(style = specialStyle) {
-                append(word)
-            }
-            withStyle(
-                style = textStyle
-            ) {
-                append(context_end)
-            }
-        })
-    }
-}
-
-@Composable
-fun CustomTextButton(
-    text: String,
-    onClick: () -> Unit,
-) {
-    TextButton(
-        onClick = onClick,
-    ){
-        Text(
-            text,
-            style = TextStyle(
-                fontFamily = Quicksand,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.W500,
-                color = Blue700,
-                textDecoration = TextDecoration.Underline
-            ),
-        )
-    }
-}

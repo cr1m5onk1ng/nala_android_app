@@ -2,6 +2,7 @@ package com.example.nala.network.model.kanji
 
 import com.example.nala.domain.model.kanji.StoriesCollection
 import com.example.nala.domain.util.DomainMapper
+import java.util.*
 
 class StoriesCollectionDtoMapper: DomainMapper<StoriesCollectionDto, StoriesCollection> {
     val storyMapper = StoryModelDtoMapper()
