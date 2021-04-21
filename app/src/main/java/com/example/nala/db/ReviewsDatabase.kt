@@ -17,7 +17,7 @@ import com.example.nala.db.models.review.*
     KanjiMeanings::class,
     KanjiOn::class,
     KanjiKun::class],
-    version=6)
+    version=7)
 abstract class ReviewDatabase : RoomDatabase() {
     abstract  fun reviewDao() : ReviewDao
 

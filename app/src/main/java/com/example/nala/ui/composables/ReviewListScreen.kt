@@ -88,9 +88,6 @@ fun ReviewListScreen(
         if (isLoading) {
             LoadingIndicator()
         }
-        else if(wordReviewItems.isEmpty()) {
-            ErrorScreen(text = "No items added to review", subtitle = "")
-        }
         else {
             Column(
                 modifier = Modifier
@@ -126,32 +123,41 @@ fun ReviewListScreen(
 
                 LazyColumn(
                     modifier = Modifier
-                        .fillMaxWidth()
                         .padding(8.dp)
                 ) {
                     when(selectedCategory) {
                         ReviewCategory.Word -> {
-                            items(count = wordReviewItems.size) { index ->
-                                WordReviewCard(
-                                    wordReviewItems[index],
-                                    setWordItem,
-                                    updateWordReviewItem,
-                                    removeWordReview,
-                                    dismissWordReview,
-                                    navController
-                                )
+                            if(wordReviewItems.isEmpty()) {
+                                item {ErrorScreen(text = "No word added to review", subtitle = "")}
+                            }
+                            else {
+                                items(count = wordReviewItems.size) { index ->
+                                    WordReviewCard(
+                                        wordReviewItems[index],
+                                        setWordItem,
+                                        updateWordReviewItem,
+                                        removeWordReview,
+                                        dismissWordReview,
+                                        navController
+                                    )
+                                }
                             }
                         }
                         ReviewCategory.Sentence -> {
-                            items(count = sentenceReviewItems.size) { index ->
-                                SentenceReviewCard(
-                                    sentenceReviewItems[index],
-                                    setSentenceItem,
-                                    updateSentenceReviewItem,
-                                    removeSentenceReview,
-                                    dismissSentenceReview,
-                                    navController
-                                )
+                            if(sentenceReviewItems.isEmpty()) {
+                                item { ErrorScreen(text = "No sentence added to review", subtitle = "")}
+                            }
+                            else {
+                                items(count = sentenceReviewItems.size) { index ->
+                                    SentenceReviewCard(
+                                        sentenceReviewItems[index],
+                                        setSentenceItem,
+                                        updateSentenceReviewItem,
+                                        removeSentenceReview,
+                                        dismissSentenceReview,
+                                        navController
+                                    )
+                                }
                             }
                         }
                         ReviewCategory.Kanji -> {
@@ -167,7 +173,6 @@ fun ReviewListScreen(
                             }
                         }
                     }
-
                 }
             }
         }
@@ -367,7 +372,6 @@ fun WordReviewCard(
         //Content Column
         Column(
             modifier = Modifier
-                .fillMaxSize()
                 .padding(8.dp),
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -408,7 +412,6 @@ fun WordReviewCard(
                 }
             )
         }
-
     }
 }
 

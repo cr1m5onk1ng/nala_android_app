@@ -135,6 +135,7 @@ class DictionaryViewModel @Inject constructor(
                     is DictionaryEvent.SearchWordEvent -> {
                         searchWord()
                     }
+                    else -> {}
                 }
             } catch(e: Exception) {
                 Log.d(TAG, "Something wrong happened: ${e.cause}")
