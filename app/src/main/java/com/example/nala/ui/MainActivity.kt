@@ -37,6 +37,8 @@ class MainActivity : AppCompatActivity() {
                         Log.d("SHARED", "SHARED TEXT: $it")
                         viewModel.setSharedSentence(it)
                     }
+                } else {
+                    Log.d("SHARED", "DIDNT PROCESS TEXT!")
                 }
             }
             else -> {

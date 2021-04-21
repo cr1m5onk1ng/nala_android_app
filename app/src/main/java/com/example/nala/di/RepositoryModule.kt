@@ -8,6 +8,7 @@ import com.example.nala.network.model.kanji.KanjiCollectionDtoMapper
 import com.example.nala.network.model.kanji.StoriesCollectionDtoMapper
 import com.example.nala.network.services.DictionaryService
 import com.example.nala.repository.*
+import com.example.nala.service.tokenization.JapaneseTokenizerService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,10 +23,12 @@ object RepositoryModule {
     @Provides
     fun provideDictionaryRepository(
         dictionaryService : DictionaryService,
+        tokenizerService: JapaneseTokenizerService,
         networkMapper : DictionaryModelDtoMapper,
     ) : DictionaryRepository {
         return DictionaryRepositoryImpl(
             dictionaryService,
+            tokenizerService,
             networkMapper
         )
     }

@@ -54,6 +54,8 @@ class DictionaryViewModel @Inject constructor(
 
     val sharedSentence: MutableState<String> = mutableStateOf("")
 
+    val sharedSentenceTokens : MutableState<List<String>> = mutableStateOf(listOf())
+
     val searchLoading: MutableState<Boolean> = mutableStateOf(false)
 
 
@@ -102,7 +104,10 @@ class DictionaryViewModel @Inject constructor(
 
     fun setSharedSentence(text: String?) {
         sentenceReceived.value = false
-        sharedSentence.value = text ?: ""
+        viewModelScope.launch {
+            sharedSentenceTokens.value = dictRepository.tokenize(text?: "")
+            sharedSentence.value = text ?: ""
+        }
         sentenceReceived.value = true
     }
 

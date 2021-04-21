@@ -5,4 +5,6 @@ import com.example.nala.network.model.dictionary.SearchOutput
 
 interface DictionaryRepository {
     suspend fun search(word: String) : DictionaryModel
+
+    suspend fun tokenize(text: String) : List<String>
 }

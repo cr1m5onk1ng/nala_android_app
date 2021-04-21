@@ -5,6 +5,7 @@ import com.example.nala.network.model.kanji.KanjiCollectionDtoMapper
 import com.example.nala.network.model.kanji.StoriesCollectionDtoMapper
 import com.example.nala.network.services.DictionaryService
 import com.example.nala.network.services.SearchApiService
+import com.example.nala.service.tokenization.JapaneseTokenizerService
 import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
@@ -32,6 +33,12 @@ object NetworkModule {
             .addConverterFactory(GsonConverterFactory.create(GsonBuilder().create()))
             .build()
             .create(DictionaryService::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun provideTokenizerService() : JapaneseTokenizerService {
+        return JapaneseTokenizerService()
     }
 
     @Singleton

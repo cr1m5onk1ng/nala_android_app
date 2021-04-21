@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.nala.ui.theme.Quicksand
@@ -22,8 +23,12 @@ import com.example.nala.ui.theme.Quicksand
 @Composable
 fun TagButton(
     text: String,
+    textColor: Color? = null,
+    textSize: TextUnit? = null,
+    textWeight: FontWeight? = null,
     height: Dp,
-    width: Dp,
+    width: Dp? = null,
+    padding: Dp? = null,
     backgroundColor: Color,
     onClick: () -> Unit,
 ) {
@@ -31,8 +36,8 @@ fun TagButton(
         onClick = onClick,
         modifier = Modifier
             .height(height)
-            .width(width)
-            .padding(3.dp)
+            .width(width?: Dp.Unspecified)
+            .padding(padding ?: 3.dp)
             .shadow(
                 elevation = 5.dp,
                 shape = RoundedCornerShape(18.dp)
@@ -50,8 +55,9 @@ fun TagButton(
                 text,
                 style = TextStyle(
                     fontFamily = Quicksand,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Light
+                    fontSize = textSize ?: 12.sp,
+                    fontWeight = textWeight ?: FontWeight.Light,
+                    color = textColor ?: Color.Black
                 )
             )
         }

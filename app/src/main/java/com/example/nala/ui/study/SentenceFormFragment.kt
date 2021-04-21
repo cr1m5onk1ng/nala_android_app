@@ -27,6 +27,8 @@ class SentenceFormFragment : Fragment() {
             setContent {
                 OneTargetForm(
                     sentence = viewModel.sharedSentence.value,
+                    tokens = viewModel.sharedSentenceTokens.value,
+                    sentenceReceived = viewModel.sentenceReceived.value,
                     selectedWord = studyViewModel.selectedWord.value,
                     onSentenceAdd = studyViewModel::setStudyContext,
                     onWordAdd = studyViewModel::setStudyTargetWord,

@@ -154,6 +154,18 @@ fun ReviewListScreen(
                                 )
                             }
                         }
+                        ReviewCategory.Kanji -> {
+                            items(count = kanjiReviewItems.size) { index ->
+                                KanjiReviewCard(
+                                    kanjiReviewItems[index],
+                                    setKanjiItem,
+                                    updateKanjiReviewItem,
+                                    removeKanjiReview,
+                                    dismissKanjiReview,
+                                    navController
+                                )
+                            }
+                        }
                     }
 
                 }

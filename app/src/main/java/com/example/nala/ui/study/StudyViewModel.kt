@@ -12,7 +12,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class StudyViewModel @Inject constructor(
-    val dictionaryRepository: DictionaryRepository
+    private val dictionaryRepository: DictionaryRepository
 ) : ViewModel() {
 
     val currentStudyContext: MutableState<String> = mutableStateOf("")
@@ -41,8 +41,8 @@ class StudyViewModel @Inject constructor(
         viewModelScope.launch {
             val wordModel = dictionaryRepository.search(word)
             currentStudyTargetWord.value = wordModel
-            wordModelLoading.value = false
         }
+        wordModelLoading.value = false
     }
 
 }

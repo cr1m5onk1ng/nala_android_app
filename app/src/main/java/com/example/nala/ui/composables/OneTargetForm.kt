@@ -1,6 +1,8 @@
 package com.example.nala.ui.composables
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
@@ -9,13 +11,19 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -26,6 +34,8 @@ import com.example.nala.ui.theme.*
 fun OneTargetForm(
     sentence: String,
     selectedWord: String,
+    sentenceReceived: Boolean,
+    tokens: List<String>,
     onSentenceAdd: (String) -> Unit,
     onWordAdd: (String) -> Unit,
     onWordSelect: (String) -> Unit,
@@ -35,8 +45,15 @@ fun OneTargetForm(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(bottom = 48.dp)
+            .padding(bottom = 48.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ){
+        /*
+        if(!sentenceReceived) {
+            LoadingIndicator()
+        }*/
+
         //Close Button
         Row(
             modifier = Modifier
@@ -55,42 +72,40 @@ fun OneTargetForm(
         //Body
         Column(
             modifier = Modifier
-                .fillMaxSize()
                 .padding(16.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             // Context section
-            SelectionContainer(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Text(
-                    sentence,
-                    style = TextStyle(
-                        fontFamily = Quicksand,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.W500,
-                        color = Color.Black,
-                    )
-                )
-            }
-            Spacer(modifier = Modifier.padding(vertical=8.dp))
-            // Word selection
-            OutlinedTextField(
-                value = selectedWord,
-                onValueChange = onWordSelect,
-                label = { Text("Word") },
-                placeholder = { Text("Select a target word") },
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = Blue500,
-                    focusedLabelColor = Blue700,
+            CustomSelectionContainer(
+                sentence = sentence,
+            )
+            // ADD A WORD SECTIONs
+            Text(
+                text = "Select a word to learn in context: ",
+                modifier = Modifier.padding(5.dp),
+                style = TextStyle(
+                    fontFamily = Quicksand,
+                    fontWeight = FontWeight.W500,
+                    fontSize = 20.sp
                 ),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Default,
+            )
+            TokenSelectionRow(
+                tokens = tokens,
+                onWordSelect = onWordSelect,
+                selectedToken = selectedWord,
+            )
+            Spacer(modifier = Modifier.padding(vertical=8.dp))
+            // SELECTED WORD
+            Text(
+                if(selectedWord.isNotEmpty()) selectedWord else "Select a word",
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center,
+                style = TextStyle(
+                    fontFamily = Quicksand,
+                    fontSize = if(selectedWord.isNotEmpty()) 42.sp else 24.sp,
+                    fontWeight = if(selectedWord.isNotEmpty()) FontWeight.Bold else FontWeight.Light,
+                    color = Color.Black,
                 ),
             )
             Spacer(modifier = Modifier.padding(vertical=16.dp))
@@ -121,5 +136,118 @@ fun OneTargetForm(
                 )
             }
         }
+
     }
+}
+
+@Composable
+fun TokenSelectionRow(
+    tokens: List<String>,
+    selectedToken: String,
+    onWordSelect: (String) -> Unit,
+){
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .background(color = Color.White),
+        horizontalArrangement = Arrangement.spacedBy(3.dp)
+    ){
+        items(count=tokens.size){
+            for (token in tokens) {
+                TagButton(
+                    onClick = {
+                        onWordSelect(token)
+                    },
+                    text = token,
+                    textSize = 16.sp,
+                    textWeight = FontWeight.W500,
+                    height = 50.dp,
+                    padding = 3.dp,
+                    backgroundColor =
+                    if(token == selectedToken) LightBlue else Color.White
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun TokensContainer(
+    tokens: List<String>,
+    selectedToken: String,
+    onWordSelect: (String) -> Unit,
+) {
+    val tokensChunks = tokens.chunked(5)
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+    ) {
+        for(chunk in tokensChunks){
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(5.dp)
+            ){
+                items(count=chunk.size) {
+                    for(token in chunk) {
+                        TagButton(
+                            onClick = {
+                                onWordSelect(token)
+                            },
+                            text = token,
+                            textSize = 14.sp,
+                            textWeight = FontWeight.W500,
+                            height = 40.dp,
+                            padding = 0.dp,
+                            backgroundColor =
+                                if(token == selectedToken) LightBlue else Color.White
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun CustomSelectionContainer(
+    sentence: String,
+) {
+    SelectionContainer(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Text(
+            sentence,
+            style = TextStyle(
+                fontFamily = Quicksand,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.W500,
+                color = Color.Black,
+            )
+        )
+    }
+}
+
+@Composable
+fun CustomOutlinedTextField(
+    selectedWord: String,
+    onWordSelect: (String) -> Unit,
+) {
+    OutlinedTextField(
+        value = selectedWord,
+        onValueChange = onWordSelect,
+        label = { Text("Word") },
+        placeholder = { Text("Select a target word") },
+        colors = TextFieldDefaults.outlinedTextFieldColors(
+            focusedBorderColor = Blue500,
+            focusedLabelColor = Blue700,
+        ),
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Text,
+            imeAction = ImeAction.Default,
+        ),
+    )
 }
