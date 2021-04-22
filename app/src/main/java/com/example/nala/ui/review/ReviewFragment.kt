@@ -36,7 +36,7 @@ class ReviewFragment : Fragment() {
                         kanjiReviewItems = reviewViewModel.kanjiReviewItems.value,
                         loadWordReviews = reviewViewModel::loadWordReviewItems,
                         loadSentenceReviews = reviewViewModel::loadSentenceReviewItems,
-                        loadKanjiReviews =reviewViewModel::loadKaniReviewItems,
+                        loadKanjiReviews =reviewViewModel::loadKanjiReviewItems,
                         setWordItem = viewModel::setCurrentWordFromReview,
                         setSentenceItem = viewModel::setCurrentSentenceFromReview,
                         setKanjiItem = viewModel::setCurrentKanji,

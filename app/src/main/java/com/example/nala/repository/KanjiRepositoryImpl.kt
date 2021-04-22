@@ -11,8 +11,8 @@ import com.google.gson.Gson
 
 
 class KanjiRepositoryImpl(
-    val kanjiMapper: KanjiCollectionDtoMapper,
-    val storiesMapper: StoriesCollectionDtoMapper
+    private val kanjiMapper: KanjiCollectionDtoMapper,
+    private val storiesMapper: StoriesCollectionDtoMapper
 ): KanjiRepository {
 
     override suspend fun getKanjiDict(context: Context) : KanjiCollection {

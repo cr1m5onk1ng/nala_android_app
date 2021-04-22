@@ -28,9 +28,6 @@ class ReviewViewModel @Inject constructor(
 
     val selectedCategory: MutableState<ReviewCategory> = mutableStateOf(ReviewCategory.Word)
 
-    val currentWordModel: MutableState<DictionaryModel?> = mutableStateOf(DictionaryModel.Empty())
-
-
     fun updateWordReviewItem(quality: Int, reviewModel: WordReviewModel) {
         viewModelScope.launch {
             reviewRepository.updateWordReviewParameters(quality, reviewModel)
@@ -71,57 +68,61 @@ class ReviewViewModel @Inject constructor(
     }
 
     fun dismissWordReviewItem(word: String) {
-        reviewsLoading.value = true
         viewModelScope.launch{
+            reviewsLoading.value = true
             wordReviewItems.value = wordReviewItems.value.filter {
                 it.word != word
             }
+            reviewsLoading.value = false
         }
-        reviewsLoading.value = false
     }
 
     fun dismissSentenceReviewItem(sentence: String){
-        reviewsLoading.value = true
         viewModelScope.launch{
+            reviewsLoading.value = true
             sentenceReviewItems.value = sentenceReviewItems.value.filter {
                 it.sentence != sentence
             }
+            reviewsLoading.value = false
         }
-        reviewsLoading.value = false
     }
 
     fun dismissKanjiReviewItem(kanji: String){
-        reviewsLoading.value = true
+
         viewModelScope.launch{
+            reviewsLoading.value = true
             kanjiReviewItems.value = kanjiReviewItems.value.filter {
                 it.kanji != kanji
             }
+            reviewsLoading.value = false
         }
-        reviewsLoading.value = false
     }
 
     fun loadWordReviewItems() {
-        reviewsLoading.value = true
         viewModelScope.launch {
+            reviewsLoading.value = true
             wordReviewItems.value = reviewRepository.getNWordReviews(30)
+            reviewsLoading.value = false
         }
-        reviewsLoading.value = false
     }
 
     fun loadSentenceReviewItems() {
-        reviewsLoading.value = true
+
         viewModelScope.launch {
+            reviewsLoading.value = true
             sentenceReviewItems.value = reviewRepository.getNSentenceReviewItems(30)
+            reviewsLoading.value = false
         }
-        reviewsLoading.value = false
+
     }
 
-    fun loadKaniReviewItems() {
-        reviewsLoading.value = true
+    fun loadKanjiReviewItems() {
         viewModelScope.launch {
+            reviewsLoading.value = true
             kanjiReviewItems.value = reviewRepository.getNKanjiReviewItems(30)
+            reviewsLoading.value = false
         }
-        reviewsLoading.value = false
+
     }
 
     fun setCategory (category: ReviewCategory) {

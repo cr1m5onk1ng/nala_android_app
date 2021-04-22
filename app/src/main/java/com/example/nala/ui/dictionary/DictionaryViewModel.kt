@@ -79,14 +79,19 @@ class DictionaryViewModel @Inject constructor(
 
 
     init{
-        mightForgetItemsLoaded.value = false
+
         viewModelScope.launch {
             kanjiDict = kanjiRepository.getKanjiDict(appContext)
             storiesDict = kanjiRepository.getKanjiStories(appContext)
+        }
+
+        viewModelScope.launch {
+            mightForgetItemsLoaded.value = false
             val lastItems = reviewRepository.getWordReviews().takeLast(10)
             mightForgetItems.value = lastItems
+            mightForgetItemsLoaded.value = true
         }
-        mightForgetItemsLoaded.value = true
+
     }
 
     fun toggleHome(value: Boolean) {
@@ -121,7 +126,8 @@ class DictionaryViewModel @Inject constructor(
     }
 
     fun setCurrentKanji(kanji: String)  {
-        currentKanji.value = kanjiDict.kanjis?.get(kanji) ?: KanjiModel.Empty()
+        val kanjiModel = kanjiDict.kanjis[kanji] ?: KanjiModel.Empty()
+        currentKanji.value = kanjiModel
     }
 
     fun setCurrentStory(kanji: String)  {
@@ -152,7 +158,7 @@ class DictionaryViewModel @Inject constructor(
         viewModelScope.launch{
             reviewRepository.addWordToReview(currentWordModel.value)
             reviewRepository.addSensesToReview(
-                currentWordModel.value.senses,
+                senses=currentWordModel.value.senses,
                 word=currentWordModel.value.word)
             reviewRepository.addWordTagsToReview(
                 currentWordModel.value.dataTags, currentWordModel.value.word)

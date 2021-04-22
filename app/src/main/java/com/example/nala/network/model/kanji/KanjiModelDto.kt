@@ -17,7 +17,7 @@ data class KanjiModelDto (
     @SerializedName("name_reading")
     val name_reading: List<String>?,
     @SerializedName("reading")
-    val reading: Reading?,
+    val reading: ReadingDto?,
     @SerializedName("strokes")
     val strokes: String?
         )

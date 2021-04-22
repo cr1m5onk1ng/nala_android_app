@@ -11,9 +11,9 @@ class KanjiModelDtoMapper() : DomainMapper<KanjiModelDto, KanjiModel> {
             jlpt = model.jlpt,
             kanji = model.kanji,
             meaning = model.meaning,
-            name_reading = model.name_reading,
-            kunReadings = model.reading?.kun ?: listOf(),
-            onReadings = model.reading?.on ?: listOf(),
+            nameReading = model.name_reading,
+            kunReadings = model.reading?.kunReadings ?: listOf(),
+            onReadings = model.reading?.onReadings ?: listOf(),
             strokes = model.strokes
         )
     }

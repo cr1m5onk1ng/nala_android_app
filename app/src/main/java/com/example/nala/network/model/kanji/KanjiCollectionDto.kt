@@ -5,5 +5,5 @@ import com.google.gson.annotations.SerializedName
 
 data class KanjiCollectionDto (
     @SerializedName("words")
-    val kanjis: List<KanjiModel>
+    val kanjis: List<KanjiModelDto>
     )

@@ -82,11 +82,11 @@ fun OneTargetForm(
             )
             // ADD A WORD SECTIONs
             Text(
-                text = "Select a word to learn in context: ",
+                text = "Select your target word: ",
                 modifier = Modifier.padding(5.dp),
                 style = TextStyle(
                     fontFamily = Quicksand,
-                    fontWeight = FontWeight.W500,
+                    fontWeight = FontWeight.W400,
                     fontSize = 20.sp
                 ),
             )
@@ -98,12 +98,12 @@ fun OneTargetForm(
             Spacer(modifier = Modifier.padding(vertical=8.dp))
             // SELECTED WORD
             Text(
-                if(selectedWord.isNotEmpty()) selectedWord else "Select a word",
+                if(selectedWord.isNotEmpty()) selectedWord else "No word selected",
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 style = TextStyle(
                     fontFamily = Quicksand,
-                    fontSize = if(selectedWord.isNotEmpty()) 42.sp else 24.sp,
+                    fontSize = if(selectedWord.isNotEmpty()) 42.sp else 18.sp,
                     fontWeight = if(selectedWord.isNotEmpty()) FontWeight.Bold else FontWeight.Light,
                     color = Color.Black,
                 ),
@@ -121,9 +121,11 @@ fun OneTargetForm(
                     text = "Study",
                     icon = Icons.Rounded.ArrowForward,
                     onCLick = {
-                        onSentenceAdd(sentence)
-                        onWordAdd(selectedWord)
-                        navController.navigate(R.id.from_sentence_form_to_study)
+                        if(selectedWord.isNotEmpty()) {
+                            onSentenceAdd(sentence)
+                            onWordAdd(selectedWord)
+                            navController.navigate(R.id.from_sentence_form_to_study)
+                        }
                     },
                     height = 50.dp,
                 )

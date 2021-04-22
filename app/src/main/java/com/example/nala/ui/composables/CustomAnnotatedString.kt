@@ -9,26 +9,24 @@ import androidx.compose.ui.text.withStyle
 
 @Composable
 fun CustomAnnotatedString(
-    context_start: String,
-    context_end: String,
+    parts: List<String>,
     word: String,
     textStyle: SpanStyle,
     specialStyle: SpanStyle,
 ) {
     SelectionContainer{
         Text(buildAnnotatedString {
-            withStyle(
-                style = textStyle
-            ) {
-                append(context_start)
-            }
-            withStyle(style = specialStyle) {
-                append(word)
-            }
-            withStyle(
-                style = textStyle
-            ) {
-                append(context_end)
+            parts.forEachIndexed{ index, part ->
+                withStyle(
+                    style = textStyle
+                ) {
+                    append(part)
+                }
+                if(index < parts.size - 1) {
+                    withStyle(style = specialStyle) {
+                        append(word)
+                    }
+                }
             }
         })
     }

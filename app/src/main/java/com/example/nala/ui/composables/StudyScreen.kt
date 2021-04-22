@@ -1,33 +1,26 @@
 package com.example.nala.ui.composables
 
-import android.content.Context
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
-import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
-import com.example.nala.domain.model.dictionary.Data
 import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.domain.model.kanji.KanjiCollection
 import com.example.nala.ui.theme.*
@@ -50,22 +43,19 @@ val normalStyle = SpanStyle(
 fun StudyScreen(
     context: String,
     wordModel: DictionaryModel,
+    similarSentences: List<String>,
     kanjiDict: KanjiCollection,
     navController: NavController,
     contextLoading: Boolean,
     wordLoading: Boolean,
+    sentencesLoading: Boolean,
     setCurrentKanji: (String) -> Unit,
     setCurrentStory: (String) -> Unit,
     addSentenceToReview: (String, String) -> Unit,
+    loadSimilarSentences: () -> Unit,
+    scaffoldState: ScaffoldState,
+    showReviewSnackbar: () -> Unit,
 ) {
-
-    val sentences = listOf(
-        "殺人 略奪 治安維持も無く力は力でしか抗えない犯罪の5割はアンドロイド\n",
-        "僕らが信じる真実は誰かの創作かもしれない僕らが見てるこの世界は\n",
-        "風がそよぎ 海が凪ぎ空に虫と鳥が戯れる木々は今青々と\n",
-        "説教じみた話じゃつまらない分かってるだからこそ感じて経験は何よりも饒舌そしてそれを忘れちゃいけないよ\n",
-        "どう? 理解できたかなこれが人類の原風景上映はこれにて終了です\n",
-    )
 
     Scaffold(
 
@@ -87,56 +77,105 @@ fun StudyScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp)
-            ) {
-                Spacer(modifier = Modifier.padding(vertical=8.dp))
-                BackButton(navController = navController)
-                Spacer(modifier = Modifier.padding(vertical=3.dp))
-                WordSection(
-                    reading = reading,
-                    word = word,
-                    kanjiDict = kanjiDict,
-                    navController,
-                    setCurrentKanji,
-                    setCurrentStory,
-                    fromStudy = true
-                )
-                ContextSection(context_start = parts[0], word = word, context_end = parts[1])
-                SmallButton(
-                    backgroundColor = MaterialTheme.colors.surface,
-                    text = "Add to review",
-                    icon = Icons.Rounded.Add,
-                    onCLick = {
-                              addSentenceToReview(word, context)
-                    },
-                    height = 50.dp,
-                )
-                Spacer(modifier = Modifier.padding(vertical=5.dp))
-                Text(
-                    "Similar sentences",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    style = TextStyle(
-                        fontFamily = Quicksand,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.W500
-                    )
-                )
+                    .padding(16.dp),
 
-                LazyColumn(
+            ) {
+                Row (
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp)
-                ) {
-                    items(count = sentences.size) { index ->
-                        SentenceCard(
-                            sentence = sentences[index],
-                            category = "Music",
-                            addSentenceToReview = addSentenceToReview
-                        )
-                    }
+                        .padding(top = 20.dp),
+                    horizontalArrangement = Arrangement.Start
+                ){
+                    BackButton(navController = navController)
                 }
+                ConstraintLayout() {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        item {
+                            Spacer(modifier = Modifier.padding(vertical=3.dp))
+                            WordSection(
+                                reading = reading,
+                                word = word,
+                                kanjiDict = kanjiDict,
+                                navController,
+                                setCurrentKanji,
+                                setCurrentStory,
+                                fromStudy = true
+                            )
+                            ContextSection( word = word, parts = parts)
+                            SmallButton(
+                                backgroundColor = MaterialTheme.colors.surface,
+                                text = "Add to review",
+                                icon = Icons.Rounded.Add,
+                                onCLick = {
+                                    addSentenceToReview(word, context)
+                                    showReviewSnackbar()
+                                },
+                                height = 50.dp,
+                            )
+                            Spacer(modifier = Modifier.padding(vertical=5.dp))
+
+                            if(similarSentences.isEmpty()) {
+                                if(sentencesLoading){
+                                    LoadingIndicator()
+                                } else {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.End
+                                    ) {
+                                        CustomTextButton(
+                                            text = "Load similar sentences",
+                                            onClick = {
+                                                loadSimilarSentences()
+                                            }
+                                        )
+                                    }
+                                }
+                            } else {
+                                Text(
+                                    "Similar sentences",
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    style = TextStyle(
+                                        fontFamily = Quicksand,
+                                        fontSize = 22.sp,
+                                        fontWeight = FontWeight.W500
+                                    )
+                                )
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(8.dp)
+                                ) {
+                                    for(sent in similarSentences) {
+                                        SentenceCard(
+                                            sentence = sent,
+                                            category = "Music",
+                                            addSentenceToReview = addSentenceToReview,
+                                            onShowReviewSnackbar = showReviewSnackbar
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    val snackbar = createRef()
+                    DefaultSnackbar(
+                        modifier = Modifier
+                            .constrainAs(snackbar){
+                                bottom.linkTo(parent.bottom)
+                                start.linkTo(parent.start)
+                                end.linkTo(parent.end)
+                            },
+                        snackbarHostState = scaffoldState.snackbarHostState,
+                        onDismiss = {
+                            scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                        }
+                    )
+                }
+
             }
         }
     }
@@ -147,7 +186,9 @@ fun SentenceCard(
     sentence: String,
     category: String,
     targetWord: String? = null,
-    addSentenceToReview: (String, String) -> Unit
+    addSentenceToReview: (String, String) -> Unit,
+    onShowReviewSnackbar: () -> Unit,
+
 ) {
     // Examples may or may not contain the target word
     // This is configurable via an option
@@ -177,7 +218,9 @@ fun SentenceCard(
             }
             // Content row
             Row(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp)
             ){
                 if(targetWord == null) {
                     SelectionContainer{
@@ -198,8 +241,7 @@ fun SentenceCard(
                     val contextStart = parts[0]
                     val contextEnd = parts[1]
                     CustomAnnotatedString(
-                        context_start = contextStart,
-                        context_end = contextEnd,
+                        parts = parts,
                         word = targetWord,
                         textStyle = normalStyle,
                         specialStyle = specialStyle
@@ -211,20 +253,23 @@ fun SentenceCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 8.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                horizontalArrangement = Arrangement.End
             ) {
                 SmallerButton(
                     text = "Save",
                     backgroundColor = LightGreen,
                     onCLick = { /*TODO*/ },
-                    height = 40.dp,
-                    icon = Icons.Rounded.Favorite
+                    height = 35.dp,
+                    icon = Icons.Rounded.Star,
                 )
                 SmallerButton(
                     text = "Review",
                     backgroundColor = LightBlue,
-                    onCLick = { addSentenceToReview(targetWord ?: "", sentence) },
-                    height = 40.dp,
+                    onCLick = {
+                        addSentenceToReview(targetWord ?: "", sentence)
+                        onShowReviewSnackbar()
+                              },
+                    height = 35.dp,
                     icon = Icons.Rounded.Add,
                 )
             }
@@ -234,9 +279,8 @@ fun SentenceCard(
 
 @Composable
 fun ContextSection(
-    context_start: String,
+    parts: List<String>,
     word: String,
-    context_end: String,
 ) {
     Column (
         modifier = Modifier
@@ -256,8 +300,7 @@ fun ContextSection(
         )
 
         CustomAnnotatedString(
-            context_start = context_start,
-            context_end = context_end,
+            parts = parts,
             word = word,
             textStyle = normalStyle,
             specialStyle = specialStyle

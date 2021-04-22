@@ -302,8 +302,7 @@ fun SentenceReviewCard(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             CustomAnnotatedString(
-                context_start = contextStart,
-                context_end = contextEnd,
+                parts = parts,
                 word = item.targetWord,
                 textStyle = normalReviewStyle,
                 specialStyle = specialReviewStyle

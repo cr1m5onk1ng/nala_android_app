@@ -36,7 +36,7 @@ class KanjiReviewDbDtoMapper @Inject constructor (
             jlpt = model.jlpt,
             kanji = model.kanji,
             meaning = definitions,
-            name_reading = listOf(),
+            nameReading = listOf(),
             kunReadings = kunReadings,
             onReadings = onReadings,
             strokes = model.strokes

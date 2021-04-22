@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
+import com.example.nala.ui.CustomFragment
 import com.example.nala.ui.composables.DictionaryDetailScreen
 import com.example.nala.ui.review.ReviewViewModel
 import com.example.nala.ui.theme.AppTheme
@@ -17,7 +18,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class DictionaryDetailFragment : Fragment() {
+class DictionaryDetailFragment : CustomFragment() {
 
     private val viewModel: DictionaryViewModel by activityViewModels()
 
@@ -39,20 +40,10 @@ class DictionaryDetailFragment : Fragment() {
                         setCurrentStory = viewModel::setCurrentStory,
                         addToReview =  viewModel::addWordToReview,
                         scaffoldState = scaffoldState,
-                        onShowSnackbar = {showSnackbar(scaffoldState)}
+                        onShowSnackbar = {showSnackbar(scaffoldState, message="Added to review")}
                     )
                 }
             }
-        }
-    }
-
-    private fun showSnackbar(scaffoldState: ScaffoldState) {
-        lifecycleScope.launch{
-            scaffoldState.snackbarHostState.showSnackbar(
-                message = "Added to review",
-                actionLabel = "Hide",
-                duration = SnackbarDuration.Short
-            )
         }
     }
 }

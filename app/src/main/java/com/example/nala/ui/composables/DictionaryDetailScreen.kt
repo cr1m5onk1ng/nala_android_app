@@ -59,47 +59,53 @@ fun DictionaryDetailScreen(
             )
         }
         else {
-            ConstraintLayout(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp),
             ) {
-
-                BackButton(
-                    navController = navController,
+                Row(
                     modifier = Modifier
+                        .fillMaxWidth()
                         .padding(top = 22.dp, start = 22.dp)
-                )
-                LazyColumn{
-                    item() {
-                        DataSection(
-                            wordModel,
-                            navController,
-                            kanjiDict,
-                            setCurrentKanji,
-                            setCurrentStory,
-                            addToReview,
-                            scaffoldState,
-                            onShowSnackbar
-                        )
-
-                    }
+                ){
+                    BackButton(
+                        navController = navController,
+                    )
                 }
-                val snackbar = createRef()
-                DefaultSnackbar(
-                    modifier = Modifier
-                        .constrainAs(snackbar){
-                            bottom.linkTo(parent.bottom)
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                        },
-                    snackbarHostState = scaffoldState.snackbarHostState,
-                    onDismiss = {
-                        scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
-                    }
-                )
+                ConstraintLayout{
+                    LazyColumn{
+                        item() {
+                            DataSection(
+                                wordModel,
+                                navController,
+                                kanjiDict,
+                                setCurrentKanji,
+                                setCurrentStory,
+                                addToReview,
+                                scaffoldState,
+                                onShowSnackbar
+                            )
 
+                        }
+                    }
+                    val snackbar = createRef()
+                    DefaultSnackbar(
+                        modifier = Modifier
+                            .constrainAs(snackbar){
+                                bottom.linkTo(parent.bottom)
+                                start.linkTo(parent.start)
+                                end.linkTo(parent.end)
+                            },
+                        snackbarHostState = scaffoldState.snackbarHostState,
+                        onDismiss = {
+                            scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                        }
+                    )
+
+                }
             }
+
         }
     }
 }
@@ -200,7 +206,6 @@ fun KanjiRow(
                 kanjiString,
                 modifier = Modifier
                     .clickable(enabled = isKanji, onClick = {
-                        // SEND KANJI TO BUNDLE
                         setCurrentStory(kanjiString)
                         setCurrentKanji(kanjiString)
                         if(fromStudy) {
