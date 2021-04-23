@@ -78,7 +78,7 @@ fun KanjiSection(
             kanji,
             style = TextStyle(
                 fontFamily = Quicksand,
-                fontSize = 46.sp,
+                fontSize = 64.sp,
                 fontWeight = FontWeight.Bold
             )
         )

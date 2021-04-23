@@ -1,6 +1,5 @@
 package com.example.nala.ui.composables
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,7 +21,6 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
 import com.example.nala.R
-import com.example.nala.domain.model.dictionary.Data
 import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.domain.model.dictionary.Sense
 import com.example.nala.domain.model.kanji.KanjiCollection
@@ -40,7 +38,7 @@ fun DictionaryDetailScreen(
     setCurrentStory: (String) -> Unit,
     addToReview: () -> Unit,
     scaffoldState: ScaffoldState,
-    onShowSnackbar: (ScaffoldState) -> Unit
+    showSnackbar: (ScaffoldState) -> Unit
 ) {
 
     Scaffold(
@@ -49,14 +47,16 @@ fun DictionaryDetailScreen(
             scaffoldState.snackbarHostState
         }
     ) {
-        if(isLoading){
-            LoadingIndicator()
-        }
-        else if(wordModel.word.isEmpty()) {
-            ErrorScreen(
-                text = "No word found in Jisho dictionary",
-                subtitle = "¯\\_(ツ)_/¯"
-            )
+
+        if(wordModel.word.isEmpty()) {
+            if(isLoading){
+                LoadingIndicator()
+            } else {
+                ErrorScreen(
+                    text = "No word found in Jisho dictionary",
+                    subtitle = "¯\\_(ツ)_/¯"
+                )
+            }
         }
         else {
             Column(
@@ -84,7 +84,7 @@ fun DictionaryDetailScreen(
                                 setCurrentStory,
                                 addToReview,
                                 scaffoldState,
-                                onShowSnackbar
+                                showSnackbar
                             )
 
                         }

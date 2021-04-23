@@ -5,12 +5,13 @@ buildscript {
     }
     repositories {
         google()
+        mavenCentral()
+
         jcenter {
             content {
                 includeModule("org.jetbrains.kotlinx", "kotlinx-collections-immutable-jvm")
             }
         }
-        mavenCentral()
     }
     dependencies {
         def hilt_version = "2.33-beta"

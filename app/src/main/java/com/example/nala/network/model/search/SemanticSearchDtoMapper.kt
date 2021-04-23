@@ -7,6 +7,7 @@ class SemanticSearchDtoMapper : DomainMapper<SemanticSearchApiDto, SemanticSearc
     override fun mapToDomainModel(model: SemanticSearchApiDto): SemanticSearchModel {
         return SemanticSearchModel(
             query = model.query,
+            category = model.category,
             results = model.results
         )
     }
@@ -14,6 +15,7 @@ class SemanticSearchDtoMapper : DomainMapper<SemanticSearchApiDto, SemanticSearc
     override fun mapFromDomainModel(model: SemanticSearchModel): SemanticSearchApiDto {
         return SemanticSearchApiDto(
             query = model.query,
+            category = model.category,
             results = model.results,
         )
     }

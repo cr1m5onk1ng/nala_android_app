@@ -55,6 +55,7 @@ fun StudyScreen(
     loadSimilarSentences: () -> Unit,
     scaffoldState: ScaffoldState,
     showReviewSnackbar: () -> Unit,
+    showSaveSnackbar: () -> Unit,
 ) {
 
     Scaffold(
@@ -125,7 +126,7 @@ fun StudyScreen(
                                         horizontalArrangement = Arrangement.End
                                     ) {
                                         CustomTextButton(
-                                            text = "Load similar sentences",
+                                            text = "See similar sentences",
                                             onClick = {
                                                 loadSimilarSentences()
                                             }
@@ -154,7 +155,8 @@ fun StudyScreen(
                                             sentence = sent,
                                             category = "Music",
                                             addSentenceToReview = addSentenceToReview,
-                                            onShowReviewSnackbar = showReviewSnackbar
+                                            showReviewSnackbar = showReviewSnackbar,
+                                            showSaveSnackbar = showSaveSnackbar,
                                         )
                                     }
                                 }
@@ -187,9 +189,10 @@ fun SentenceCard(
     category: String,
     targetWord: String? = null,
     addSentenceToReview: (String, String) -> Unit,
-    onShowReviewSnackbar: () -> Unit,
+    showReviewSnackbar: () -> Unit,
+    showSaveSnackbar: () -> Unit,
 
-) {
+    ) {
     // Examples may or may not contain the target word
     // This is configurable via an option
     Card(
@@ -258,7 +261,10 @@ fun SentenceCard(
                 SmallerButton(
                     text = "Save",
                     backgroundColor = LightGreen,
-                    onCLick = { /*TODO*/ },
+                    onCLick = {
+                              //TODO(ADD TO CORPUS FUNCTIONALITY)
+                              showSaveSnackbar()
+                    },
                     height = 35.dp,
                     icon = Icons.Rounded.Star,
                 )
@@ -267,7 +273,7 @@ fun SentenceCard(
                     backgroundColor = LightBlue,
                     onCLick = {
                         addSentenceToReview(targetWord ?: "", sentence)
-                        onShowReviewSnackbar()
+                        showReviewSnackbar()
                               },
                     height = 35.dp,
                     icon = Icons.Rounded.Add,

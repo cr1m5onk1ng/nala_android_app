@@ -534,6 +534,8 @@ fun FilterButtonsRow(
     ) {
         TagButton(
             text = "Word",
+            textWeight = if (selectedCategory == ReviewCategory.Word) FontWeight.W500
+                            else FontWeight.Light,
             height = 40.dp,
             width = 90.dp,
             backgroundColor = if (selectedCategory == ReviewCategory.Word) LightGreen
@@ -545,6 +547,8 @@ fun FilterButtonsRow(
         )
         TagButton(
             text = "Sentence",
+            textWeight = if (selectedCategory == ReviewCategory.Sentence) FontWeight.W500
+                            else FontWeight.Light,
             height = 40.dp,
             width = 90.dp,
             backgroundColor = if (selectedCategory == ReviewCategory.Sentence) LightBlue
@@ -556,6 +560,8 @@ fun FilterButtonsRow(
         )
         TagButton(
             text = "Kanji",
+            textWeight = if (selectedCategory == ReviewCategory.Sentence) FontWeight.W500
+                            else FontWeight.Light,
             height = 40.dp,
             width = 90.dp,
             backgroundColor = if (selectedCategory == ReviewCategory.Kanji) LightYellow

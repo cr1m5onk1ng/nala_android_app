@@ -28,9 +28,9 @@ fun ErrorScreen(text: String, subtitle: String) {
             text,
             style = TextStyle(
                 fontFamily = Quicksand,
-                fontSize = 22.sp,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.W500,
-                color = Color.White
+                color = Color.Black
             )
         )
         if(subtitle.isNotEmpty()) {
@@ -38,9 +38,9 @@ fun ErrorScreen(text: String, subtitle: String) {
                 subtitle,
                 style = TextStyle(
                     fontFamily = Quicksand,
-                    fontSize = 20.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.W500,
-                    color = Color.White
+                    color = Color.Black
                 )
             )
         }

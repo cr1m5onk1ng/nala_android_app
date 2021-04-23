@@ -41,7 +41,8 @@ class StudyScreenFragment : CustomFragment() {
                     addSentenceToReview = viewModel::addSentenceToReview,
                     loadSimilarSentences = studyViewModel::loadSimilarSentences,
                     scaffoldState = scaffoldState,
-                    showReviewSnackbar = {showSnackbar(scaffoldState, message="Added to review")}
+                    showReviewSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
+                    showSaveSnackbar = {showSnackbar(scaffoldState, message="Sentence added to corpus")}
                 )
             }
         }

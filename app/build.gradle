@@ -51,7 +51,7 @@ dependencies {
     api fileTree(include: ['*.jar'], dir: 'libs')
 
     //PYTORCH
-    implementation 'org.pytorch:pytorch_android:1.8.0'
+    //implementation 'org.pytorch:pytorch_android:1.8.0'
 
     //ROOM
     def room_version = "2.2.6"

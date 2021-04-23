@@ -6,6 +6,9 @@ data class SemanticSearchApiDto (
     @SerializedName("query")
     val query: String,
 
+    @SerializedName("category")
+    val category: String,
+
     @SerializedName("results")
     val results: List<String>
         )
