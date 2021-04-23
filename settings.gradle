@@ -4,6 +4,7 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         //noinspection JcenterRepositoryObsolete
+        jcenter()
         jcenter {
             content {
                 includeModule("org.jetbrains.kotlinx", "kotlinx-collections-immutable-jvm")

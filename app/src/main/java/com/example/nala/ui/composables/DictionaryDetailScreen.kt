@@ -59,21 +59,22 @@ fun DictionaryDetailScreen(
             }
         }
         else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-            ) {
-                Row(
+            ConstraintLayout() {
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 22.dp, start = 22.dp)
-                ){
-                    BackButton(
-                        navController = navController,
-                    )
-                }
-                ConstraintLayout{
+                        .fillMaxSize()
+                        .padding(16.dp),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 22.dp, start = 22.dp)
+                    ){
+                        BackButton(
+                            navController = navController,
+                        )
+                    }
+
                     LazyColumn{
                         item() {
                             DataSection(
@@ -89,23 +90,21 @@ fun DictionaryDetailScreen(
 
                         }
                     }
-                    val snackbar = createRef()
-                    DefaultSnackbar(
-                        modifier = Modifier
-                            .constrainAs(snackbar){
-                                bottom.linkTo(parent.bottom)
-                                start.linkTo(parent.start)
-                                end.linkTo(parent.end)
-                            },
-                        snackbarHostState = scaffoldState.snackbarHostState,
-                        onDismiss = {
-                            scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
-                        }
-                    )
-
                 }
+                val snackbar = createRef()
+                DefaultSnackbar(
+                    modifier = Modifier
+                        .constrainAs(snackbar){
+                            bottom.linkTo(parent.bottom)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        },
+                    snackbarHostState = scaffoldState.snackbarHostState,
+                    onDismiss = {
+                        scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                    }
+                )
             }
-
         }
     }
 }
@@ -243,8 +242,6 @@ fun ButtonSection(
                 addToReview()
                 onShowSnackbar(scaffoldState)
                       },
-
-
             modifier = Modifier
                 .fillMaxWidth()
                 .shadow(

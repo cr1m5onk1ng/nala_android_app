@@ -1,5 +1,7 @@
 package com.example.nala.ui.composables
 
+import android.graphics.drawable.Icon
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
@@ -13,11 +15,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.nala.ui.theme.Quicksand
 
 @Composable
 fun MainButton(
     text: String,
+    textColor: Color? = null,
+    textSize: TextUnit? = null,
     backgroundColor: Color,
     onCLick: () -> Unit,
 ) {
@@ -45,9 +54,23 @@ fun MainButton(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Rounded.Add, contentDescription = "add to review")
+                Icon(
+                    Icons.Rounded.Add,
+                    contentDescription = "add to review",
+                    modifier = Modifier
+                        .size(14.dp)
+                        .background(color=Color.White)
+                )
                 Spacer(modifier= Modifier.padding(horizontal = 5.dp))
-                Text(text)
+                Text(
+                    text,
+                    style = TextStyle(
+                        color=textColor ?: Color.Black,
+                        fontFamily = Quicksand,
+                        fontSize = textSize ?: 14.sp,
+                        fontWeight = FontWeight.W500,
+                    )
+                )
             }
         }
     }

@@ -40,6 +40,8 @@ fun OneTargetForm(
     onSentenceAdd: (String) -> Unit,
     onWordAdd: (String) -> Unit,
     onWordSelect: (String) -> Unit,
+    addSentenceToReview: (String, String) -> Unit,
+    showSnackbar: () -> Unit,
     navController: NavController,
 ) {
 
@@ -50,99 +52,100 @@ fun OneTargetForm(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ){
-        /*
+
         if(!sentenceReceived) {
             LoadingIndicator()
-        }*/
-
-        //Close Button
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 32.dp, end = 32.dp),
-            horizontalArrangement = Arrangement.End
-        ){
-            IconButton(
-                onClick = {
-                    navController.navigate(R.id.sentence_form_to_home)
+        } else{
+            //Close Button
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 32.dp, end = 32.dp),
+                horizontalArrangement = Arrangement.End
+            ){
+                IconButton(
+                    onClick = {
+                        navController.navigate(R.id.sentence_form_to_home)
+                    }
+                ) {
+                    Icon(Icons.Rounded.Close, contentDescription = "close icon")
                 }
-            ) {
-                Icon(Icons.Rounded.Close, contentDescription = "close icon")
             }
-        }
-        //Body
-        LazyColumn(
-            modifier = Modifier
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            item{
-                Column() {
-                    CustomSelectionContainer(
-                        sentence = sentence,
-                    )
-                    // ADD A WORD SECTIONs
-                    Text(
-                        text = "Select your target word: ",
-                        modifier = Modifier.padding(5.dp),
-                        style = TextStyle(
-                            fontFamily = Quicksand,
-                            fontWeight = FontWeight.W400,
-                            fontSize = 20.sp
-                        ),
-                    )
-                    TokenSelectionRow(
-                        tokens = tokens,
-                        onWordSelect = onWordSelect,
-                        selectedToken = selectedWord,
-                    )
-                    Spacer(modifier = Modifier.padding(vertical=8.dp))
-                    // SELECTED WORD
-                    Text(
-                        if(selectedWord.isNotEmpty()) selectedWord else "No word selected",
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Center,
-                        style = TextStyle(
-                            fontFamily = Quicksand,
-                            fontSize = if(selectedWord.isNotEmpty()) 42.sp else 18.sp,
-                            fontWeight = if(selectedWord.isNotEmpty()) FontWeight.Bold else FontWeight.Light,
-                            color = Color.Black,
-                        ),
-                    )
-                    Spacer(modifier = Modifier.padding(vertical=16.dp))
-                    // Buttons row
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        SmallerButton(
-                            backgroundColor = LightGreen,
-                            text = "Study",
-                            icon = Icons.Rounded.ArrowForward,
-                            onCLick = {
-                                if(selectedWord.isNotEmpty()) {
-                                    onSentenceAdd(sentence)
-                                    onWordAdd(selectedWord)
-                                    navController.navigate(R.id.from_sentence_form_to_study)
-                                }
-                            },
-                            height = 50.dp,
+            //Body
+            LazyColumn(
+                modifier = Modifier
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                item{
+                    Column() {
+                        CustomSelectionContainer(
+                            sentence = sentence,
                         )
-                        SmallerButton(
-                            backgroundColor = LightBlue,
-                            text = "Review",
-                            icon = Icons.Rounded.Add,
-                            onCLick = {},
-                            height = 50.dp,
+                        // ADD A WORD SECTIONs
+                        Text(
+                            text = "Select your target word: ",
+                            modifier = Modifier.padding(5.dp),
+                            style = TextStyle(
+                                fontFamily = Quicksand,
+                                fontWeight = FontWeight.W400,
+                                fontSize = 20.sp
+                            ),
                         )
+                        TokenSelectionRow(
+                            tokens = tokens,
+                            onWordSelect = onWordSelect,
+                            selectedToken = selectedWord,
+                        )
+                        Spacer(modifier = Modifier.padding(vertical=8.dp))
+                        // SELECTED WORD
+                        Text(
+                            if(selectedWord.isNotEmpty()) selectedWord else "No word selected",
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center,
+                            style = TextStyle(
+                                fontFamily = Quicksand,
+                                fontSize = if(selectedWord.isNotEmpty()) 42.sp else 18.sp,
+                                fontWeight = if(selectedWord.isNotEmpty()) FontWeight.Bold else FontWeight.Light,
+                                color = Color.Black,
+                            ),
+                        )
+                        Spacer(modifier = Modifier.padding(vertical=16.dp))
+                        // Buttons row
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            SmallerButton(
+                                backgroundColor = LightGreen,
+                                text = "Study",
+                                icon = Icons.Rounded.ArrowForward,
+                                onCLick = {
+                                    if(selectedWord.isNotEmpty()) {
+                                        onSentenceAdd(sentence)
+                                        onWordAdd(selectedWord)
+                                        navController.navigate(R.id.from_sentence_form_to_study)
+                                    }
+                                },
+                                height = 50.dp,
+                            )
+                            SmallerButton(
+                                backgroundColor = LightBlue,
+                                text = "Review",
+                                icon = Icons.Rounded.Add,
+                                onCLick = {
+                                    addSentenceToReview(selectedWord, sentence)
+                                },
+                                height = 50.dp,
+                            )
+                        }
                     }
                 }
             }
         }
-
     }
 }
 

@@ -6,7 +6,7 @@ buildscript {
     repositories {
         google()
         mavenCentral()
-
+        jcenter()
         jcenter {
             content {
                 includeModule("org.jetbrains.kotlinx", "kotlinx-collections-immutable-jvm")

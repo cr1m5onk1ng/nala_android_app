@@ -108,12 +108,12 @@ class DictionaryViewModel @Inject constructor(
     }
 
     fun setSharedSentence(text: String?) {
-        sentenceReceived.value = false
         viewModelScope.launch {
+            sentenceReceived.value = false
             sharedSentenceTokens.value = dictRepository.tokenize(text?: "")
             sharedSentence.value = text ?: ""
+            sentenceReceived.value = true
         }
-        sentenceReceived.value = true
     }
 
     fun unsetSharedText() {
@@ -178,45 +178,47 @@ class DictionaryViewModel @Inject constructor(
         addedToReview.value = true
     }
 
-    fun addKanjiToReview(kanji: String) {
-        addedToReview.value = false
+    fun addKanjiToReview(kanjiModel: KanjiModel) {
         viewModelScope.launch{
-            val kanjiModel = kanjiDict.kanjis[kanji]
+            addedToReview.value = false
+            //val kanjiModel = kanjiDict.kanjis[kanji]
+            /*
             val kanjiReview = KanjiReviewModel(
                 kanji = kanjiModel?.kanji ?: "",
                 freq = kanjiModel?.freq ?: "",
                 grade = kanjiModel?.grade ?: "",
                 jlpt = kanjiModel?.jlpt ?: "",
                 strokes = null,
-            )
+            )*/
             val meanings = kanjiModel?.meaning ?: listOf()
             val kunReadings = kanjiModel?.kunReadings ?: listOf()
             val onReadings = kanjiModel?.onReadings ?: listOf()
-            reviewRepository.addKanjiMeaningsToReview(meanings, kanji)
-            reviewRepository.addKanjiKunReadingsToReview(kunReadings, kanji)
-            reviewRepository.addKanjiOnReadingsToReview(onReadings, kanji)
+            reviewRepository.addKanjiToReview(kanjiModel ?: KanjiModel.Empty())
+            reviewRepository.addKanjiMeaningsToReview(meanings, kanjiModel.kanji)
+            reviewRepository.addKanjiKunReadingsToReview(kunReadings, kanjiModel.kanji)
+            reviewRepository.addKanjiOnReadingsToReview(onReadings, kanjiModel.kanji)
+            addedToReview.value = true
         }
-        addedToReview.value = true
     }
 
     fun setCurrentWordFromReview(wordReviewModel: WordReviewModel) {
-        searchLoading.value = true
         viewModelScope.launch {
+            searchLoading.value = true
             val model = reviewRepository.getWordData(wordReviewModel)
             currentWordModel.value = model
             currentSentence.value = ""
+            searchLoading.value = false
         }
-        searchLoading.value = false
     }
 
     fun setCurrentSentenceFromReview(word: String, sentence: String){
-        searchLoading.value = true
         viewModelScope.launch {
+            searchLoading.value = true
             val reviewModel = reviewRepository.getWordReview(word)
             setCurrentWordFromReview(reviewModel)
             currentSentence.value = sentence
+            searchLoading.value = false
         }
-        searchLoading.value = false
     }
 
     private suspend fun searchWord() {

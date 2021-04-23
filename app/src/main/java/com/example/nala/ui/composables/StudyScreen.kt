@@ -71,25 +71,26 @@ fun StudyScreen(
             )
         }
         else {
-            val word = wordModel.word
-            val reading = wordModel.reading
-            val parts = context.split(Regex(word))
-            assert(parts.size == 2)
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-
-            ) {
-                Row (
+            ConstraintLayout() {
+                val word = wordModel.word
+                val reading = wordModel.reading
+                val parts = context.split(Regex(word))
+                assert(parts.size == 2)
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 20.dp),
-                    horizontalArrangement = Arrangement.Start
-                ){
-                    BackButton(navController = navController)
-                }
-                ConstraintLayout() {
+                        .fillMaxSize()
+                        .padding(16.dp),
+
+                    ) {
+                    Row (
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 20.dp),
+                        horizontalArrangement = Arrangement.Start
+                    ){
+                        BackButton(navController = navController)
+                    }
+
                     LazyColumn(
                         verticalArrangement = Arrangement.Center
                     ) {
@@ -163,21 +164,20 @@ fun StudyScreen(
                             }
                         }
                     }
-                    val snackbar = createRef()
-                    DefaultSnackbar(
-                        modifier = Modifier
-                            .constrainAs(snackbar){
-                                bottom.linkTo(parent.bottom)
-                                start.linkTo(parent.start)
-                                end.linkTo(parent.end)
-                            },
-                        snackbarHostState = scaffoldState.snackbarHostState,
-                        onDismiss = {
-                            scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
-                        }
-                    )
                 }
-
+                val snackbar = createRef()
+                DefaultSnackbar(
+                    modifier = Modifier
+                        .constrainAs(snackbar){
+                            bottom.linkTo(parent.bottom)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        },
+                    snackbarHostState = scaffoldState.snackbarHostState,
+                    onDismiss = {
+                        scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                    }
+                )
             }
         }
     }
