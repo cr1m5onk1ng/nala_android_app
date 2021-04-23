@@ -560,7 +560,7 @@ fun FilterButtonsRow(
         )
         TagButton(
             text = "Kanji",
-            textWeight = if (selectedCategory == ReviewCategory.Sentence) FontWeight.W500
+            textWeight = if (selectedCategory == ReviewCategory.Kanji) FontWeight.W500
                             else FontWeight.Light,
             height = 40.dp,
             width = 90.dp,
