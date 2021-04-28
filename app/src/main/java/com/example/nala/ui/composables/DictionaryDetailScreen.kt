@@ -31,6 +31,7 @@ import kotlin.random.Random
 @Composable
 fun DictionaryDetailScreen(
     wordModel: DictionaryModel,
+    sentence: String? = null,
     isLoading: Boolean,
     navController: NavController,
     kanjiDict: KanjiCollection,
@@ -79,6 +80,7 @@ fun DictionaryDetailScreen(
                         item() {
                             DataSection(
                                 wordModel,
+                                sentence = sentence,
                                 navController,
                                 kanjiDict,
                                 setCurrentKanji,
@@ -112,6 +114,7 @@ fun DictionaryDetailScreen(
 @Composable
 fun DataSection(
     wordModel: DictionaryModel,
+    sentence: String? = null,
     navController: NavController,
     kanjiDict: KanjiCollection,
     setCurrentKanji: (String) -> Unit,

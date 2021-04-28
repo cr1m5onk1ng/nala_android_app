@@ -7,12 +7,17 @@ A simple Android app that offers a set of tools to make the life o japanese lear
 
 The [Jetpack Toolkit](https://developer.android.com/jetpack) was used to build the app, including the new Jetpack Compose for the UI.
 
-The app makes also use of the incredibly useful [Jisho](https://jisho.org/) api for words lookup
+<a href="https://pytorch.org/"><img src="https://miro.medium.com/max/691/0*xXUYOs5MWWenxoNz" width="200"/></a>
+<br>
+
+For the on-device neural language models, I used [pytorch mobile](https://pytorch.org/mobile/home/)
+
+A [personal Web API](https://github.com/cr1m5onk1ng/semantic-search-api/tree/master) built with FastApi was used as a base for the semantic search service used in the app.
+
+The app makes also use of the incredibly useful [Jisho](https://jisho.org/) API for words lookup
 
 <a href="https://jisho.org/"><img src="https://camo.githubusercontent.com/ecf2e1f38cf2d00aa5e9b7ae2cba32ab9865101567767328e04de495038672d4/687474703a2f2f6173736574732e6a6973686f2e6f72672f6173736574732f6a6973686f2d6c6f676f2d76344032782d373333303039316330373962396464353936303134303162303532623532653130333937383232316338666236663565323234303664383731666363373436612e706e67" width="200"/></a>
 <br>
-
-
 
 
 ## ✨ Features
@@ -22,7 +27,8 @@ The app makes also use of the incredibly useful [Jisho](https://jisho.org/) api 
 - [x] Add sentences with a target word to study/review them
 - [x] Starting from a sentence, search for the most similar/dissimilar sentences
 - [x] Automatically organize your sentences/documents by category/topic
-- [ ] Find most frequent words that use a certain kanji
+- [ ] Find the most frequent words that use a certain kanji
+- [ ] Search for semantically related words saved locally
 - [ ] Share words/sentences with AnkiDroid
 
 ## 📸 Screenshots

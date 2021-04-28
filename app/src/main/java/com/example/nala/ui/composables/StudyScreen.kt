@@ -107,7 +107,7 @@ fun StudyScreen(
                             )
                             ContextSection( word = word, parts = parts)
                             SmallButton(
-                                backgroundColor = MaterialTheme.colors.surface,
+                                backgroundColor = Blue700,
                                 text = "Add to review",
                                 icon = Icons.Rounded.Add,
                                 onCLick = {
