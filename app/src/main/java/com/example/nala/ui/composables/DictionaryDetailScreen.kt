@@ -48,18 +48,14 @@ fun DictionaryDetailScreen(
             scaffoldState.snackbarHostState
         }
     ) {
-
-        if(wordModel.word.isEmpty()) {
-            if(isLoading){
-                LoadingIndicator()
-            } else {
-                ErrorScreen(
-                    text = "No word found in Jisho dictionary",
-                    subtitle = "¯\\_(ツ)_/¯"
-                )
-            }
-        }
-        else {
+        if(isLoading){
+            LoadingIndicator()
+        } else if(wordModel.word.isEmpty()) {
+            ErrorScreen(
+                text = "No word found in Jisho dictionary",
+                subtitle = "¯\\_(ツ)_/¯"
+            )
+        } else {
             ConstraintLayout() {
                 Column(
                     modifier = Modifier

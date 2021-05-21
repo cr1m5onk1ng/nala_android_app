@@ -34,7 +34,7 @@ class DictionaryHomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        viewModel.onTriggerEvent(DictionaryEvent.LoadReviewsEvent)
+        //viewModel.onTriggerEvent(DictionaryEvent.LoadReviewsEvent)
         return ComposeView(requireContext()).apply {
             setContent {
                 AppTheme(darkTheme = false) {

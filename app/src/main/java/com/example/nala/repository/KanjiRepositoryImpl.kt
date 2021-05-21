@@ -8,9 +8,10 @@ import com.example.nala.network.model.kanji.KanjiCollectionDtoMapper
 import com.example.nala.network.model.kanji.StoriesCollectionDto
 import com.example.nala.network.model.kanji.StoriesCollectionDtoMapper
 import com.google.gson.Gson
+import javax.inject.Inject
 
 
-class KanjiRepositoryImpl(
+class KanjiRepositoryImpl @Inject constructor(
     private val kanjiMapper: KanjiCollectionDtoMapper,
     private val storiesMapper: StoriesCollectionDtoMapper
 ): KanjiRepository {

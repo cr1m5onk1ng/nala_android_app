@@ -75,7 +75,6 @@ fun StudyScreen(
                 val word = wordModel.word
                 val reading = wordModel.reading
                 val parts = context.split(Regex(word))
-                assert(parts.size == 2)
                 Column(
                     modifier = Modifier
                         .fillMaxSize()

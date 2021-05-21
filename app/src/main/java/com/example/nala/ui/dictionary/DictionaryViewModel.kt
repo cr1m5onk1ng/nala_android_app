@@ -7,12 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nala.db.models.review.*
-import com.example.nala.db.models.review.relations.WordReviewWithSenses
-import com.example.nala.db.models.review.relations.WordSenseWithDefinitions
-import com.example.nala.db.models.review.relations.WordSenseWithTags
-import com.example.nala.db.models.review.relations.WordWithTags
 import com.example.nala.domain.model.dictionary.DictionaryModel
-import com.example.nala.domain.model.dictionary.Sense
 import com.example.nala.domain.model.kanji.KanjiCollection
 import com.example.nala.domain.model.kanji.KanjiModel
 import com.example.nala.domain.model.kanji.StoriesCollection

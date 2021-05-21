@@ -9,8 +9,9 @@ import com.example.nala.domain.model.kanji.KanjiModel
 import com.example.nala.domain.model.review.SentenceReviewModel
 import com.example.nala.domain.util.SuperMemo2
 import java.util.*
+import javax.inject.Inject
 
-class ReviewRepositoryImpl(
+class ReviewRepositoryImpl @Inject constructor(
     private val reviewDao: ReviewDao,
 ) : ReviewRepository {
 
