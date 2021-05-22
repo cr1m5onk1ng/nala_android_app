@@ -41,6 +41,7 @@ fun OneTargetForm(
     onSentenceAdd: (String) -> Unit,
     onWordAdd: (String) -> Unit,
     onWordSelect: (String) -> Unit,
+    unsetSharedSentence: () -> Unit,
     addSentenceToReview: (String, String) -> Unit,
     showSnackbar: () -> Unit,
     navController: NavController,
@@ -61,11 +62,12 @@ fun OneTargetForm(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 32.dp, end = 32.dp),
+                    .padding(top = 26.dp, end = 32.dp),
                 horizontalArrangement = Arrangement.End
             ){
                 IconButton(
                     onClick = {
+                        unsetSharedSentence()
                         navController.popBackStack()
                     }
                 ) {

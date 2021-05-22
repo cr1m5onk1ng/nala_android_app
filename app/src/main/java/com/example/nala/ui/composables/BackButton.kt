@@ -15,6 +15,7 @@ import androidx.navigation.NavController
 fun BackButton(
     navController: NavController,
     modifier: Modifier = Modifier,
+    cleanupFunction: (() -> Unit?)? = null,
 ) {
 
     Row(
@@ -23,6 +24,10 @@ fun BackButton(
     ){
         IconButton(
             onClick = {
+
+                cleanupFunction?.let {
+                    it()
+                }
                 navController.popBackStack()
             }
         ) {

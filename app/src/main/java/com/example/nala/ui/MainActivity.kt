@@ -69,7 +69,17 @@ class MainActivity : AppCompatActivity() {
             AppTheme {
                 val navController = rememberNavController()
                 val scaffoldState = rememberScaffoldState()
-                NavHost(navController=navController, startDestination="home_screen") {
+
+                // Navigate to detail screen if a word was searched from another app
+                val startDestination = "home_screen"/* if(viewModel.textReceived.value) {
+                    "detail_screen"
+                } else if(viewModel.sentenceReceived.value) {
+                    "sentence_form_screen"
+                } else{
+                    "home_screen"
+                } */
+
+                NavHost(navController=navController, startDestination) {
                     composable("home_screen"){
                         HomeScreen(
                             query = viewModel.query.value,
@@ -95,6 +105,7 @@ class MainActivity : AppCompatActivity() {
                             kanjiDict = viewModel.kanjiDict,
                             setCurrentKanji = viewModel::setCurrentKanji,
                             setCurrentStory = viewModel::setCurrentStory,
+                            unsetSharedWord = viewModel::unsetSharedText,
                             addToReview =  viewModel::addWordToReview,
                             scaffoldState = scaffoldState,
                             showSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
@@ -154,6 +165,7 @@ class MainActivity : AppCompatActivity() {
                             onWordAdd = studyViewModel::setStudyTargetWord,
                             onWordSelect = studyViewModel::setSelectedWord,
                             addSentenceToReview = viewModel::addSentenceToReview,
+                            unsetSharedSentence = viewModel::unsetSharedSentence,
                             showSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
                             navController = navController,
                         )

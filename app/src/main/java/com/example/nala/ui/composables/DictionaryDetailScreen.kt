@@ -20,7 +20,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
-import com.example.nala.R
 import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.domain.model.dictionary.Sense
 import com.example.nala.domain.model.kanji.KanjiCollection
@@ -37,6 +36,7 @@ fun DictionaryDetailScreen(
     kanjiDict: KanjiCollection,
     setCurrentKanji: (String) -> Unit,
     setCurrentStory: (String) -> Unit,
+    unsetSharedWord: () -> Unit,
     addToReview: () -> Unit,
     scaffoldState: ScaffoldState,
     showSnackbar: (ScaffoldState) -> Unit
@@ -65,10 +65,11 @@ fun DictionaryDetailScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 22.dp, start = 22.dp)
+                            .padding(top = 22.dp, start = 16.dp)
                     ){
                         BackButton(
                             navController = navController,
+                            cleanupFunction = { unsetSharedWord() }
                         )
                     }
 
