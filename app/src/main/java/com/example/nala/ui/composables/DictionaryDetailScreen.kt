@@ -206,11 +206,7 @@ fun KanjiRow(
                     .clickable(enabled = isKanji, onClick = {
                         setCurrentStory(kanjiString)
                         setCurrentKanji(kanjiString)
-                        if(fromStudy) {
-                            navController.navigate(R.id.from_study_to_kanji)
-                        } else{
-                            navController.navigate(R.id.show_kanji_detail)
-                        }
+                        navController.navigate("kanji_detail_screen")
                     }),
                 style = TextStyle(
                     fontSize = 46.sp,

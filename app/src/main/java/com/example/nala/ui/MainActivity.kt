@@ -6,12 +6,28 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
+import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.compose.material.ScaffoldState
+import androidx.compose.material.SnackbarDuration
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.findNavController
 import com.example.nala.R
+import com.example.nala.ui.composables.*
+import com.example.nala.ui.dictionary.DictionaryEvent
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import com.example.nala.ui.dictionary.DictionaryViewModel
+import com.example.nala.ui.review.ReviewViewModel
+import com.example.nala.ui.study.StudyViewModel
+import com.example.nala.ui.theme.AppTheme
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -20,7 +36,10 @@ class MainActivity : AppCompatActivity() {
     lateinit var app: BaseApplication
 
     private val viewModel: DictionaryViewModel by viewModels()
+    private val reviewViewModel: ReviewViewModel by viewModels()
+    private val studyViewModel: StudyViewModel by viewModels()
 
+    @ExperimentalComposeUiApi
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,6 +65,137 @@ class MainActivity : AppCompatActivity() {
             }
         }
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
-        setContentView(R.layout.activity_main)
+        setContent{
+            AppTheme {
+                val navController = rememberNavController()
+                val scaffoldState = rememberScaffoldState()
+                NavHost(navController=navController, startDestination="home_screen") {
+                    composable("home_screen"){
+                        HomeScreen(
+                            query = viewModel.query.value,
+                            mightForgetItems = viewModel.mightForgetItems.value,
+                            mightForgetItemsLoaded = viewModel.mightForgetItemsLoaded.value,
+                            onQueryChange = viewModel::onQueryChanged,
+                            onClick = {viewModel.onTriggerEvent(DictionaryEvent.SearchWordEvent)},
+                            textReceived = viewModel.textReceived.value,
+                            sentenceReceived = viewModel.sentenceReceived.value,
+                            isHomeSelected = viewModel.isHomeSelected.value,
+                            isReviewsSelected = viewModel.isReviewSelected.value,
+                            toggleHome = viewModel::toggleHome,
+                            toggleReviews = viewModel::toggleReviews,
+                            navController = navController
+                        )
+                    }
+
+                    composable("detail_screen") {
+                        DictionaryDetailScreen(
+                            viewModel.currentWordModel.value,
+                            isLoading = viewModel.searchLoading.value,
+                            navController = navController,
+                            kanjiDict = viewModel.kanjiDict,
+                            setCurrentKanji = viewModel::setCurrentKanji,
+                            setCurrentStory = viewModel::setCurrentStory,
+                            addToReview =  viewModel::addWordToReview,
+                            scaffoldState = scaffoldState,
+                            showSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
+                        )
+                    }
+
+                    composable("kanji_detail_screen"){
+                        KanjiDetailScreen(
+                            kanji = viewModel.currentKanji.value,
+                            story = viewModel.currentStory.value,
+                            addKanjiToReview = viewModel::addKanjiToReview,
+                            navController = navController,
+                            scaffoldState = scaffoldState,
+                            showSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
+                        )
+                    }
+
+                    composable("review_screen") {
+                        ReviewListScreen(
+                            isLoading = reviewViewModel.reviewsLoading.value,
+                            selectedCategory = reviewViewModel.selectedCategory.value,
+                            setCategory = reviewViewModel::setCategory,
+                            wordReviewItems = reviewViewModel.wordReviewItems.value,
+                            sentenceReviewItems = reviewViewModel.sentenceReviewItems.value,
+                            kanjiReviewItems = reviewViewModel.kanjiReviewItems.value,
+                            loadWordReviews = reviewViewModel::loadWordReviewItems,
+                            loadSentenceReviews = reviewViewModel::loadSentenceReviewItems,
+                            loadKanjiReviews =reviewViewModel::loadKanjiReviewItems,
+                            setWordItem = viewModel::setCurrentWordFromReview,
+                            setSentenceItem = viewModel::setCurrentSentenceFromReview,
+                            setKanjiItem = viewModel::setCurrentKanji,
+                            removeWordReview = reviewViewModel::removeWordReviewItem,
+                            removeSentenceReview = reviewViewModel::removeSentenceReviewItem,
+                            removeKanjiReview = reviewViewModel::removeKanjiReviewItem,
+                            dismissWordReview = reviewViewModel::dismissWordReviewItem,
+                            dismissSentenceReview = reviewViewModel::dismissSentenceReviewItem,
+                            dismissKanjiReview = reviewViewModel::dismissKanjiReviewItem,
+                            isHomeSelected = viewModel.isHomeSelected.value,
+                            isReviewsSelected = viewModel.isReviewSelected.value,
+                            toggleHome = viewModel::toggleHome,
+                            toggleReviews = viewModel::toggleReviews,
+                            updateWordReviewItem = reviewViewModel::updateWordReviewItem,
+                            updateSentenceReviewItem= reviewViewModel::updateSentenceReviewItem,
+                            updateKanjiReviewItem = reviewViewModel::updateKanjiReviewItem,
+                            navController = navController,
+                        )
+
+                    }
+
+                    composable("sentence_form_screen"){
+                        OneTargetForm(
+                            sentence = viewModel.sharedSentence.value,
+                            tokens = viewModel.sharedSentenceTokens.value,
+                            sentenceReceived = viewModel.sentenceReceived.value,
+                            selectedWord = studyViewModel.selectedWord.value,
+                            onSentenceAdd = studyViewModel::setStudyContext,
+                            onWordAdd = studyViewModel::setStudyTargetWord,
+                            onWordSelect = studyViewModel::setSelectedWord,
+                            addSentenceToReview = viewModel::addSentenceToReview,
+                            showSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
+                            navController = navController,
+                        )
+
+                    }
+
+                    composable("study_screen") {
+                        StudyScreen(
+                            context = studyViewModel.currentStudyContext.value ?: "",
+                            wordModel = studyViewModel.currentStudyTargetWord.value,
+                            similarSentences = studyViewModel.similarSentences.value,
+                            kanjiDict = viewModel.kanjiDict,
+                            navController = navController,
+                            setCurrentKanji = viewModel::setCurrentKanji,
+                            setCurrentStory = viewModel::setCurrentStory,
+                            contextLoading = studyViewModel.contextLoading.value,
+                            wordLoading = studyViewModel.wordModelLoading.value,
+                            sentencesLoading = studyViewModel.similarSentencesLoading.value,
+                            addSentenceToReview = viewModel::addSentenceToReview,
+                            loadSimilarSentences = studyViewModel::loadSimilarSentences,
+                            scaffoldState = scaffoldState,
+                            showReviewSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
+                            showSaveSnackbar = {showSnackbar(scaffoldState, message="Sentence added to corpus")}
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun showSnackbar(
+        scaffoldState: ScaffoldState,
+        message: String,
+        actionLabel: String="hide",
+        duration: SnackbarDuration = SnackbarDuration.Short,
+    ) {
+        lifecycleScope.launch{
+            scaffoldState.snackbarHostState.showSnackbar(
+                message = message,
+                actionLabel = actionLabel,
+                duration = duration
+            )
+        }
     }
 }

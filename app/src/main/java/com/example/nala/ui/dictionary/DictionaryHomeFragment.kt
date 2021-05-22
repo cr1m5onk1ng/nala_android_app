@@ -46,8 +46,6 @@ class DictionaryHomeFragment : Fragment() {
                         onClick = {viewModel.onTriggerEvent(DictionaryEvent.SearchWordEvent)},
                         textReceived = viewModel.textReceived.value,
                         sentenceReceived = viewModel.sentenceReceived.value,
-                        unsetSharedText = viewModel::unsetSharedText,
-                        unsetSharedSentence = viewModel::unsetSharedSentence,
                         isHomeSelected = viewModel.isHomeSelected.value,
                         isReviewsSelected = viewModel.isReviewSelected.value,
                         toggleHome = viewModel::toggleHome,

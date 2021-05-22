@@ -29,7 +29,7 @@ fun BottomBar(
                 if (!isHomeSelected) {
                     toggleHome(true)
                     toggleReviews(false)
-                    navController.popBackStack()
+                    navController.navigate("home_screen")
                 }},
             icon = {Icon(
                 Icons.Rounded.Home,
@@ -42,7 +42,7 @@ fun BottomBar(
                 if(!isReviewsSelected) {
                     toggleHome(false)
                     toggleReviews(true)
-                    navController.navigate(R.id.show_reviews)
+                    navController.navigate("review_screen")
                 } },
             icon = {Icon(
                 Icons.Rounded.List,

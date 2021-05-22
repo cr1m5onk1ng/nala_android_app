@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -17,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -45,8 +47,6 @@ fun HomeScreen(
     onClick: () -> Unit,
     textReceived: Boolean,
     sentenceReceived: Boolean,
-    unsetSharedText: () -> Unit,
-    unsetSharedSentence: () -> Unit,
     isHomeSelected: Boolean,
     isReviewsSelected: Boolean,
     toggleHome: (Boolean) -> Unit,
@@ -57,13 +57,11 @@ fun HomeScreen(
 
     if(textReceived){
         onClick()
-        navController.navigate(R.id.show_details)
-        unsetSharedText()
+        navController.navigate("detail_screen")
     }
 
     if(sentenceReceived){
-        navController.navigate(R.id.show_sentence_form)
-        unsetSharedSentence()
+        navController.navigate("sentence_form_screen")
     }
 
     Scaffold(
@@ -135,7 +133,7 @@ fun HomeScreen(
                                         onQueryChange(word)
                                         onClick()
                                         onQueryChange("")
-                                        navController.navigate(R.id.show_details)
+                                        navController.navigate("detail_screen")
                                     },
                                 shape = RoundedCornerShape(18.dp),
                                 contentColor = Blue500,
@@ -157,44 +155,41 @@ fun HomeScreen(
                     Spacer(
                         modifier = Modifier.height(10.dp),
                     )
-                    Surface(
+
+                    TextField(
+                        value = query,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp)
-                    ){
+                            .alpha(0.6f),
+                        onValueChange = onQueryChange,
+                        textStyle = TextStyle(color = MaterialTheme.colors.onSurface, fontSize = 20.sp),
+                        colors = TextFieldDefaults.textFieldColors(
+                            backgroundColor = Blue400,
+                            focusedIndicatorColor =  Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent),
+                        shape = RoundedCornerShape(32.dp),
+                        placeholder = { Text("Search in dictionary") },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Rounded.Search,
+                                contentDescription = "search",
+                                tint = Color.White )
 
-                        TextField(
-                            value = query,
-                            modifier = Modifier.alpha(0.6f),
-                            onValueChange = onQueryChange,
-                            textStyle = TextStyle(color = MaterialTheme.colors.onSurface, fontSize = 20.sp),
-                            colors = TextFieldDefaults.textFieldColors(
-                                backgroundColor = Color.Transparent,
-                                focusedIndicatorColor =  Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent),
-                            shape = RoundedCornerShape(18.dp),
-                            placeholder = { Text("Search in dictionary") },
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Rounded.Search,
-                                    contentDescription = "search",
-                                    tint = Color.White )
-
-                            },
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Search,
-                            ),
-                            keyboardActions = KeyboardActions (
-                                onSearch = {
-                                    onClick()
-                                    onQueryChange("")
-                                    keyboardController?.hideSoftwareKeyboard()
-                                    navController.navigate(R.id.show_details)
-                                }
-                            )
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Search,
+                        ),
+                        keyboardActions = KeyboardActions (
+                            onSearch = {
+                                onClick()
+                                onQueryChange("")
+                                keyboardController?.hideSoftwareKeyboard()
+                                navController.navigate("detail_screen")
+                            }
                         )
-                    }
+                    )
                 }
             }
         }

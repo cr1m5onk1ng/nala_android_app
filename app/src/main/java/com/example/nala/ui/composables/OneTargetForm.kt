@@ -1,5 +1,6 @@
 package com.example.nala.ui.composables
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -65,7 +66,7 @@ fun OneTargetForm(
             ){
                 IconButton(
                     onClick = {
-                        navController.navigate(R.id.sentence_form_to_home)
+                        navController.popBackStack()
                     }
                 ) {
                     Icon(Icons.Rounded.Close, contentDescription = "close icon")
@@ -127,7 +128,7 @@ fun OneTargetForm(
                                     if(selectedWord.isNotEmpty()) {
                                         onSentenceAdd(sentence)
                                         onWordAdd(selectedWord)
-                                        navController.navigate(R.id.from_sentence_form_to_study)
+                                        navController.navigate("study_screen")
                                     }
                                 },
                                 height = 50.dp,
@@ -138,6 +139,7 @@ fun OneTargetForm(
                                 icon = Icons.Rounded.Add,
                                 onCLick = {
                                     addSentenceToReview(selectedWord, sentence)
+                                    showSnackbar()
                                 },
                                 height = 50.dp,
                             )

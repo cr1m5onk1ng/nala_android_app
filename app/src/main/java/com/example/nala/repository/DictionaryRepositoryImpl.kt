@@ -20,7 +20,7 @@ class DictionaryRepositoryImpl @Inject constructor(
             val result = dictionaryService.search(word);
             return dictionaryModelMapper.mapToDomainModel(result);
         } catch (e: Exception){
-            e
+            e.printStackTrace()
         }
         return DictionaryModel.Empty()
     }

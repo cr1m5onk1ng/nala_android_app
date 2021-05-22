@@ -197,7 +197,7 @@ fun KanjiReviewCard(
             .padding(3.dp)
             .clickable {
                 setKanjiItem(item.kanji)
-                navController.navigate(R.id.show_kanji_detail)
+                navController.navigate("kanji_detail_screen")
             },
         backgroundColor = Color.White,
         shape = RoundedCornerShape(18.dp),
@@ -277,7 +277,7 @@ fun SentenceReviewCard(
             .padding(16.dp)
             .clickable {
                 setSentenceItem(item.targetWord, item.sentence)
-                navController.navigate(R.id.show_review_detail)
+                navController.navigate("detail_screen")
             },
         backgroundColor = Color.White,
         shape = RoundedCornerShape(18.dp),
@@ -357,7 +357,7 @@ fun WordReviewCard(
             .padding(3.dp)
             .clickable {
                 setWordItem(item)
-                navController.navigate(R.id.show_review_detail)
+                navController.navigate("detail_screen")
             },
         backgroundColor = Color.White,
         shape = RoundedCornerShape(18.dp),
