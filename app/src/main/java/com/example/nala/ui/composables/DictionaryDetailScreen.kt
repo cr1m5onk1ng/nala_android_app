@@ -47,7 +47,7 @@ fun DictionaryDetailScreen(
         snackbarHost =  {
             scaffoldState.snackbarHostState
         }
-    ) {
+    ) { paddingValue ->
         if(isLoading){
             LoadingIndicator()
         } else if(wordModel.word.isEmpty()) {
@@ -56,7 +56,9 @@ fun DictionaryDetailScreen(
                 subtitle = "¯\\_(ツ)_/¯"
             )
         } else {
-            ConstraintLayout() {
+            ConstraintLayout(
+                modifier = Modifier.padding(paddingValue)
+            ) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()

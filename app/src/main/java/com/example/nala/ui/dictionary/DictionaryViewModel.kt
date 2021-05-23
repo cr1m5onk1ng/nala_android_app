@@ -34,6 +34,8 @@ class DictionaryViewModel @Inject constructor(
 
     val sentenceReceived: MutableState<Boolean> = mutableStateOf(false)
 
+    val sentenceLoading: MutableState<Boolean> = mutableStateOf(true)
+
     val mightForgetItemsLoaded: MutableState<Boolean> = mutableStateOf(false)
 
     val addedToReview: MutableState<Boolean> = mutableStateOf(false)
@@ -98,16 +100,17 @@ class DictionaryViewModel @Inject constructor(
     }
 
     fun setSharedText(text: String?) {
-        query.value = text ?: ""
         textReceived.value = true
+        query.value = text ?: ""
     }
 
     fun setSharedSentence(text: String?) {
         viewModelScope.launch {
-            sentenceReceived.value = false
+            sentenceReceived.value = true
+            sentenceLoading.value = true
             sharedSentenceTokens.value = dictRepository.tokenize(text?: "")
             sharedSentence.value = text ?: ""
-            sentenceReceived.value = true
+            sentenceLoading.value = false
         }
     }
 

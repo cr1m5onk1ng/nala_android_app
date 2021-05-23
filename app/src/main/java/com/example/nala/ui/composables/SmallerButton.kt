@@ -58,7 +58,7 @@ fun SmallerButton(
                     style = TextStyle(
                         fontFamily = Quicksand,
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.Light
+                        fontWeight = FontWeight.W400
                     )
                 )
                 Spacer(modifier= Modifier.padding(horizontal = 3.dp))

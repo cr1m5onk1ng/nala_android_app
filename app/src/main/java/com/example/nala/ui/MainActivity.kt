@@ -151,6 +151,13 @@ class MainActivity : AppCompatActivity() {
                             updateSentenceReviewItem= reviewViewModel::updateSentenceReviewItem,
                             updateKanjiReviewItem = reviewViewModel::updateKanjiReviewItem,
                             navController = navController,
+                            showSnackbar = {
+                                showSnackbar(
+                                    scaffoldState,
+                                    message="Review removed",
+                                    actionLabel="Undo",
+                                )},
+                            scaffoldState = scaffoldState,
                         )
 
                     }
@@ -159,7 +166,7 @@ class MainActivity : AppCompatActivity() {
                         OneTargetForm(
                             sentence = viewModel.sharedSentence.value,
                             tokens = viewModel.sharedSentenceTokens.value,
-                            sentenceReceived = viewModel.sentenceReceived.value,
+                            sentenceLoading = viewModel.sentenceLoading.value,
                             selectedWord = studyViewModel.selectedWord.value,
                             onSentenceAdd = studyViewModel::setStudyContext,
                             onWordAdd = studyViewModel::setStudyTargetWord,
@@ -167,6 +174,7 @@ class MainActivity : AppCompatActivity() {
                             addSentenceToReview = viewModel::addSentenceToReview,
                             unsetSharedSentence = viewModel::unsetSharedSentence,
                             showSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
+                            scaffoldState = scaffoldState,
                             navController = navController,
                         )
 

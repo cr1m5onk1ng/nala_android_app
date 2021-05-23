@@ -74,7 +74,7 @@ fun HomeScreen(
                 toggleReviews
             )
         }
-    ){
+    ){ paddingValue ->
         Column(
             modifier = Modifier
                 .background(
@@ -82,7 +82,8 @@ fun HomeScreen(
                         colors = listOf(BackgroundGradientStart, BackgroundGradientEnd),
                     )
                 )
-                .fillMaxSize(),
+                .fillMaxSize()
+                .padding(paddingValue),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {

@@ -1,6 +1,5 @@
 package com.example.nala.ui.composables
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,144 +12,155 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
-import com.example.nala.R
 import com.example.nala.ui.theme.*
 
 @Composable
 fun OneTargetForm(
     sentence: String,
     selectedWord: String,
-    sentenceReceived: Boolean,
+    sentenceLoading: Boolean,
     tokens: List<String>,
     onSentenceAdd: (String) -> Unit,
     onWordAdd: (String) -> Unit,
     onWordSelect: (String) -> Unit,
     unsetSharedSentence: () -> Unit,
     addSentenceToReview: (String, String) -> Unit,
-    showSnackbar: () -> Unit,
     navController: NavController,
+    scaffoldState: ScaffoldState,
+    showSnackbar: (ScaffoldState) -> Unit
 ) {
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(bottom = 48.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ){
-
-        if(!sentenceReceived) {
-            LoadingIndicator()
-        } else{
-            //Close Button
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 26.dp, end = 32.dp),
-                horizontalArrangement = Arrangement.End
-            ){
-                IconButton(
-                    onClick = {
-                        unsetSharedSentence()
-                        navController.popBackStack()
+    ConstraintLayout{
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 48.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            if(sentenceLoading) {
+                LoadingIndicator()
+            } else{
+                //Close Button
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 26.dp, end = 32.dp),
+                    horizontalArrangement = Arrangement.End
+                ){
+                    IconButton(
+                        onClick = {
+                            unsetSharedSentence()
+                            navController.popBackStack()
+                        }
+                    ) {
+                        Icon(Icons.Rounded.Close, contentDescription = "close icon")
                     }
-                ) {
-                    Icon(Icons.Rounded.Close, contentDescription = "close icon")
                 }
-            }
-            //Body
-            LazyColumn(
-                modifier = Modifier
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                item{
-                    Column() {
-                        CustomSelectionContainer(
-                            sentence = sentence,
-                        )
-                        // ADD A WORD SECTIONs
-                        Text(
-                            text = "Select your target word: ",
-                            modifier = Modifier.padding(5.dp),
-                            style = TextStyle(
-                                fontFamily = Quicksand,
-                                fontWeight = FontWeight.W400,
-                                fontSize = 20.sp
-                            ),
-                        )
-                        TokenSelectionRow(
-                            tokens = tokens,
-                            onWordSelect = onWordSelect,
-                            selectedToken = selectedWord,
-                        )
-                        Spacer(modifier = Modifier.padding(vertical=8.dp))
-                        // SELECTED WORD
-                        Text(
-                            if(selectedWord.isNotEmpty()) selectedWord else "No word selected",
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center,
-                            style = TextStyle(
-                                fontFamily = Quicksand,
-                                fontSize = if(selectedWord.isNotEmpty()) 42.sp else 18.sp,
-                                fontWeight = if(selectedWord.isNotEmpty()) FontWeight.Bold else FontWeight.Light,
-                                color = Color.Black,
-                            ),
-                        )
-                        Spacer(modifier = Modifier.padding(vertical=16.dp))
-                        // Buttons row
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            SmallerButton(
-                                backgroundColor = LightGreen,
-                                text = "Study",
-                                icon = Icons.Rounded.ArrowForward,
-                                onCLick = {
-                                    if(selectedWord.isNotEmpty()) {
-                                        onSentenceAdd(sentence)
-                                        onWordAdd(selectedWord)
-                                        navController.navigate("study_screen")
-                                    }
-                                },
-                                height = 50.dp,
+                //Body
+                LazyColumn(
+                    modifier = Modifier
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    item{
+                        Column() {
+                            CustomSelectionContainer(
+                                sentence = sentence,
                             )
-                            SmallerButton(
-                                backgroundColor = LightBlue,
-                                text = "Review",
-                                icon = Icons.Rounded.Add,
-                                onCLick = {
-                                    addSentenceToReview(selectedWord, sentence)
-                                    showSnackbar()
-                                },
-                                height = 50.dp,
+                            // ADD A WORD SECTIONs
+                            Text(
+                                text = "Select your target word: ",
+                                modifier = Modifier.padding(5.dp),
+                                style = TextStyle(
+                                    fontFamily = Quicksand,
+                                    fontWeight = FontWeight.W400,
+                                    fontSize = 20.sp
+                                ),
                             )
+                            TokenSelectionRow(
+                                tokens = tokens,
+                                onWordSelect = onWordSelect,
+                                selectedToken = selectedWord,
+                            )
+                            Spacer(modifier = Modifier.padding(vertical=8.dp))
+                            // SELECTED WORD
+                            Text(
+                                if(selectedWord.isNotEmpty()) selectedWord else "No word selected",
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center,
+                                style = TextStyle(
+                                    fontFamily = Quicksand,
+                                    fontSize = if(selectedWord.isNotEmpty()) 42.sp else 18.sp,
+                                    fontWeight = if(selectedWord.isNotEmpty()) FontWeight.Bold else FontWeight.Light,
+                                    color = Color.Black,
+                                ),
+                            )
+                            Spacer(modifier = Modifier.padding(vertical=16.dp))
+                            // Buttons row
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp),
+                                horizontalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                SmallerButton(
+                                    backgroundColor = LightGreen,
+                                    text = "Study",
+                                    icon = Icons.Rounded.ArrowForward,
+                                    onCLick = {
+                                        if(selectedWord.isNotEmpty()) {
+                                            onSentenceAdd(sentence)
+                                            onWordAdd(selectedWord)
+                                            navController.navigate("study_screen")
+                                        }
+                                    },
+                                    height = 50.dp,
+                                )
+                                SmallerButton(
+                                    backgroundColor = LightBlue,
+                                    text = "Review",
+                                    icon = Icons.Rounded.Add,
+                                    onCLick = {
+                                        addSentenceToReview(selectedWord, sentence)
+                                        showSnackbar(scaffoldState)
+                                    },
+                                    height = 50.dp,
+                                )
+                            }
                         }
                     }
                 }
             }
         }
+        val snackbar = createRef()
+        DefaultSnackbar(
+            modifier = Modifier
+                .constrainAs(snackbar){
+                    bottom.linkTo(parent.bottom)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                },
+            snackbarHostState = scaffoldState.snackbarHostState,
+            onDismiss = {
+                scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+            }
+        )
     }
+
 }
 
 @Composable

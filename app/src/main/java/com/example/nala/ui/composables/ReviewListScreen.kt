@@ -22,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.constraintlayout.compose.ConstraintLayout
 import com.example.nala.db.models.review.KanjiReviewModel
 import com.example.nala.db.models.review.WordReviewModel
 import com.example.nala.domain.model.review.ReviewCategory
@@ -69,8 +70,27 @@ fun ReviewListScreen(
     updateWordReviewItem: (quality: Int, reviewItem: WordReviewModel) -> Unit,
     updateSentenceReviewItem: (quality: Int, sentenceReview: SentenceReviewModel) -> Unit,
     updateKanjiReviewItem: (quality: Int, kanjiReview: KanjiReviewModel) -> Unit,
-    navController: NavController
+    navController: NavController,
+    scaffoldState: ScaffoldState,
+    showSnackbar: (ScaffoldState) -> Unit
 ) {
+    // the default reviews displayed are word reviews
+    if(wordReviewItems.isEmpty() &&
+        sentenceReviewItems.isEmpty() &&
+        kanjiReviewItems.isEmpty()){
+        when(selectedCategory){
+            ReviewCategory.Kanji -> {
+                loadKanjiReviews()
+            }
+            ReviewCategory.Word -> {
+                loadWordReviews()
+            }
+            ReviewCategory.Sentence -> {
+                loadSentenceReviews()
+            }
+        }
+    }
+
     Scaffold(
         bottomBar = {
             BottomBar(
@@ -81,18 +101,15 @@ fun ReviewListScreen(
                 toggleReviews
             )
         }
-    ) {
-        if (isLoading) {
-            LoadingIndicator()
-        }
-        else {
+    ) { innerPadding ->
+        ConstraintLayout(
+            modifier = Modifier.padding(innerPadding)
+        ){
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
-
-
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -122,61 +139,77 @@ fun ReviewListScreen(
                     loadSentenceReviews = loadSentenceReviews,
                     loadWordReviews = loadWordReviews
                 )
-
-                LazyColumn(
-                    modifier = Modifier
-                        .padding(8.dp)
-                ) {
-                    when(selectedCategory) {
-                        ReviewCategory.Word -> {
-                            if(wordReviewItems.isEmpty()) {
-                                item {ErrorScreen(text = "No word added to review", subtitle = "")}
+                if (isLoading) {
+                    LoadingIndicator()
+                } else{
+                    LazyColumn(
+                        modifier = Modifier
+                            .padding(8.dp)
+                    ) {
+                        when(selectedCategory) {
+                            ReviewCategory.Word -> {
+                                if(wordReviewItems.isEmpty()) {
+                                    item {ErrorScreen(text = "No word added to review", subtitle = "")}
+                                }
+                                else {
+                                    items(count = wordReviewItems.size) { index ->
+                                        WordReviewCard(
+                                            wordReviewItems[index],
+                                            setWordItem,
+                                            updateWordReviewItem,
+                                            removeWordReview,
+                                            dismissWordReview,
+                                            navController
+                                        )
+                                    }
+                                }
                             }
-                            else {
-                                items(count = wordReviewItems.size) { index ->
-                                    WordReviewCard(
-                                        wordReviewItems[index],
-                                        setWordItem,
-                                        updateWordReviewItem,
-                                        removeWordReview,
-                                        dismissWordReview,
+                            ReviewCategory.Sentence -> {
+                                if(sentenceReviewItems.isEmpty()) {
+                                    item { ErrorScreen(text = "No sentence added to review", subtitle = "")}
+                                }
+                                else {
+                                    items(count = sentenceReviewItems.size) { index ->
+                                        SentenceReviewCard(
+                                            sentenceReviewItems[index],
+                                            setSentenceItem,
+                                            updateSentenceReviewItem,
+                                            removeSentenceReview,
+                                            dismissSentenceReview,
+                                            navController
+                                        )
+                                    }
+                                }
+                            }
+                            ReviewCategory.Kanji -> {
+                                items(count = kanjiReviewItems.size) { index ->
+                                    KanjiReviewCard(
+                                        kanjiReviewItems[index],
+                                        setKanjiItem,
+                                        updateKanjiReviewItem,
+                                        removeKanjiReview,
+                                        dismissKanjiReview,
                                         navController
                                     )
                                 }
-                            }
-                        }
-                        ReviewCategory.Sentence -> {
-                            if(sentenceReviewItems.isEmpty()) {
-                                item { ErrorScreen(text = "No sentence added to review", subtitle = "")}
-                            }
-                            else {
-                                items(count = sentenceReviewItems.size) { index ->
-                                    SentenceReviewCard(
-                                        sentenceReviewItems[index],
-                                        setSentenceItem,
-                                        updateSentenceReviewItem,
-                                        removeSentenceReview,
-                                        dismissSentenceReview,
-                                        navController
-                                    )
-                                }
-                            }
-                        }
-                        ReviewCategory.Kanji -> {
-                            items(count = kanjiReviewItems.size) { index ->
-                                KanjiReviewCard(
-                                    kanjiReviewItems[index],
-                                    setKanjiItem,
-                                    updateKanjiReviewItem,
-                                    removeKanjiReview,
-                                    dismissKanjiReview,
-                                    navController
-                                )
                             }
                         }
                     }
                 }
             }
+            val snackbar = createRef()
+            DefaultSnackbar(
+                modifier = Modifier
+                    .constrainAs(snackbar){
+                        bottom.linkTo(parent.bottom)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                    },
+                snackbarHostState = scaffoldState.snackbarHostState,
+                onDismiss = {
+                    scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                }
+            )
         }
     }
 }
@@ -190,6 +223,7 @@ fun KanjiReviewCard(
     dismissKanjiReview: (String) -> Unit,
     navController: NavController,
 ){
+    val isEasyChecked = remember { mutableStateOf(false) }
     val isOkChecked = remember { mutableStateOf(false) }
     val isKoChecked = remember { mutableStateOf(false) }
 
@@ -229,15 +263,17 @@ fun KanjiReviewCard(
             )
             //CHECKBOX SECTION
             CheckBoxRow(
+                isEasyChecked = isEasyChecked,
                 isOkChecked = isOkChecked,
                 isKoChecked = isKoChecked,
                 onDismiss = {
-                    if(isOkChecked.value || isKoChecked.value) {
-                        val quality: Int
-                        if(isOkChecked.value){
-                            quality = 4
-                        }else{
-                            quality = 1
+                    if(isOkChecked.value || isKoChecked.value || isEasyChecked.value) {
+                        val quality = if(isEasyChecked.value){
+                            5
+                        }else if(isOkChecked.value) {
+                            3
+                        } else {
+                            1
                         }
                         updateKanjiReviewItem(quality, item)
                         dismissKanjiReview(item.kanji)
@@ -267,12 +303,11 @@ fun SentenceReviewCard(
     dismissSentenceReview: (String) -> Unit,
     navController: NavController,
 ){
+    val isEasyChecked = remember { mutableStateOf(false) }
     val isOkChecked = remember { mutableStateOf(false) }
     val isKoChecked = remember { mutableStateOf(false) }
 
     val parts = item.sentence.split(Regex(item.targetWord))
-    val contextStart = parts[0]
-    val contextEnd = parts[1]
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -311,6 +346,7 @@ fun SentenceReviewCard(
             )
             //CHECKBOX SECTION
             CheckBoxRow(
+                isEasyChecked = isEasyChecked,
                 isOkChecked = isOkChecked,
                 isKoChecked = isKoChecked,
                 onDismiss = {
@@ -350,6 +386,7 @@ fun WordReviewCard(
     navController: NavController,
     ) {
 
+    val isEasyChecked = remember { mutableStateOf(false) }
     val isOkChecked = remember { mutableStateOf(false) }
     val isKoChecked = remember { mutableStateOf(false) }
 
@@ -388,6 +425,7 @@ fun WordReviewCard(
             )
             //CHECKBOX SECTION
             CheckBoxRow(
+                isEasyChecked = isEasyChecked,
                 isOkChecked = isOkChecked,
                 isKoChecked = isKoChecked,
                 onDismiss = {
@@ -416,8 +454,13 @@ fun WordReviewCard(
     }
 }
 
+fun checkLogic(){
+
+}
+
 @Composable
 fun CheckBoxRow(
+    isEasyChecked: MutableState<Boolean>,
     isOkChecked: MutableState<Boolean>,
     isKoChecked: MutableState<Boolean>,
     onDismiss: () -> Unit,
@@ -434,12 +477,28 @@ fun CheckBoxRow(
             verticalAlignment = Alignment.CenterVertically
         ){
             CustomCheckBox(
-                label = "Ok",
+                label = "Easy",
+                isChecked = isEasyChecked,
+                onCheckedChange = { checked ->
+                    if(checked) {
+                        isEasyChecked.value = true
+                        isOkChecked.value = false
+                        isKoChecked.value = false
+                    }
+                    else{
+                        isEasyChecked.value = false
+                    }
+                },
+                colors = CheckboxDefaults.colors(Color.Blue)
+            )
+            CustomCheckBox(
+                label = "OK",
                 isChecked = isOkChecked,
                 onCheckedChange = {
                     if(it) {
                         isOkChecked.value = true
                         isKoChecked.value = false
+                        isEasyChecked.value = false
                     }
                     else{
                         isOkChecked.value = false
@@ -448,12 +507,13 @@ fun CheckBoxRow(
                 colors = CheckboxDefaults.colors(Color.Green)
             )
             CustomCheckBox(
-                label = "Ko",
+                label = "KO",
                 isChecked = isKoChecked,
                 onCheckedChange = {
                     if(it) {
                         isKoChecked.value = true
                         isOkChecked.value = false
+                        isEasyChecked.value = false
                     }
                     else{
                         isKoChecked.value = false
