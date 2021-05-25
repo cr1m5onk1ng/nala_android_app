@@ -51,11 +51,15 @@ class DictionaryViewModel @Inject constructor(
 
     val sharedSentence: MutableState<String> = mutableStateOf("")
 
-    val sharedSentenceTokens : MutableState<List<String>> = mutableStateOf(listOf())
+    val sharedSentenceTokens: MutableState<List<String>> = mutableStateOf(
+        listOf()
+    )
+
+    val sharedSentenceTokensIndexMap : MutableState<Map<Pair<Int, Int>, String>> = mutableStateOf(mapOf())
 
     val searchLoading: MutableState<Boolean> = mutableStateOf(false)
 
-
+    // BOTTOM BAR STATE
 
     val isHomeSelected: MutableState<Boolean> = mutableStateOf(true)
 
@@ -109,6 +113,10 @@ class DictionaryViewModel @Inject constructor(
             sentenceReceived.value = true
             sentenceLoading.value = true
             sharedSentenceTokens.value = dictRepository.tokenize(text?: "")
+            sharedSentenceTokensIndexMap.value = dictRepository.tokensToIndexMap(
+                sharedSentenceTokens.value,
+                text ?: ""
+            )
             sharedSentence.value = text ?: ""
             sentenceLoading.value = false
         }

@@ -8,4 +8,7 @@ interface DictionaryRepository {
     suspend fun search(word: String) : DictionaryModel
 
     suspend fun tokenize(text: String) : List<String>
+
+    fun tokensToIndexMap(tokens: List<String>, text: String): Map<Pair<Int, Int>, String>
+
 }

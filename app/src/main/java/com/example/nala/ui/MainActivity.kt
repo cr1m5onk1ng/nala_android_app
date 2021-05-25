@@ -166,6 +166,7 @@ class MainActivity : AppCompatActivity() {
                         OneTargetForm(
                             sentence = viewModel.sharedSentence.value,
                             tokens = viewModel.sharedSentenceTokens.value,
+                            tokensIndexMap = viewModel.sharedSentenceTokensIndexMap.value,
                             sentenceLoading = viewModel.sentenceLoading.value,
                             selectedWord = studyViewModel.selectedWord.value,
                             onSentenceAdd = studyViewModel::setStudyContext,

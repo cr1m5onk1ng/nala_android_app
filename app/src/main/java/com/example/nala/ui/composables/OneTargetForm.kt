@@ -1,9 +1,13 @@
 package com.example.nala.ui.composables
 
+import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
@@ -12,9 +16,11 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -25,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
 import com.example.nala.ui.theme.*
+import kotlinx.coroutines.launch
 
 @Composable
 fun OneTargetForm(
@@ -32,6 +39,7 @@ fun OneTargetForm(
     selectedWord: String,
     sentenceLoading: Boolean,
     tokens: List<String>,
+    tokensIndexMap: Map<Pair<Int, Int>, String>,
     onSentenceAdd: (String) -> Unit,
     onWordAdd: (String) -> Unit,
     onWordSelect: (String) -> Unit,
@@ -70,7 +78,11 @@ fun OneTargetForm(
                     }
                 }
                 //Body
+                val listState = rememberLazyListState()
+                // Remember a CoroutineScope to be able to launch
+                val coroutineScope = rememberCoroutineScope()
                 LazyColumn(
+                    state = listState,
                     modifier = Modifier
                         .padding(16.dp),
                     verticalArrangement = Arrangement.Center,
@@ -78,29 +90,40 @@ fun OneTargetForm(
                 ) {
                     item{
                         Column() {
-                            CustomSelectionContainer(
-                                sentence = sentence,
+                            Text(
+                                text = "Tap to select your target word: ",
+                                modifier = Modifier.padding(5.dp),
+                                style = TextStyle(
+                                    fontFamily = Quicksand,
+                                    fontWeight = FontWeight.Light,
+                                    fontSize = 20.sp
+                                ),
+                            )
+                            CustomClickableText(
+                                modifier = Modifier
+                                    .padding(8.dp),
+                                tokens = tokens,
+                                tokensMap = tokensIndexMap,
+                                selectedToken = selectedWord,
+                                onClick = onWordSelect,
+                                fontSize = 24.sp,
                             )
                             // ADD A WORD SECTIONs
+                            /*
                             Text(
-                                text = "Select your target word: ",
-                                modifier = Modifier.padding(5.dp),
+                                text = "Target word:",
+                                modifier = Modifier.padding(8.dp),
                                 style = TextStyle(
                                     fontFamily = Quicksand,
                                     fontWeight = FontWeight.W400,
                                     fontSize = 20.sp
                                 ),
-                            )
-                            TokenSelectionRow(
-                                tokens = tokens,
-                                onWordSelect = onWordSelect,
-                                selectedToken = selectedWord,
-                            )
+                            ) */
                             Spacer(modifier = Modifier.padding(vertical=8.dp))
                             // SELECTED WORD
                             Text(
                                 if(selectedWord.isNotEmpty()) selectedWord else "No word selected",
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().padding(8.dp),
                                 textAlign = TextAlign.Center,
                                 style = TextStyle(
                                     fontFamily = Quicksand,
@@ -171,7 +194,6 @@ fun TokenSelectionRow(
 ){
     LazyRow(
         modifier = Modifier
-            .fillMaxWidth()
             .padding(8.dp)
             .background(color = Color.White),
         horizontalArrangement = Arrangement.spacedBy(3.dp)
@@ -199,9 +221,11 @@ fun TokenSelectionRow(
 fun TokensContainer(
     tokens: List<String>,
     selectedToken: String,
+    chunk: Int = 5,
     onWordSelect: (String) -> Unit,
+    onClick: (() -> Unit)? = null,
 ) {
-    val tokensChunks = tokens.chunked(5)
+    val tokensChunks = tokens.chunked(chunk)
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -210,13 +234,18 @@ fun TokensContainer(
             LazyRow(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(5.dp)
+                    .background(color = Color.Transparent)
+                    .height(55.dp),
+                horizontalArrangement = Arrangement.Center
             ){
                 items(count=chunk.size) {
                     for(token in chunk) {
                         TagButton(
                             onClick = {
                                 onWordSelect(token)
+                                onClick?.let{ onCLick ->
+                                    onClick()
+                                }
                             },
                             text = token,
                             textSize = 14.sp,
@@ -237,21 +266,16 @@ fun TokensContainer(
 fun CustomSelectionContainer(
     sentence: String,
 ) {
-    SelectionContainer(
+    ClickableText(
+        text = AnnotatedString(sentence),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
-    ) {
-        Text(
-            sentence,
-            style = TextStyle(
-                fontFamily = Quicksand,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.W500,
-                color = Color.Black,
-            )
-        )
-    }
+            .padding(16.dp),
+        onClick = { offset ->
+            Log.d("TextDebug", "offset: $offset")
+
+        }
+    )
 }
 
 @Composable
