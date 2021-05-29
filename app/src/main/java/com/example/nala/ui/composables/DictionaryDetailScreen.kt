@@ -38,6 +38,7 @@ fun DictionaryDetailScreen(
     setCurrentStory: (String) -> Unit,
     unsetSharedWord: () -> Unit,
     addToReview: () -> Unit,
+    loadWordReviews: () -> Unit,
     scaffoldState: ScaffoldState,
     showSnackbar: (ScaffoldState) -> Unit
 ) {
@@ -85,6 +86,7 @@ fun DictionaryDetailScreen(
                                 setCurrentKanji,
                                 setCurrentStory,
                                 addToReview,
+                                loadWordReviews,
                                 scaffoldState,
                                 showSnackbar
                             )
@@ -119,6 +121,7 @@ fun DataSection(
     setCurrentKanji: (String) -> Unit,
     setCurrentStory: (String) -> Unit,
     addToReview: () -> Unit,
+    loadWordReviews: () -> Unit,
     scaffoldState: ScaffoldState,
     onShowSnackbar: (ScaffoldState) -> Unit
 ) {
@@ -139,7 +142,7 @@ fun DataSection(
         Spacer(
             modifier = Modifier.padding(vertical=5.dp)
         )
-        ButtonSection(addToReview, scaffoldState, onShowSnackbar)
+        ButtonSection(addToReview, loadWordReviews, scaffoldState, onShowSnackbar)
         Spacer(modifier = Modifier.padding(vertical = 5.dp) )
         val isCommon: Boolean = wordModel?.common ?: false
         val isCommonTag: String = if(isCommon) "Common" else ""
@@ -226,6 +229,7 @@ fun KanjiRow(
 @Composable
 fun ButtonSection(
     addToReview: () -> Unit,
+    loadWordReviews: () -> Unit,
     scaffoldState: ScaffoldState,
     onShowSnackbar: (ScaffoldState) -> Unit
 ) {
@@ -239,6 +243,7 @@ fun ButtonSection(
             onClick = {
                 addToReview()
                 onShowSnackbar(scaffoldState)
+                loadWordReviews()
                       },
             modifier = Modifier
                 .fillMaxWidth()

@@ -75,6 +75,7 @@ fun ReviewListScreen(
     showSnackbar: (ScaffoldState) -> Unit
 ) {
     // the default reviews displayed are word reviews
+    /*
     if(wordReviewItems.isEmpty() &&
         sentenceReviewItems.isEmpty() &&
         kanjiReviewItems.isEmpty()){
@@ -89,7 +90,7 @@ fun ReviewListScreen(
                 loadSentenceReviews()
             }
         }
-    }
+    } */
 
     Scaffold(
         bottomBar = {

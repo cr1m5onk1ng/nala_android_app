@@ -52,6 +52,7 @@ fun StudyScreen(
     setCurrentKanji: (String) -> Unit,
     setCurrentStory: (String) -> Unit,
     addSentenceToReview: (String, String) -> Unit,
+    loadSentenceReviews: () -> Unit,
     loadSimilarSentences: () -> Unit,
     scaffoldState: ScaffoldState,
     showReviewSnackbar: () -> Unit,
@@ -155,6 +156,7 @@ fun StudyScreen(
                                             sentence = sent,
                                             category = "Music",
                                             addSentenceToReview = addSentenceToReview,
+                                            loadSentenceReviews = loadSentenceReviews,
                                             showReviewSnackbar = showReviewSnackbar,
                                             showSaveSnackbar = showSaveSnackbar,
                                         )
@@ -188,6 +190,7 @@ fun SentenceCard(
     category: String,
     targetWord: String? = null,
     addSentenceToReview: (String, String) -> Unit,
+    loadSentenceReviews: () -> Unit,
     showReviewSnackbar: () -> Unit,
     showSaveSnackbar: () -> Unit,
 
@@ -273,6 +276,7 @@ fun SentenceCard(
                     onCLick = {
                         addSentenceToReview(targetWord ?: "", sentence)
                         showReviewSnackbar()
+                        loadSentenceReviews()
                               },
                     height = 35.dp,
                     icon = Icons.Rounded.Add,

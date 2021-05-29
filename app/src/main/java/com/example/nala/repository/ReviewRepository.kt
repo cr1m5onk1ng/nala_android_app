@@ -46,9 +46,13 @@ interface ReviewRepository {
 
     suspend fun addWordTagsToReview(tags: List<String>, word: String)
 
-    suspend fun addSensesToReview(senses: List<Sense>, word: String)
+    suspend fun addWordSensesToReview(senses: List<Sense>, word: String)
 
-    suspend fun getWordReview(word: String) : WordReviewModel
+    suspend fun addSenseTagsToReview(sense: Sense, senseId: String)
+
+    suspend fun addSenseDefinitionsToReview(sense: Sense, senseId: String)
+
+    suspend fun getWordReview(word: String) : WordReviewModel?
 
     suspend fun getWordReviews() : List<WordReviewModel>
 

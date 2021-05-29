@@ -11,11 +11,13 @@ import androidx.navigation.findNavController
 import com.example.nala.ui.CustomFragment
 import com.example.nala.ui.composables.OneTargetForm
 import com.example.nala.ui.dictionary.DictionaryViewModel
+import com.example.nala.ui.review.ReviewViewModel
 
 class SentenceFormFragment : CustomFragment() {
 
     private val viewModel: DictionaryViewModel by activityViewModels()
     private val studyViewModel: StudyViewModel by activityViewModels()
+    private val reviewViewModel: ReviewViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -35,6 +37,7 @@ class SentenceFormFragment : CustomFragment() {
                     onWordSelect = studyViewModel::setSelectedWord,
                     unsetSharedSentence = viewModel::unsetSharedSentence,
                     addSentenceToReview = viewModel::addSentenceToReview,
+                    loadSentenceReviews = reviewViewModel::loadSentenceReviewItems,
                     scaffoldState = scaffoldState,
                     showSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
                     navController = findNavController()

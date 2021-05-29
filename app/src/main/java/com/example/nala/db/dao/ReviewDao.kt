@@ -17,10 +17,19 @@ interface ReviewDao : DatabaseDao{
     suspend fun insertKanjiMeaning(definition: KanjiMeanings)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertKanjiMeanings(vararg definitions: KanjiMeanings)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertKanjiKunReading(reading: KanjiKun)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertKanjiKunReadings(vararg readings: KanjiKun)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertKanjiOnReading(reading: KanjiOn)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertKanjiOnReadings(vararg readings: KanjiOn)
 
     @Delete
     suspend fun deleteKanjiReview(kanjiReview: KanjiReviewModel)
@@ -29,10 +38,19 @@ interface ReviewDao : DatabaseDao{
     suspend fun deleteKanjiDefinition(definition: KanjiMeanings)
 
     @Delete
+    suspend fun deleteKanjiDefinitions(vararg definitions: KanjiMeanings)
+
+    @Delete
     suspend fun deleteKanjiKunReading(reading: KanjiKun)
 
     @Delete
+    suspend fun deleteKanjiKunReadings(vararg readings: KanjiKun)
+
+    @Delete
     suspend fun deleteKanjiOnReading(reading: KanjiOn)
+
+    @Delete
+    suspend fun deleteKanjiOnReadings(vararg readings: KanjiOn)
 
     @Query("SELECT * FROM kanji_review WHERE kanji=:kanji")
     suspend fun getKanjiReview(kanji: String) : List<KanjiReviewModel>
@@ -96,10 +114,19 @@ interface ReviewDao : DatabaseDao{
     suspend fun insertWordSense(wordSense: WordSenseDb)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertWordSenses(vararg wordSenses: WordSenseDb)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertWordSenseTag(wordSenseTag: WordSenseTagDb)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertWordSenseTags(vararg wordSenseTags: WordSenseTagDb)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertWordSenseDefinition(wordSenseDefinition: WordSenseDefinitionDb)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertWordSenseDefinitions(vararg wordSenseDefinitions: WordSenseDefinitionDb)
 
     @Transaction
     @Query("SELECT * FROM word_review WHERE word=:word")
@@ -109,12 +136,23 @@ interface ReviewDao : DatabaseDao{
     @Query("SELECT * FROM word_review WHERE word=:word")
     suspend fun getWordSensesWithTags(word: String) : List<WordReviewWithSensesAndTags>
 
+
+    @Transaction
+    @Query("SELECT * FROM word_sense WHERE senseId=:senseId")
+    suspend fun getSenseWithDefinitionsAndTags(senseId: String) : List<WordSenseWithTagsAndDefinitions>
+
     @Transaction
     @Query("SELECT * FROM word_review WHERE word=:word")
     suspend fun getWordTags(word: String) : List<WordWithTags>
 
     @Query("DELETE FROM word_review")
     suspend fun deleteAllReviews()
+
+    @Query("SELECT * FROM word_sense_tag WHERE senseId=:senseId")
+    suspend fun getWordSenseTags(senseId: String) : List<WordSenseTagDb>
+
+    @Query("SELECT * FROM word_sense_definition WHERE senseId=:senseId")
+    suspend fun getWordSenseDefinitions(senseId: String) : List<WordSenseDefinitionDb>
 
     @Query("DELETE FROM word_definition")
     suspend fun deleteAllDefinitions()
@@ -129,7 +167,13 @@ interface ReviewDao : DatabaseDao{
     suspend fun addWordTag(tag: WordTag)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun addWordTags(vararg tags: WordTag)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addWordDefinition(definition: WordDefinition)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun addWordDefinitions(vararg definitions: WordDefinition)
 
     @Delete
     suspend fun deleteWordReview(word: WordReviewModel)
@@ -138,7 +182,13 @@ interface ReviewDao : DatabaseDao{
     suspend fun deleteWordTag(tag: WordTag)
 
     @Delete
+    suspend fun deleteWordTags(vararg tags: WordTag)
+
+    @Delete
     suspend fun deleteWordDefinition(definition: WordDefinition)
+
+    @Delete
+    suspend fun deleteWordDefinitions(vararg definitions: WordDefinition)
 
     @Update
     suspend fun updateWordReviewItem(wordModel: WordReviewModel)

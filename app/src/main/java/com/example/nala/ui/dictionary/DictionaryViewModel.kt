@@ -160,28 +160,28 @@ class DictionaryViewModel @Inject constructor(
     }
 
     fun addWordToReview() {
-        addedToReview.value = false
         viewModelScope.launch{
+            addedToReview.value = false
             reviewRepository.addWordToReview(currentWordModel.value)
-            reviewRepository.addSensesToReview(
-                senses=currentWordModel.value.senses,
-                word=currentWordModel.value.word)
-            reviewRepository.addWordTagsToReview(
-                currentWordModel.value.dataTags, currentWordModel.value.word)
+            addedToReview.value = true
         }
-        addedToReview.value = true
     }
 
     fun addSentenceToReview(word: String, sentence: String) {
-        addedToReview.value = false
         viewModelScope.launch{
+            addedToReview.value = false
             val reviewModel = SentenceReviewModel(
                 sentence = sentence,
                 targetWord = word,
             )
+            val cachedWord = reviewRepository.getWordReview(word)
+            if(cachedWord == null) {
+                searchWord()
+                reviewRepository.addWordToReview(currentWordModel.value)
+            }
             reviewRepository.addSentenceToReview(reviewModel)
+            addedToReview.value = true
         }
-        addedToReview.value = true
     }
 
     fun addKanjiToReview(kanjiModel: KanjiModel) {
@@ -207,13 +207,15 @@ class DictionaryViewModel @Inject constructor(
         }
     }
 
-    fun setCurrentWordFromReview(wordReviewModel: WordReviewModel) {
+    fun setCurrentWordFromReview(wordReviewModel: WordReviewModel?) {
         viewModelScope.launch {
             searchLoading.value = true
-            val model = reviewRepository.getWordData(wordReviewModel)
-            currentWordModel.value = model
-            currentSentence.value = ""
-            searchLoading.value = false
+            wordReviewModel?.let{
+                val model = reviewRepository.getWordData(wordReviewModel)
+                currentWordModel.value = model
+                currentSentence.value = ""
+                searchLoading.value = false
+            }
         }
     }
 

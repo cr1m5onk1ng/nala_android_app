@@ -10,6 +10,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.findNavController
 import com.example.nala.ui.CustomFragment
 import com.example.nala.ui.composables.DictionaryDetailScreen
+import com.example.nala.ui.review.ReviewViewModel
 import com.example.nala.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -17,6 +18,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class DictionaryDetailFragment : CustomFragment() {
 
     private val viewModel: DictionaryViewModel by activityViewModels()
+    private val reviewViewModel: ReviewViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,6 +38,7 @@ class DictionaryDetailFragment : CustomFragment() {
                         setCurrentStory = viewModel::setCurrentStory,
                         unsetSharedWord = viewModel::unsetSharedText,
                         addToReview =  viewModel::addWordToReview,
+                        loadWordReviews = reviewViewModel::loadWordReviewItems,
                         scaffoldState = scaffoldState,
                         showSnackbar = {showSnackbar(scaffoldState, message="Added to review")}
                     )

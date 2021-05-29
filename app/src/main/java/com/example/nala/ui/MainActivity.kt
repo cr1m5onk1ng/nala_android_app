@@ -107,6 +107,7 @@ class MainActivity : AppCompatActivity() {
                             setCurrentStory = viewModel::setCurrentStory,
                             unsetSharedWord = viewModel::unsetSharedText,
                             addToReview =  viewModel::addWordToReview,
+                            loadWordReviews = reviewViewModel::loadWordReviewItems,
                             scaffoldState = scaffoldState,
                             showSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
                         )
@@ -173,6 +174,7 @@ class MainActivity : AppCompatActivity() {
                             onWordAdd = studyViewModel::setStudyTargetWord,
                             onWordSelect = studyViewModel::setSelectedWord,
                             addSentenceToReview = viewModel::addSentenceToReview,
+                            loadSentenceReviews = reviewViewModel::loadSentenceReviewItems,
                             unsetSharedSentence = viewModel::unsetSharedSentence,
                             showSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
                             scaffoldState = scaffoldState,
@@ -194,6 +196,7 @@ class MainActivity : AppCompatActivity() {
                             wordLoading = studyViewModel.wordModelLoading.value,
                             sentencesLoading = studyViewModel.similarSentencesLoading.value,
                             addSentenceToReview = viewModel::addSentenceToReview,
+                            loadSentenceReviews = reviewViewModel::loadSentenceReviewItems,
                             loadSimilarSentences = studyViewModel::loadSimilarSentences,
                             scaffoldState = scaffoldState,
                             showReviewSnackbar = {showSnackbar(scaffoldState, message="Added to review")},

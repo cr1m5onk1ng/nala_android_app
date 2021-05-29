@@ -1,8 +1,8 @@
 package com.example.nala.repository
 
+import android.util.Log
 import com.example.nala.db.dao.ReviewDao
 import com.example.nala.db.models.review.*
-import com.example.nala.db.models.review.mappers.*
 import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.domain.model.dictionary.Sense
 import com.example.nala.domain.model.kanji.KanjiModel
@@ -15,7 +15,6 @@ class ReviewRepositoryImpl @Inject constructor(
     private val reviewDao: ReviewDao,
 ) : ReviewRepository {
 
-    private val tagsMapper = WordTagDtoMapper()
 
     override suspend fun getSentenceReviewItem(
         sentence: String,
@@ -111,60 +110,51 @@ class ReviewRepositoryImpl @Inject constructor(
         val kanjiMeanings = kanjiModel.meaning ?: listOf()
         val kanjiOnReadings = kanjiModel.onReadings ?: listOf()
         val kanjiKunReadings = kanjiModel.kunReadings ?: listOf()
-        kanjiMeanings.forEach {
-            val meaningDto = KanjiMeanings(
-                kanji = kanjiModel.kanji,
-                meaning = it
-            )
-            reviewDao.insertKanjiMeaning(meaningDto)
-        }
+        addKanjiMeaningsToReview(kanjiMeanings, kanjiModel.kanji)
+        addKanjiOnReadingsToReview(kanjiOnReadings, kanjiModel.kanji)
+        addKanjiKunReadingsToReview(kanjiKunReadings, kanjiModel.kanji)
+        addKanjiMeaningsToReview(kanjiMeanings, kanjiModel.kanji)
 
-        kanjiOnReadings.forEach {
-            val onReadingDto = KanjiOn(
-                kanji = kanjiModel.kanji,
-                onReading = it
-            )
-            reviewDao.insertKanjiOnReading(onReadingDto)
-        }
-
-        kanjiKunReadings.forEach {
-            val kunReadingDto = KanjiKun(
-                kanji = kanjiModel.kanji,
-                kunReading = it
-            )
-            reviewDao.insertKanjiKunReading(kunReadingDto)
-        }
         reviewDao.insertKanjiReview(kanjiReviewDao)
     }
 
     override suspend fun addKanjiMeaningsToReview(meanings: List<String>, kanji: String) {
+        val meaningsList: MutableList<KanjiMeanings> = mutableListOf()
         meanings.forEach {
             val meaningDao = KanjiMeanings(
                 kanji = kanji,
                 meaning = it
             )
-            reviewDao.insertKanjiMeaning(meaningDao)
+            meaningsList.add(meaningDao)
+            //reviewDao.insertKanjiMeaning(meaningDao)
         }
+        reviewDao.insertKanjiMeanings(*meaningsList.toTypedArray())
     }
 
     override suspend fun addKanjiKunReadingsToReview(readings: List<String>, kanji: String) {
+        val readingsList = mutableListOf<KanjiKun>()
         readings.forEach {
             val kunDao = KanjiKun(
                 kanji = kanji,
                 kunReading = it
             )
-            reviewDao.insertKanjiKunReading(kunDao)
+            readingsList.add(kunDao)
+            //reviewDao.insertKanjiKunReading(kunDao)
         }
+        reviewDao.insertKanjiKunReadings(*readingsList.toTypedArray())
     }
 
     override suspend fun addKanjiOnReadingsToReview(readings: List<String>, kanji: String) {
+        val readingsList = mutableListOf<KanjiOn>()
         readings.forEach {
             val onDao = KanjiOn(
                 kanji = kanji,
                 onReading = it
             )
-            reviewDao.insertKanjiOnReading(onDao)
+            readingsList.add(onDao)
+            //reviewDao.insertKanjiOnReading(onDao)
         }
+        reviewDao.insertKanjiOnReadings(*readingsList.toTypedArray())
     }
 
     override suspend fun removeKanjiReviewItem(kanjiModel: KanjiReviewModel) {
@@ -205,32 +195,74 @@ class ReviewRepositoryImpl @Inject constructor(
             common = wordModel.common,
         )
         reviewDao.addWordReview(wordReview)
+        addWordTagsToReview(wordModel.dataTags, wordModel.word)
+        addWordSensesToReview(wordModel.senses, wordModel.word)
     }
 
     override suspend fun addWordTagsToReview(tags: List<String>, word: String) {
+        val tagsList = mutableListOf<WordTag>()
         tags.forEach {
             val tagDto = WordTag(
                 word = word,
                 tag = it,
             )
-            reviewDao.addWordTag(tagDto)
+            tagsList.add(tagDto)
+            //reviewDao.addWordTag(tagDto)
         }
+        reviewDao.addWordTags(*tagsList.toTypedArray())
     }
 
-    override suspend fun addSensesToReview(senses: List<Sense>, word: String) {
-        senses.forEach {
+    override suspend fun addWordSensesToReview(senses: List<Sense>, word: String) {
+        Log.d("DBDEBUG", "Senses: $senses")
+        val senseList = mutableListOf<WordSenseDb>()
+        senses.forEach { sense ->
+            val senseId = UUID.randomUUID().toString()
             val sensesDto = WordSenseDb(
-                senseId = UUID.randomUUID().toString(),
+                senseId = senseId,
                 word = word,
-                pos = it.partsOfSpeech?.first() ?: ""
+                pos = sense.partsOfSpeech?.first() ?: ""
             )
-            reviewDao.insertWordSense(sensesDto)
+            Log.d("DBDEBUG", "Added Sense: $sensesDto")
+            senseList.add(sensesDto)
+            addSenseTagsToReview(sense, senseId)
+            addSenseDefinitionsToReview(sense, senseId)
+            //reviewDao.insertWordSense(sensesDto)
         }
-
+        reviewDao.insertWordSenses(*senseList.toTypedArray())
     }
 
-    override suspend fun getWordReview(word: String): WordReviewModel {
-        return reviewDao.getReview(word).first()
+    override suspend fun addSenseTagsToReview(sense: Sense, senseId: String) {
+        val tagsList = mutableListOf<WordSenseTagDb>()
+        sense.tags?.forEach{
+            val tag = WordSenseTagDb(
+                senseId = senseId,
+                tag = it
+            )
+            Log.d("DBDEBUG", "Added sense tag: $tag")
+            tagsList.add(tag)
+            //reviewDao.insertWordSenseTag(tag)
+        }
+        reviewDao.insertWordSenseTags(*tagsList.toTypedArray())
+    }
+
+    override suspend fun addSenseDefinitionsToReview(sense: Sense, senseId: String) {
+        val defsList = mutableListOf<WordSenseDefinitionDb>()
+        sense.englishDefinitions?.forEach{
+            val def = WordSenseDefinitionDb(
+                senseId = senseId,
+                definition = it
+            )
+            Log.d("DBDEBUG", "Added sense definition: $def")
+            defsList.add(def)
+            //reviewDao.insertWordSenseDefinition(def)
+        }
+        reviewDao.insertWordSenseDefinitions(*defsList.toTypedArray())
+    }
+
+    // BUG - Reviews might be empty
+    override suspend fun getWordReview(word: String): WordReviewModel? {
+        val review = reviewDao.getReview(word)
+        return if(review.isNotEmpty()) review.first() else null
     }
 
     override suspend fun getWordReviews(): List<WordReviewModel> {
@@ -241,6 +273,21 @@ class ReviewRepositoryImpl @Inject constructor(
         return reviewDao.getNReviews(n)
     }
 
+    private suspend fun getWordSenses(word: String): List<Sense> {
+        val wordSenses = reviewDao.getWordSenses(word).first()
+        val sensesDb = wordSenses.wordReviewSenses
+        return sensesDb.map { sense ->
+            val tags = reviewDao.getWordSenseTags(sense.senseId)
+            val definitions = reviewDao.getWordSenseDefinitions(sense.senseId)
+            Sense(
+                englishDefinitions = definitions?.map{it.definition},
+                tags = tags?.map{it.tag},
+                partsOfSpeech = listOf(sense.pos),
+            )
+        }
+    }
+
+    // TODO NEED TO MAP SENSES CORRECTLY
     override suspend fun getWordData(wordReview: WordReviewModel): DictionaryModel {
         val senses = getWordSenses(wordReview.word)
         val tags = getWordTags(wordReview.word)
@@ -278,19 +325,6 @@ class ReviewRepositoryImpl @Inject constructor(
 
     override suspend fun removeWordReview(wordReview: WordReviewModel) {
         reviewDao.deleteWordReview(wordReview)
-    }
-
-    private suspend fun getWordSenses(word: String): List<Sense> {
-        val wordSenseDefinitions = reviewDao.getWordSensesWithDefinitions(word).first()
-        val sensesDb = wordSenseDefinitions.sensesWithDefinitions
-        return sensesDb.map {
-            val sense = it.wordSense
-            val definitions = it.wordSenseDefinitions
-            Sense(
-                englishDefinitions = definitions.map{it.definition},
-                partsOfSpeech = listOf(sense.pos),
-            )
-        }
     }
 
     private suspend fun getWordTags(word: String): List<String> {

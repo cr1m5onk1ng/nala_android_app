@@ -11,11 +11,13 @@ import androidx.navigation.findNavController
 import com.example.nala.ui.CustomFragment
 import com.example.nala.ui.composables.StudyScreen
 import com.example.nala.ui.dictionary.DictionaryViewModel
+import com.example.nala.ui.review.ReviewViewModel
 
 class StudyScreenFragment : CustomFragment() {
 
     private val viewModel: DictionaryViewModel by activityViewModels()
     private val studyViewModel: StudyViewModel by activityViewModels()
+    private val reviewViewModel: ReviewViewModel by activityViewModels()
     private val sentence = "昨日の夜遅く テレビで\n" +
             "やっていた映画を見たんだ\n" +
             "未来の世界を舞台にした\n" +
@@ -39,6 +41,7 @@ class StudyScreenFragment : CustomFragment() {
                     wordLoading = studyViewModel.wordModelLoading.value,
                     sentencesLoading = studyViewModel.similarSentencesLoading.value,
                     addSentenceToReview = viewModel::addSentenceToReview,
+                    loadSentenceReviews = reviewViewModel::loadSentenceReviewItems,
                     loadSimilarSentences = studyViewModel::loadSimilarSentences,
                     scaffoldState = scaffoldState,
                     showReviewSnackbar = {showSnackbar(scaffoldState, message="Added to review")},

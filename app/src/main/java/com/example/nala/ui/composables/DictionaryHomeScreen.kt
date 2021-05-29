@@ -128,7 +128,6 @@ fun HomeScreen(
                             Card(
                                 modifier = Modifier
                                     .padding(8.dp)
-                                    .background(color = Color.Transparent)
                                     .alpha(0.9F)
                                     .clickable {
                                         onQueryChange(word)
@@ -136,6 +135,7 @@ fun HomeScreen(
                                         onQueryChange("")
                                         navController.navigate("detail_screen")
                                     },
+                                backgroundColor = Blue400,
                                 shape = RoundedCornerShape(18.dp),
                                 contentColor = Blue500,
                                 elevation = 3.dp,

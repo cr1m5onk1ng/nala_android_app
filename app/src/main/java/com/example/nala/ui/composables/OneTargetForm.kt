@@ -45,6 +45,7 @@ fun OneTargetForm(
     onWordSelect: (String) -> Unit,
     unsetSharedSentence: () -> Unit,
     addSentenceToReview: (String, String) -> Unit,
+    loadSentenceReviews: () -> Unit,
     navController: NavController,
     scaffoldState: ScaffoldState,
     showSnackbar: (ScaffoldState) -> Unit
@@ -160,6 +161,7 @@ fun OneTargetForm(
                                     onCLick = {
                                         addSentenceToReview(selectedWord, sentence)
                                         showSnackbar(scaffoldState)
+                                        loadSentenceReviews()
                                     },
                                     height = 50.dp,
                                 )
