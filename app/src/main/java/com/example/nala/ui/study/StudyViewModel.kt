@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.repository.DictionaryRepository
+import com.example.nala.repository.ReviewRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -13,7 +14,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class StudyViewModel @Inject constructor(
-    private val dictionaryRepository: DictionaryRepository
+    private val dictionaryRepository: DictionaryRepository,
+    private val reviewRepository: ReviewRepository,
 ) : ViewModel() {
 
     val currentStudyContext: MutableState<String> = mutableStateOf("")
@@ -64,7 +66,13 @@ class StudyViewModel @Inject constructor(
     fun setStudyTargetWord(word: String) {
         viewModelScope.launch {
             wordModelLoading.value = true
-            val wordModel = dictionaryRepository.search(word)
+            var wordModel: DictionaryModel
+            val cachedWord = reviewRepository.getWordReview(word)
+            wordModel = if(cachedWord == null){
+                dictionaryRepository.search(word)
+            } else {
+                reviewRepository.getWordData(cachedWord)
+            }
             currentStudyTargetWord.value = wordModel
             wordModelLoading.value = false
         }

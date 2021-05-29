@@ -55,7 +55,8 @@ fun ReviewListScreen(
     loadSentenceReviews: () -> Unit,
     loadKanjiReviews: () -> Unit,
     setWordItem: (WordReviewModel) -> Unit,
-    setSentenceItem: (String, String) -> Unit,
+    setSentenceItem: (String) -> Unit,
+    setTargetWordItem: (String) -> Unit,
     setKanjiItem: (String) -> Unit,
     removeWordReview: (WordReviewModel) -> Unit,
     removeSentenceReview: (SentenceReviewModel) -> Unit,
@@ -174,6 +175,7 @@ fun ReviewListScreen(
                                         SentenceReviewCard(
                                             sentenceReviewItems[index],
                                             setSentenceItem,
+                                            setTargetWordItem,
                                             updateSentenceReviewItem,
                                             removeSentenceReview,
                                             dismissSentenceReview,
@@ -298,7 +300,8 @@ fun KanjiReviewCard(
 @Composable
 fun SentenceReviewCard(
     item: SentenceReviewModel,
-    setSentenceItem: (String, String) -> Unit,
+    setSentenceItem: (String) -> Unit,
+    setTargetWordItem: (String) -> Unit,
     updateSentenceReviewItem: (quality: Int, sentenceReview: SentenceReviewModel) -> Unit,
     removeSentenceReview: (SentenceReviewModel) -> Unit,
     dismissSentenceReview: (String) -> Unit,
@@ -314,8 +317,9 @@ fun SentenceReviewCard(
             .fillMaxWidth()
             .padding(16.dp)
             .clickable {
-                setSentenceItem(item.targetWord, item.sentence)
-                navController.navigate("detail_screen")
+                setSentenceItem(item.sentence)
+                setTargetWordItem(item.targetWord)
+                navController.navigate("study_screen")
             },
         backgroundColor = Color.White,
         shape = RoundedCornerShape(18.dp),

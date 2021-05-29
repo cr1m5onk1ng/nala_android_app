@@ -176,8 +176,10 @@ class DictionaryViewModel @Inject constructor(
             )
             val cachedWord = reviewRepository.getWordReview(word)
             if(cachedWord == null) {
-                searchWord()
-                reviewRepository.addWordToReview(currentWordModel.value)
+                val word = dictRepository.search(query.value.toLowerCase())
+                if(!word.isEmpty()) {
+                    reviewRepository.addWordToReview(word)
+                }
             }
             reviewRepository.addSentenceToReview(reviewModel)
             addedToReview.value = true

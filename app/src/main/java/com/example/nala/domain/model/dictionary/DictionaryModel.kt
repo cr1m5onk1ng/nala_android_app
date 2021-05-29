@@ -21,4 +21,8 @@ class DictionaryModel (
             )
         }
     }
+
+    fun isEmpty() : Boolean{
+        return word.isEmpty()
+    }
 }

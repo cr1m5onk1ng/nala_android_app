@@ -51,12 +51,7 @@ fun DictionaryDetailScreen(
     ) { paddingValue ->
         if(isLoading){
             LoadingIndicator()
-        } else if(wordModel.word.isEmpty()) {
-            ErrorScreen(
-                text = "No word found in Jisho dictionary",
-                subtitle = "¯\\_(ツ)_/¯"
-            )
-        } else {
+        }  else {
             ConstraintLayout(
                 modifier = Modifier.padding(paddingValue)
             ) {
@@ -75,22 +70,27 @@ fun DictionaryDetailScreen(
                             cleanupFunction = { unsetSharedWord() }
                         )
                     }
-
-                    LazyColumn{
-                        item() {
-                            DataSection(
-                                wordModel,
-                                sentence = sentence,
-                                navController,
-                                kanjiDict,
-                                setCurrentKanji,
-                                setCurrentStory,
-                                addToReview,
-                                loadWordReviews,
-                                scaffoldState,
-                                showSnackbar
-                            )
-
+                    if(wordModel.word.isEmpty()) {
+                        ErrorScreen(
+                            text = "No word found in Jisho dictionary",
+                            subtitle = "¯\\_(ツ)_/¯")
+                    }
+                    else{
+                        LazyColumn{
+                            item() {
+                                DataSection(
+                                    wordModel,
+                                    sentence = sentence,
+                                    navController,
+                                    kanjiDict,
+                                    setCurrentKanji,
+                                    setCurrentStory,
+                                    addToReview,
+                                    loadWordReviews,
+                                    scaffoldState,
+                                    showSnackbar
+                                )
+                            }
                         }
                     }
                 }

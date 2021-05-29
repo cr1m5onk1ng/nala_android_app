@@ -12,13 +12,14 @@ import androidx.navigation.findNavController
 import com.example.nala.ui.CustomFragment
 import com.example.nala.ui.composables.ReviewListScreen
 import com.example.nala.ui.dictionary.DictionaryViewModel
+import com.example.nala.ui.study.StudyViewModel
 import com.example.nala.ui.theme.AppTheme
 
 class ReviewFragment : CustomFragment() {
 
     private val viewModel: DictionaryViewModel by activityViewModels()
-
     private val reviewViewModel: ReviewViewModel by activityViewModels()
+    private val studyViewModel: StudyViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,7 +42,8 @@ class ReviewFragment : CustomFragment() {
                         loadSentenceReviews = reviewViewModel::loadSentenceReviewItems,
                         loadKanjiReviews =reviewViewModel::loadKanjiReviewItems,
                         setWordItem = viewModel::setCurrentWordFromReview,
-                        setSentenceItem = viewModel::setCurrentSentenceFromReview,
+                        setSentenceItem = studyViewModel::setStudyContext,
+                        setTargetWordItem = studyViewModel::setStudyTargetWord,
                         setKanjiItem = viewModel::setCurrentKanji,
                         removeWordReview = reviewViewModel::removeWordReviewItem,
                         removeSentenceReview = reviewViewModel::removeSentenceReviewItem,
