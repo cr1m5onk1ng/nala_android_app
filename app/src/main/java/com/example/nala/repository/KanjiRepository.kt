@@ -1,7 +1,9 @@
 package com.example.nala.repository
 
 import android.content.Context
+import com.example.nala.db.models.kanji.KanjiDictDbModel
 import com.example.nala.domain.model.kanji.KanjiCollection
+import com.example.nala.domain.model.kanji.KanjiModel
 import com.example.nala.domain.model.kanji.StoriesCollection
 import java.io.IOException
 
@@ -32,4 +34,14 @@ interface KanjiRepository {
     suspend fun getKanjiDict (context: Context): KanjiCollection
 
     suspend fun getKanjiStories(context: Context): StoriesCollection
+
+    suspend fun getKanjiModel(kanji: String) : KanjiModel
+
+    suspend fun getKanjiStory(kanji: String) : String
+
+    suspend fun getKanjis() : List<KanjiDictDbModel>
+
+    suspend fun populateKanjiDatabase(
+        kanjiCollection: KanjiCollection,
+        storiesCollection: StoriesCollection)
 }

@@ -46,7 +46,6 @@ class DictionaryViewModel @Inject constructor(
 
     val currentSentence: MutableState<String> = mutableStateOf("")
 
-
     val query: MutableState<String> = mutableStateOf("")
 
     val sharedSentence: MutableState<String> = mutableStateOf("")
@@ -59,6 +58,10 @@ class DictionaryViewModel @Inject constructor(
 
     val searchLoading: MutableState<Boolean> = mutableStateOf(false)
 
+    val kanjiSet: MutableState<Boolean> = mutableStateOf(false)
+
+    val storySet: MutableState<Boolean> = mutableStateOf(false)
+
     // BOTTOM BAR STATE
 
     val isHomeSelected: MutableState<Boolean> = mutableStateOf(true)
@@ -70,21 +73,38 @@ class DictionaryViewModel @Inject constructor(
     val currentKanji: MutableState<KanjiModel> = mutableStateOf(
         KanjiModel.Empty())
 
+    val currentWordKanjis: MutableState<List<String>> = mutableStateOf(listOf())
+
     val currentStory: MutableState<String> = mutableStateOf("")
 
-   val mightForgetItems: MutableState<List<WordReviewModel>> = mutableStateOf(listOf())
+    val mightForgetItems: MutableState<List<WordReviewModel>> = mutableStateOf(listOf())
 
-    lateinit var kanjiDict: KanjiCollection
-
-    lateinit var storiesDict: StoriesCollection
+    //lateinit var kanjiDict: HashSet<String>
+    //lateinit var storiesDict: StoriesCollection
 
 
     init{
-
+        /*
         viewModelScope.launch {
             kanjiDict = kanjiRepository.getKanjiDict(appContext)
             storiesDict = kanjiRepository.getKanjiStories(appContext)
+            kanjiRepository.populateKanjiDatabase(
+                kanjiDict,
+                storiesDict,
+            )
         }
+
+        //TODO FIND A BETTER WAY
+        viewModelScope.launch {
+            val kanjis = kanjiRepository.getKanjis()
+            val kanjiSet = HashSet<String>()
+            kanjis.forEach { kanji ->
+                kanjiSet.add(kanji.kanji)
+            }
+            kanjiDict = kanjiSet
+        }
+         */
+
 
         viewModelScope.launch {
             mightForgetItemsLoaded.value = false
@@ -92,8 +112,8 @@ class DictionaryViewModel @Inject constructor(
             mightForgetItems.value = lastItems
             mightForgetItemsLoaded.value = true
         }
-
     }
+
 
     fun toggleHome(value: Boolean) {
         isHomeSelected.value = value
@@ -132,12 +152,40 @@ class DictionaryViewModel @Inject constructor(
     }
 
     fun setCurrentKanji(kanji: String)  {
+        /*
         val kanjiModel = kanjiDict.kanjis[kanji] ?: KanjiModel.Empty()
         currentKanji.value = kanjiModel
+        */
+        viewModelScope.launch {
+            kanjiSet.value = false
+            currentKanji.value = kanjiRepository.getKanjiModel(kanji)
+            kanjiSet.value = true
+        }
+    }
+
+    fun setCurrentWordKanjis(word: String) {
+        viewModelScope.launch {
+            val kanjiList = mutableListOf<String>()
+            for(k in word) {
+                Log.d("KANJIDEBUG", "Searched character: $k")
+                val kanji = kanjiRepository.getKanjiModel(k.toString())
+                Log.d("KANJIDEBUG", "Retrieved Kanji: $kanji")
+                if (!kanji.isEmpty()){
+                    kanjiList.add(kanji.kanji)
+                }
+            }
+            Log.d("KANJIDEBUG", "KANJI LIST: $kanjiList")
+            currentWordKanjis.value = kanjiList
+        }
     }
 
     fun setCurrentStory(kanji: String)  {
-        currentStory.value = storiesDict.stories?.get(kanji) ?: ""
+        //currentStory.value = storiesDict.stories?.get(kanji) ?: ""
+        viewModelScope.launch {
+            storySet.value = false
+            currentStory.value = kanjiRepository.getKanjiStory(kanji)
+            storySet.value = true
+        }
     }
 
     fun onTriggerEvent(event: DictionaryEvent) {
@@ -189,15 +237,6 @@ class DictionaryViewModel @Inject constructor(
     fun addKanjiToReview(kanjiModel: KanjiModel) {
         viewModelScope.launch{
             addedToReview.value = false
-            //val kanjiModel = kanjiDict.kanjis[kanji]
-            /*
-            val kanjiReview = KanjiReviewModel(
-                kanji = kanjiModel?.kanji ?: "",
-                freq = kanjiModel?.freq ?: "",
-                grade = kanjiModel?.grade ?: "",
-                jlpt = kanjiModel?.jlpt ?: "",
-                strokes = null,
-            )*/
             val meanings = kanjiModel?.meaning ?: listOf()
             val kunReadings = kanjiModel?.kunReadings ?: listOf()
             val onReadings = kanjiModel?.onReadings ?: listOf()
@@ -235,6 +274,7 @@ class DictionaryViewModel @Inject constructor(
         searchLoading.value = true
         val dictModel = dictRepository.search(query.value.toLowerCase())
         currentWordModel.value = dictModel
+        setCurrentWordKanjis(dictModel.word)
         searchLoading.value = false
     }
 }

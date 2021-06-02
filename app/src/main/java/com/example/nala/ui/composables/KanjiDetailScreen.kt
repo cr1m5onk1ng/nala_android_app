@@ -25,62 +25,69 @@ import com.example.nala.ui.theme.Quicksand
 fun KanjiDetailScreen(
     kanji: KanjiModel,
     story: String,
+    kanjiSet: Boolean,
+    storySet: Boolean,
     addKanjiToReview: (KanjiModel) -> Unit,
     navController: NavController,
     scaffoldState: ScaffoldState,
     showSnackbar: () -> Unit,
 ) {
     ConstraintLayout {
-        LazyColumn (
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-        ){
-            item() {
-                Column() {
-                    var tags: MutableList<String> = mutableListOf()
-                    var freq = kanji?.freq ?: ""
-                    if(freq.isNotEmpty()) {
-                        freq = "frequency: $freq"
-                        tags.add(freq)
-                    }
+        if (!kanjiSet || !storySet) {
+            LoadingIndicator()
+        }
+        else {
+            LazyColumn (
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+            ){
+                item() {
+                    Column() {
+                        var tags: MutableList<String> = mutableListOf()
+                        var freq = kanji?.freq ?: ""
+                        if(freq.isNotEmpty()) {
+                            freq = "frequency: $freq"
+                            tags.add(freq)
+                        }
 
-                    var jlpt = kanji?.jlpt ?: ""
-                    if(jlpt.isNotEmpty()) {
-                        jlpt = "jlptn-$jlpt"
-                        tags.add(jlpt)
-                    }
+                        var jlpt = kanji?.jlpt ?: ""
+                        if(jlpt.isNotEmpty()) {
+                            jlpt = "jlptn-$jlpt"
+                            tags.add(jlpt)
+                        }
 
-                    var grade = kanji?.grade ?: ""
-                    if(grade.isNotEmpty()) {
-                        grade = "grade: $grade"
-                        tags.add(grade)
-                    }
+                        var grade = kanji?.grade ?: ""
+                        if(grade.isNotEmpty()) {
+                            grade = "grade: $grade"
+                            tags.add(grade)
+                        }
 
-                    // SECTIONS
-                    Spacer(modifier = Modifier.padding(vertical = 16.dp))
-                    BackButton(navController)
-                    Spacer(modifier = Modifier.padding(vertical = 16.dp))
-                    KanjiSection(kanji = kanji.kanji)
-                    //Spacer(modifier = Modifier.padding(bottom = 8.dp))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        horizontalArrangement = Arrangement.Center,
-                    ){
-                        AddToReviewButton(
-                            scaffoldState = scaffoldState,
-                            addToReview = {
-                                addKanjiToReview(kanji)
-                                showSnackbar()
-                            },
-                            onShowSnackbar = {showSnackbar()}
-                        )
+                        // SECTIONS
+                        Spacer(modifier = Modifier.padding(vertical = 16.dp))
+                        BackButton(navController)
+                        Spacer(modifier = Modifier.padding(vertical = 16.dp))
+                        KanjiSection(kanji = kanji.kanji)
+                        //Spacer(modifier = Modifier.padding(bottom = 8.dp))
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            horizontalArrangement = Arrangement.Center,
+                        ){
+                            AddToReviewButton(
+                                scaffoldState = scaffoldState,
+                                addToReview = {
+                                    addKanjiToReview(kanji)
+                                    showSnackbar()
+                                },
+                                onShowSnackbar = {showSnackbar()}
+                            )
+                        }
+                        TagRow(tags = tags)
+                        StorySection(story = story)
+                        DetailsSection(kanji)
                     }
-                    TagRow(tags = tags)
-                    StorySection(story = story)
-                    DetailsSection(kanji)
                 }
             }
         }

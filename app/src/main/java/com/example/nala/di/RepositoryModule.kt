@@ -1,5 +1,6 @@
 package com.example.nala.di
 
+import com.example.nala.db.dao.KanjiDictDao
 import com.example.nala.db.dao.ReviewDao
 import com.example.nala.db.models.review.mappers.KanjiReviewDbDtoMapper
 import com.example.nala.db.models.review.mappers.SentenceReviewDbDtoMapper
@@ -37,11 +38,13 @@ object RepositoryModule {
     @Provides
     fun provideKanjiRepository(
         kanjiMapper: KanjiCollectionDtoMapper,
-        storiesMapper: StoriesCollectionDtoMapper
+        storiesMapper: StoriesCollectionDtoMapper,
+        kanjiDao: KanjiDictDao
     ) : KanjiRepository {
         return KanjiRepositoryImpl(
             kanjiMapper,
-            storiesMapper
+            storiesMapper,
+            kanjiDao,
         )
     }
 

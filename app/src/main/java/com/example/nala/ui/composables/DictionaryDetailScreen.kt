@@ -22,7 +22,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
 import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.domain.model.dictionary.Sense
-import com.example.nala.domain.model.kanji.KanjiCollection
+import com.example.nala.domain.model.kanji.KanjiModel
 import com.example.nala.ui.theme.*
 import kotlin.random.Random
 
@@ -33,7 +33,7 @@ fun DictionaryDetailScreen(
     sentence: String? = null,
     isLoading: Boolean,
     navController: NavController,
-    kanjiDict: KanjiCollection,
+    wordKanjis: List<String>,
     setCurrentKanji: (String) -> Unit,
     setCurrentStory: (String) -> Unit,
     unsetSharedWord: () -> Unit,
@@ -82,7 +82,7 @@ fun DictionaryDetailScreen(
                                     wordModel,
                                     sentence = sentence,
                                     navController,
-                                    kanjiDict,
+                                    wordKanjis,
                                     setCurrentKanji,
                                     setCurrentStory,
                                     addToReview,
@@ -117,7 +117,7 @@ fun DataSection(
     wordModel: DictionaryModel,
     sentence: String? = null,
     navController: NavController,
-    kanjiDict: KanjiCollection,
+    wordKanjis: List<String>,
     setCurrentKanji: (String) -> Unit,
     setCurrentStory: (String) -> Unit,
     addToReview: () -> Unit,
@@ -134,7 +134,7 @@ fun DataSection(
         WordSection(
             reading = wordModel.reading,
             word = wordModel.word,
-            kanjiDict = kanjiDict,
+            wordKanjis = wordKanjis,
             navController,
             setCurrentKanji,
             setCurrentStory,
@@ -161,7 +161,7 @@ fun DataSection(
 fun WordSection(
     reading: String,
     word: String,
-    kanjiDict: KanjiCollection,
+    wordKanjis: List<String>,
     navController: NavController,
     setCurrentKanji: (String) -> Unit,
     setCurrentStory: (String) -> Unit,
@@ -185,7 +185,7 @@ fun WordSection(
         )
         KanjiRow(
             word,
-            kanjiDict,
+            wordKanjis,
             navController,
             setCurrentKanji,
             setCurrentStory,
@@ -196,7 +196,7 @@ fun WordSection(
 @Composable
 fun KanjiRow(
     kanjis: String,
-    kanjiDict: KanjiCollection,
+    wordKanjis: List<String>,
     navController: NavController,
     setCurrentKanji: (String) -> Unit,
     setCurrentStory: (String) -> Unit,
@@ -205,7 +205,7 @@ fun KanjiRow(
     Row() {
         for (kanji in kanjis) {
             val kanjiString = kanji.toString()
-            val isKanji: Boolean = kanjiDict.kanjis.contains(kanjiString)
+            val isKanji: Boolean = wordKanjis.contains(kanjiString)
             Text(
                 kanjiString,
                 modifier = Modifier

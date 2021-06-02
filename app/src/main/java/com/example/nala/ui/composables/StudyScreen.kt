@@ -23,6 +23,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
 import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.domain.model.kanji.KanjiCollection
+import com.example.nala.domain.model.kanji.KanjiModel
 import com.example.nala.ui.theme.*
 
 val specialStyle = SpanStyle(
@@ -44,7 +45,7 @@ fun StudyScreen(
     context: String,
     wordModel: DictionaryModel,
     similarSentences: List<String>,
-    kanjiDict: KanjiCollection,
+    wordKanjis: List<String>,
     navController: NavController,
     contextLoading: Boolean,
     wordLoading: Boolean,
@@ -99,7 +100,7 @@ fun StudyScreen(
                             WordSection(
                                 reading = reading,
                                 word = word,
-                                kanjiDict = kanjiDict,
+                                wordKanjis = wordKanjis,
                                 navController,
                                 setCurrentKanji,
                                 setCurrentStory,

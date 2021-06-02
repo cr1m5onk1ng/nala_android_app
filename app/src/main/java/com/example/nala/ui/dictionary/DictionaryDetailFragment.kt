@@ -33,7 +33,7 @@ class DictionaryDetailFragment : CustomFragment() {
                         viewModel.currentWordModel.value,
                         isLoading = viewModel.searchLoading.value,
                         navController = findNavController(),
-                        kanjiDict = viewModel.kanjiDict,
+                        wordKanjis = viewModel.currentWordKanjis.value,
                         setCurrentKanji = viewModel::setCurrentKanji,
                         setCurrentStory = viewModel::setCurrentStory,
                         unsetSharedWord = viewModel::unsetSharedText,

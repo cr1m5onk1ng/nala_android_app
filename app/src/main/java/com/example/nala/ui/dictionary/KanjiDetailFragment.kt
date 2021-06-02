@@ -28,6 +28,8 @@ class KanjiDetailFragment : CustomFragment() {
                 KanjiDetailScreen(
                     kanji = viewModel.currentKanji.value,
                     story = viewModel.currentStory.value,
+                    kanjiSet = viewModel.kanjiSet.value,
+                    storySet = viewModel.storySet.value,
                     addKanjiToReview = viewModel::addKanjiToReview,
                     navController = findNavController(),
                     scaffoldState = scaffoldState,

@@ -2,7 +2,9 @@ package com.example.nala.di
 
 import android.content.Context
 import androidx.room.Room
+import com.example.nala.db.KanjiDatabase
 import com.example.nala.db.ReviewDatabase
+import com.example.nala.db.dao.KanjiDictDao
 import com.example.nala.db.dao.ReviewDao
 import com.example.nala.db.models.review.mappers.KanjiReviewDbDtoMapper
 import com.example.nala.db.models.review.mappers.SentenceReviewDbDtoMapper
@@ -51,6 +53,25 @@ object DatabaseModule {
     @Provides
     fun provideKanjiReviewMapper(reviewDao: ReviewDao) : KanjiReviewDbDtoMapper {
         return KanjiReviewDbDtoMapper(reviewDao)
+    }
+
+    @Singleton
+    @Provides
+    fun provideKanjiDatabase(@ApplicationContext context: Context) : KanjiDatabase {
+        return Room.databaseBuilder(
+            context,
+            KanjiDatabase::class.java,
+            KanjiDatabase.DATABASE_NAME
+        )
+            .createFromAsset("database/kanji_database.db")
+            .fallbackToDestructiveMigration()
+            .build()
+    }
+
+    @Singleton
+    @Provides
+    fun provideKanjiDao(kanjiDatabase: KanjiDatabase) : KanjiDictDao {
+        return kanjiDatabase.kanjiDao()
     }
 
     /*

@@ -4,15 +4,15 @@ import com.example.nala.domain.model.DomainModel
 
 
 data class KanjiModel(
-    val freq: String?,
-    val grade: String?,
-    val jlpt: String?,
+    val freq: String? = null,
+    val grade: String? = null,
+    val jlpt: String? = null,
     val kanji: String,
-    val meaning: List<String>?,
-    val nameReading: List<String>?,
-    val kunReadings: List<String>?,
-    val onReadings: List<String>?,
-    val strokes: String?
+    val meaning: List<String>? = null,
+    val nameReading: List<String>? = null,
+    val kunReadings: List<String>? = null,
+    val onReadings: List<String>? = null,
+    val strokes: String? = null
 ) : DomainModel() {
     companion object {
         fun Empty() : KanjiModel {
@@ -28,5 +28,9 @@ data class KanjiModel(
                 strokes = null
             )
         }
+    }
+
+    fun isEmpty() : Boolean {
+        return kanji == ""
     }
 }

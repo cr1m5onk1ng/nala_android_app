@@ -17,8 +17,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.findNavController
-import com.example.nala.R
 import com.example.nala.ui.composables.*
 import com.example.nala.ui.dictionary.DictionaryEvent
 import dagger.hilt.android.AndroidEntryPoint
@@ -102,7 +100,7 @@ class MainActivity : AppCompatActivity() {
                             viewModel.currentWordModel.value,
                             isLoading = viewModel.searchLoading.value,
                             navController = navController,
-                            kanjiDict = viewModel.kanjiDict,
+                            wordKanjis = viewModel.currentWordKanjis.value,
                             setCurrentKanji = viewModel::setCurrentKanji,
                             setCurrentStory = viewModel::setCurrentStory,
                             unsetSharedWord = viewModel::unsetSharedText,
@@ -117,6 +115,8 @@ class MainActivity : AppCompatActivity() {
                         KanjiDetailScreen(
                             kanji = viewModel.currentKanji.value,
                             story = viewModel.currentStory.value,
+                            kanjiSet = viewModel.kanjiSet.value,
+                            storySet = viewModel.storySet.value,
                             addKanjiToReview = viewModel::addKanjiToReview,
                             navController = navController,
                             scaffoldState = scaffoldState,
@@ -189,7 +189,7 @@ class MainActivity : AppCompatActivity() {
                             context = studyViewModel.currentStudyContext.value ?: "",
                             wordModel = studyViewModel.currentStudyTargetWord.value,
                             similarSentences = studyViewModel.similarSentences.value,
-                            kanjiDict = viewModel.kanjiDict,
+                            wordKanjis = viewModel.currentWordKanjis.value,
                             navController = navController,
                             setCurrentKanji = viewModel::setCurrentKanji,
                             setCurrentStory = viewModel::setCurrentStory,

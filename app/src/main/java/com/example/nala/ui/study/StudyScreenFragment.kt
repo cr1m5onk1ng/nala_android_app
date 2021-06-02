@@ -33,7 +33,7 @@ class StudyScreenFragment : CustomFragment() {
                     context = studyViewModel.currentStudyContext.value ?: "",
                     wordModel = studyViewModel.currentStudyTargetWord.value,
                     similarSentences = studyViewModel.similarSentences.value,
-                    kanjiDict = viewModel.kanjiDict,
+                    wordKanjis = viewModel.currentWordKanjis.value,
                     navController = findNavController(),
                     setCurrentKanji = viewModel::setCurrentKanji,
                     setCurrentStory = viewModel::setCurrentStory,
