@@ -40,7 +40,7 @@ Home
 | Word                             | Sentence                              |
 | --------------------------------- | --------------------------------- |
 | <img src="screens/app-screeenshot-word-search.png" width="400">  | <img src="screens/app-screenshot-share.png" width="400">  |
-| <img src="screens/app-screenshot-word-detail-2.png" width="400">  | <img src="screens/app-screenshot-one-target-word-screen-2.png" width="400">  |
+| <img src="screens/app-screenshot-word-detail-2.png" width="400">  | <img src="screens/app-screenshot-one-target-form.png" width="400">  |
 | <img src="screens/app-screenshot-added-to-review.png" width="400">  | <img src="screens/app-screenshot-study-screen-music.png" width="400">  |
 | <img src="screens/app-screenshot-kanji-detail.png" width="400">  | <img src="screens/app-screenshot-similar-sentences.png" width="400">  |
 | <img src="screens/app-screenshot-word-reviews.png" width="400">  | <img src="screens/app-screenshot-sentence-reviews.png" width="400"> |
