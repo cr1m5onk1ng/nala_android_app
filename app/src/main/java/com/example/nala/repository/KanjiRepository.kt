@@ -39,6 +39,8 @@ interface KanjiRepository {
 
     suspend fun getKanjiStory(kanji: String) : String
 
+    suspend fun updateKanjiStory(kanji: String, story: String)
+
     suspend fun getKanjis() : List<KanjiDictDbModel>
 
     suspend fun populateKanjiDatabase(

@@ -186,7 +186,7 @@ fun HomeScreen(
                             onSearch = {
                                 onClick()
                                 onQueryChange("")
-                                keyboardController?.hideSoftwareKeyboard()
+                                keyboardController?.hide()
                                 navController.navigate("detail_screen")
                             }
                         )

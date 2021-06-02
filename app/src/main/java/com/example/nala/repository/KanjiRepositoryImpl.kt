@@ -62,6 +62,15 @@ class KanjiRepositoryImpl @Inject constructor(
         return if(result.isNotEmpty()) result.first() else ""
     }
 
+    override suspend fun updateKanjiStory(kanji: String, story: String) {
+        val newStory = KanjiStories(
+            kanji = kanji,
+            story = story,
+        )
+        kanjiDao.updateKanjiStory(newStory)
+    }
+
+
     override suspend fun getKanjis(): List<KanjiDictDbModel> {
         return kanjiDao.getKanjis()
     }

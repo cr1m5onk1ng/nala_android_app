@@ -62,6 +62,8 @@ class DictionaryViewModel @Inject constructor(
 
     val storySet: MutableState<Boolean> = mutableStateOf(false)
 
+    val editStoryFormActive: MutableState<Boolean> = mutableStateOf(false)
+
     // BOTTOM BAR STATE
 
     val isHomeSelected: MutableState<Boolean> = mutableStateOf(true)
@@ -93,16 +95,6 @@ class DictionaryViewModel @Inject constructor(
                 storiesDict,
             )
         }
-
-        //TODO FIND A BETTER WAY
-        viewModelScope.launch {
-            val kanjis = kanjiRepository.getKanjis()
-            val kanjiSet = HashSet<String>()
-            kanjis.forEach { kanji ->
-                kanjiSet.add(kanji.kanji)
-            }
-            kanjiDict = kanjiSet
-        }
          */
 
 
@@ -121,6 +113,10 @@ class DictionaryViewModel @Inject constructor(
 
     fun toggleReviews(value: Boolean) {
         isReviewSelected.value = value
+    }
+
+    fun toggleEditStoryForm(value: Boolean) {
+        editStoryFormActive.value = value
     }
 
     fun setSharedText(text: String?) {
@@ -152,10 +148,6 @@ class DictionaryViewModel @Inject constructor(
     }
 
     fun setCurrentKanji(kanji: String)  {
-        /*
-        val kanjiModel = kanjiDict.kanjis[kanji] ?: KanjiModel.Empty()
-        currentKanji.value = kanjiModel
-        */
         viewModelScope.launch {
             kanjiSet.value = false
             currentKanji.value = kanjiRepository.getKanjiModel(kanji)
@@ -180,7 +172,6 @@ class DictionaryViewModel @Inject constructor(
     }
 
     fun setCurrentStory(kanji: String)  {
-        //currentStory.value = storiesDict.stories?.get(kanji) ?: ""
         viewModelScope.launch {
             storySet.value = false
             currentStory.value = kanjiRepository.getKanjiStory(kanji)
@@ -257,6 +248,12 @@ class DictionaryViewModel @Inject constructor(
                 currentSentence.value = ""
                 searchLoading.value = false
             }
+        }
+    }
+
+    fun updateKanjiStory(kanji: String, story: String) {
+        viewModelScope.launch {
+            kanjiRepository.updateKanjiStory(kanji, story)
         }
     }
 

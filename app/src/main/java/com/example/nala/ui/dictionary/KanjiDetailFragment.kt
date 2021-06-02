@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.material.rememberScaffoldState
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -18,6 +19,7 @@ class KanjiDetailFragment : CustomFragment() {
 
     private val viewModel: DictionaryViewModel by activityViewModels()
 
+    @ExperimentalComposeUiApi
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -30,7 +32,11 @@ class KanjiDetailFragment : CustomFragment() {
                     story = viewModel.currentStory.value,
                     kanjiSet = viewModel.kanjiSet.value,
                     storySet = viewModel.storySet.value,
+                    storyFormActive = viewModel.editStoryFormActive.value,
                     addKanjiToReview = viewModel::addKanjiToReview,
+                    updateKanjiStory = viewModel::updateKanjiStory,
+                    setCurrentStory = viewModel::setCurrentStory,
+                    toggleStoryEditForm = viewModel::toggleEditStoryForm,
                     navController = findNavController(),
                     scaffoldState = scaffoldState,
                     showSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
