@@ -159,9 +159,11 @@ fun OneTargetForm(
                                     text = "Review",
                                     icon = Icons.Rounded.Add,
                                     onCLick = {
-                                        addSentenceToReview(selectedWord, sentence)
-                                        showSnackbar(scaffoldState)
-                                        loadSentenceReviews()
+                                        if (selectedWord.isNotEmpty()) {
+                                            addSentenceToReview(selectedWord, sentence)
+                                            showSnackbar(scaffoldState)
+                                            loadSentenceReviews()
+                                        }
                                     },
                                     height = 50.dp,
                                 )

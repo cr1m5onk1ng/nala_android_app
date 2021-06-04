@@ -76,22 +76,7 @@ fun ReviewListScreen(
     showSnackbar: (ScaffoldState) -> Unit
 ) {
     // the default reviews displayed are word reviews
-    /*
-    if(wordReviewItems.isEmpty() &&
-        sentenceReviewItems.isEmpty() &&
-        kanjiReviewItems.isEmpty()){
-        when(selectedCategory){
-            ReviewCategory.Kanji -> {
-                loadKanjiReviews()
-            }
-            ReviewCategory.Word -> {
-                loadWordReviews()
-            }
-            ReviewCategory.Sentence -> {
-                loadSentenceReviews()
-            }
-        }
-    } */
+
 
     Scaffold(
         bottomBar = {
@@ -133,10 +118,12 @@ fun ReviewListScreen(
                         )
                     )
                 }
-
                 FilterButtonsRow(
                     setCategory = setCategory,
                     selectedCategory,
+                    wordReviewItems = wordReviewItems,
+                    sentenceReviewItems = sentenceReviewItems,
+                    kanjiReviewItems = kanjiReviewItems,
                     loadKanjiReviews = loadKanjiReviews,
                     loadSentenceReviews = loadSentenceReviews,
                     loadWordReviews = loadWordReviews
@@ -270,19 +257,14 @@ fun KanjiReviewCard(
                 isOkChecked = isOkChecked,
                 isKoChecked = isKoChecked,
                 onDismiss = {
-                    if(isOkChecked.value || isKoChecked.value || isEasyChecked.value) {
-                        val quality = if(isEasyChecked.value){
-                            5
-                        }else if(isOkChecked.value) {
-                            3
-                        } else {
-                            1
-                        }
-                        updateKanjiReviewItem(quality, item)
-                        dismissKanjiReview(item.kanji)
-                        isOkChecked.value = false
-                        isKoChecked.value = false
-                    }
+                    val quality = checkBoxLogic(
+                        isOkChecked,
+                        isKoChecked,
+                        isEasyChecked,
+                    )
+                    updateKanjiReviewItem(quality, item)
+                    dismissKanjiReview(item.kanji)
+
                 }
             )
             //BUTTONS SECTION
@@ -294,7 +276,6 @@ fun KanjiReviewCard(
             )
         }
     }
-
 }
 
 @Composable
@@ -355,18 +336,13 @@ fun SentenceReviewCard(
                 isOkChecked = isOkChecked,
                 isKoChecked = isKoChecked,
                 onDismiss = {
-                    if(isOkChecked.value || isKoChecked.value) {
-                        val quality: Int
-                        if(isOkChecked.value){
-                            quality = 4
-                        }else{
-                            quality = 1
-                        }
-                        updateSentenceReviewItem(quality, item)
-                        dismissSentenceReview(item.sentence)
-                        isOkChecked.value = false
-                        isKoChecked.value = false
-                    }
+                    val quality = checkBoxLogic(
+                        isOkChecked,
+                        isKoChecked,
+                        isEasyChecked,
+                    )
+                    updateSentenceReviewItem(quality, item)
+                    dismissSentenceReview(item.sentence)
                 }
             )
             //BUTTONS SECTION
@@ -434,18 +410,13 @@ fun WordReviewCard(
                 isOkChecked = isOkChecked,
                 isKoChecked = isKoChecked,
                 onDismiss = {
-                    if(isOkChecked.value || isKoChecked.value) {
-                        val quality: Int
-                        if(isOkChecked.value){
-                            quality = 4
-                        }else{
-                            quality = 1
-                        }
-                        updateWordReviewItem(quality, item)
-                        dismissWordReview(item.word)
-                        isOkChecked.value = false
-                        isKoChecked.value = false
-                    }
+                    val quality = checkBoxLogic(
+                        isOkChecked,
+                        isKoChecked,
+                        isEasyChecked,
+                    )
+                    updateWordReviewItem(quality, item)
+                    dismissWordReview(item.word)
                 }
             )
             //BUTTONS SECTION
@@ -459,8 +430,25 @@ fun WordReviewCard(
     }
 }
 
-fun checkLogic(){
-
+fun checkBoxLogic(
+    isOkChecked: MutableState<Boolean>,
+    isKoChecked: MutableState<Boolean>,
+    isEasyChecked: MutableState<Boolean>,
+) : Int {
+    var quality: Int = 0
+    if(isOkChecked.value || isKoChecked.value || isEasyChecked.value) {
+        quality = if(isOkChecked.value){
+            4
+        }else if(isEasyChecked.value){
+            5
+        } else {
+            2
+        }
+        isOkChecked.value = false
+        isKoChecked.value = false
+        isEasyChecked.value = false
+    }
+    return quality
 }
 
 @Composable
@@ -588,6 +576,9 @@ fun ButtonsRow(
 fun FilterButtonsRow(
     setCategory: (ReviewCategory) -> Unit,
     selectedCategory: ReviewCategory,
+    wordReviewItems: List<WordReviewModel>,
+    sentenceReviewItems: List<SentenceReviewModel>,
+    kanjiReviewItems: List<KanjiReviewModel>,
     loadWordReviews: () -> Unit,
     loadSentenceReviews: () -> Unit,
     loadKanjiReviews: () -> Unit
@@ -609,7 +600,9 @@ fun FilterButtonsRow(
                                 else Color.White,
             onClick = {
                 setCategory(ReviewCategory.Word)
-                loadWordReviews()
+                if(wordReviewItems.isEmpty()) {
+                    loadWordReviews()
+                }
             }
         )
         TagButton(
@@ -622,7 +615,9 @@ fun FilterButtonsRow(
                                 else Color.White,
             onClick = {
                 setCategory(ReviewCategory.Sentence)
-                loadSentenceReviews()
+                if(sentenceReviewItems.isEmpty()) {
+                    loadSentenceReviews()
+                }
             }
         )
         TagButton(
@@ -635,7 +630,9 @@ fun FilterButtonsRow(
                                 else Color.White,
             onClick = {
                 setCategory(ReviewCategory.Kanji)
-                loadKanjiReviews()
+                if(kanjiReviewItems.isEmpty()) {
+                    loadKanjiReviews()
+                }
             }
         )
     }

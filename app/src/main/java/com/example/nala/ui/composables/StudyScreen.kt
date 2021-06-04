@@ -52,6 +52,7 @@ fun StudyScreen(
     sentencesLoading: Boolean,
     setCurrentKanji: (String) -> Unit,
     setCurrentStory: (String) -> Unit,
+    setSharedSentence: (String) -> Unit,
     addSentenceToReview: (String, String) -> Unit,
     loadSentenceReviews: () -> Unit,
     loadSimilarSentences: () -> Unit,
@@ -158,8 +159,10 @@ fun StudyScreen(
                                             category = "Music",
                                             addSentenceToReview = addSentenceToReview,
                                             loadSentenceReviews = loadSentenceReviews,
+                                            setSharedSentence = setSharedSentence,
                                             showReviewSnackbar = showReviewSnackbar,
                                             showSaveSnackbar = showSaveSnackbar,
+                                            navController = navController,
                                         )
                                     }
                                 }
@@ -192,8 +195,10 @@ fun SentenceCard(
     targetWord: String? = null,
     addSentenceToReview: (String, String) -> Unit,
     loadSentenceReviews: () -> Unit,
+    setSharedSentence: (String) -> Unit,
     showReviewSnackbar: () -> Unit,
     showSaveSnackbar: () -> Unit,
+    navController: NavController,
 
     ) {
     // Examples may or may not contain the target word
@@ -272,15 +277,17 @@ fun SentenceCard(
                     icon = Icons.Rounded.Star,
                 )
                 SmallerButton(
-                    text = "Review",
+                    text = "Study",
                     backgroundColor = LightBlue,
                     onCLick = {
-                        addSentenceToReview(targetWord ?: "", sentence)
-                        showReviewSnackbar()
-                        loadSentenceReviews()
+                        //addSentenceToReview(targetWord ?: "", sentence)
+                        //showReviewSnackbar()
+                        //loadSentenceReviews()
+                        setSharedSentence(sentence)
+                        navController.navigate("sentence_form_screen")
                               },
                     height = 35.dp,
-                    icon = Icons.Rounded.Add,
+                    icon = Icons.Rounded.ArrowForward,
                 )
             }
         }

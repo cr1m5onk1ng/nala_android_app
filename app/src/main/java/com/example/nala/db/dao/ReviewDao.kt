@@ -58,7 +58,7 @@ interface ReviewDao : DatabaseDao{
     @Query("SELECT * FROM kanji_review")
     suspend fun getAllKanjiReviews() : List<KanjiReviewModel>
 
-    @Query("SELECT * FROM kanji_review LIMIT :n")
+    @Query("SELECT * FROM kanji_review ORDER BY interval LIMIT :n")
     suspend fun getNKanjiReviews(n: Int) : List<KanjiReviewModel>
 
     @Transaction
@@ -89,7 +89,7 @@ interface ReviewDao : DatabaseDao{
     @Query("SELECT * FROM sentence_review")
     suspend fun getAllSentenceReviews() : List<SentenceReviewModelDto>
 
-    @Query("SELECT * FROM sentence_review LIMIT :n")
+    @Query("SELECT * FROM sentence_review ORDER BY interval LIMIT :n")
     suspend fun getNSentenceReviews(n: Int) : List<SentenceReviewModelDto>
 
     @Update
@@ -103,7 +103,7 @@ interface ReviewDao : DatabaseDao{
     @Query("SELECT * FROM word_review")
     suspend fun getAllReviews() : List<WordReviewModel>
 
-    @Query("SELECT * FROM word_review LIMIT :n")
+    @Query("SELECT * FROM word_review ORDER BY interval LIMIT :n")
     suspend fun getNReviews(n: Int) : List<WordReviewModel>
 
     @Transaction

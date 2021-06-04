@@ -2,7 +2,9 @@ package com.example.nala.di
 
 import android.content.Context
 import androidx.room.Room
-import com.example.nala.db.KanjiDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.nala.db.KanjiDictionaryDb
 import com.example.nala.db.ReviewDatabase
 import com.example.nala.db.dao.KanjiDictDao
 import com.example.nala.db.dao.ReviewDao
@@ -55,6 +57,28 @@ object DatabaseModule {
         return KanjiReviewDbDtoMapper(reviewDao)
     }
 
+    val MIGRATION_1_2 = object : Migration(1, 2) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL(
+                    "DROP TABLE kanji_meanings"
+            )
+        }
+    }
+
+    @Singleton
+    @Provides
+    fun provideKanjiDictionaryDb(@ApplicationContext context: Context) : KanjiDictionaryDb {
+        return Room.databaseBuilder(
+            context,
+            KanjiDictionaryDb::class.java,
+            KanjiDictionaryDb.DATABASE_NAME
+        )
+            .createFromAsset("databases/kanji_dictionary_database.db")
+            //.fallbackToDestructiveMigration()
+            .build()
+    }
+
+    /*
     @Singleton
     @Provides
     fun provideKanjiDatabase(@ApplicationContext context: Context) : KanjiDatabase {
@@ -63,14 +87,14 @@ object DatabaseModule {
             KanjiDatabase::class.java,
             KanjiDatabase.DATABASE_NAME
         )
-            .createFromAsset("database/kanji_database.db")
-            .fallbackToDestructiveMigration()
+            .createFromAsset("databases/kanji_database.db")
+            //.fallbackToDestructiveMigration()
             .build()
-    }
+    } */
 
     @Singleton
     @Provides
-    fun provideKanjiDao(kanjiDatabase: KanjiDatabase) : KanjiDictDao {
+    fun provideKanjiDao(kanjiDatabase: KanjiDictionaryDb) : KanjiDictDao {
         return kanjiDatabase.kanjiDao()
     }
 

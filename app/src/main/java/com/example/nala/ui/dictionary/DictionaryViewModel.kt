@@ -81,22 +81,18 @@ class DictionaryViewModel @Inject constructor(
 
     val mightForgetItems: MutableState<List<WordReviewModel>> = mutableStateOf(listOf())
 
-    //lateinit var kanjiDict: HashSet<String>
-    //lateinit var storiesDict: StoriesCollection
+    //lateinit var kanjiDict: KanjiCollection
+    //lateinit var storyDict: StoriesCollection
 
 
     init{
+
         /*
         viewModelScope.launch {
             kanjiDict = kanjiRepository.getKanjiDict(appContext)
-            storiesDict = kanjiRepository.getKanjiStories(appContext)
-            kanjiRepository.populateKanjiDatabase(
-                kanjiDict,
-                storiesDict,
-            )
-        }
-         */
-
+            storyDict = kanjiRepository.getKanjiStories(appContext)
+            kanjiRepository.populateKanjiDatabase(kanjiDict, storyDict)
+        } */
 
         viewModelScope.launch {
             mightForgetItemsLoaded.value = false

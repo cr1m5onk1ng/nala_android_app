@@ -197,6 +197,7 @@ class MainActivity : AppCompatActivity() {
                             navController = navController,
                             setCurrentKanji = viewModel::setCurrentKanji,
                             setCurrentStory = viewModel::setCurrentStory,
+                            setSharedSentence = viewModel::setSharedSentence,
                             contextLoading = studyViewModel.contextLoading.value,
                             wordLoading = studyViewModel.wordModelLoading.value,
                             sentencesLoading = studyViewModel.similarSentencesLoading.value,

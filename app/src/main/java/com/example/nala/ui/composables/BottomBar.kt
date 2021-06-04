@@ -42,6 +42,7 @@ fun BottomBar(
                 if(!isReviewsSelected) {
                     toggleHome(false)
                     toggleReviews(true)
+
                     navController.navigate("review_screen")
                 } },
             icon = {Icon(

@@ -280,12 +280,13 @@ fun StoryEditForm(
     val keyboardController = LocalSoftwareKeyboardController.current
     Row(
         Modifier
-            .padding(16.dp)
+            .padding(8.dp)
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
     ) {
         val textState = remember { mutableStateOf(TextFieldValue()) }
         TextField(
+            modifier = Modifier.fillMaxWidth(),
             value = textState.value,
             onValueChange = { textState.value = it },
             trailingIcon = {

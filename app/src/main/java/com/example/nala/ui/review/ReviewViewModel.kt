@@ -26,6 +26,10 @@ class ReviewViewModel @Inject constructor(
     val sentenceReviewItems: MutableState<List<SentenceReviewModel>> = mutableStateOf(listOf())
     val kanjiReviewItems: MutableState<List<KanjiReviewModel>> = mutableStateOf(listOf())
 
+    init {
+        loadWordReviewItems()
+    }
+
     val selectedCategory: MutableState<ReviewCategory> = mutableStateOf(ReviewCategory.Word)
 
     fun updateWordReviewItem(quality: Int, reviewModel: WordReviewModel) {

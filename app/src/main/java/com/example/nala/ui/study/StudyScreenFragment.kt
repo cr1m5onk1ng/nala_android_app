@@ -37,6 +37,7 @@ class StudyScreenFragment : CustomFragment() {
                     navController = findNavController(),
                     setCurrentKanji = viewModel::setCurrentKanji,
                     setCurrentStory = viewModel::setCurrentStory,
+                    setSharedSentence = viewModel::setSharedSentence,
                     contextLoading = studyViewModel.contextLoading.value,
                     wordLoading = studyViewModel.wordModelLoading.value,
                     sentencesLoading = studyViewModel.similarSentencesLoading.value,
