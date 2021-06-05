@@ -106,57 +106,60 @@ fun HomeScreen(
                         ),
                     )
                     Spacer(modifier = Modifier.height(40.dp))
-                    Text(
-                        "Words you might forget",
-                        modifier = Modifier
-                            .padding(16.dp),
-                        style = TextStyle(
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.W500,
-                            fontFamily = Quicksand,
-                            color = Color.White
+                    if(mightForgetItems.isNotEmpty()) {
+                        Text(
+                            "Words you might forget",
+                            modifier = Modifier
+                                .padding(16.dp),
+                            style = TextStyle(
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.W500,
+                                fontFamily = Quicksand,
+                                color = Color.White
+                            )
                         )
-                    )
-                    LazyRow(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(100.dp),
-                        horizontalArrangement = Arrangement.Center
-                    ){
-                        items(mightForgetItems.size) { index ->
-                            val word = mightForgetItems[index].word
-                            Card(
-                                modifier = Modifier
-                                    .padding(8.dp)
-                                    .alpha(0.9F)
-                                    .clickable {
-                                        onQueryChange(word)
-                                        onClick()
-                                        onQueryChange("")
-                                        navController.navigate("detail_screen")
-                                    },
-                                backgroundColor = Blue400,
-                                shape = RoundedCornerShape(18.dp),
-                                contentColor = Blue500,
-                                elevation = 3.dp,
-                            ) {
-                                Text(
-                                    word,
-                                    modifier = Modifier.padding(8.dp),
-                                    style = TextStyle(
-                                        fontSize = 24.sp,
-                                        fontWeight = FontWeight.Light,
-                                        color = TEXT_COLORS[Random.nextInt(0, TEXT_COLORS.size)]
-                                    ),
-                                )
+                        LazyRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(100.dp),
+                            horizontalArrangement = Arrangement.Center
+                        ){
+                            items(mightForgetItems.size) { index ->
+                                val word = mightForgetItems[index].word
+                                Card(
+                                    modifier = Modifier
+                                        .padding(8.dp)
+                                        .alpha(0.9F)
+                                        .clickable {
+                                            onQueryChange(word)
+                                            onClick()
+                                            onQueryChange("")
+                                            navController.navigate("detail_screen")
+                                        },
+                                    backgroundColor = Blue400,
+                                    shape = RoundedCornerShape(18.dp),
+                                    contentColor = Blue500,
+                                    elevation = 3.dp,
+                                ) {
+                                    Text(
+                                        word,
+                                        modifier = Modifier.padding(8.dp),
+                                        style = TextStyle(
+                                            fontSize = 24.sp,
+                                            fontWeight = FontWeight.Light,
+                                            color = TEXT_COLORS[Random.nextInt(0, TEXT_COLORS.size)]
+                                        ),
+                                    )
 
+                                }
                             }
                         }
+                        Spacer(
+                            modifier = Modifier.height(10.dp),
+                        )
+                    } else {
+                        Spacer(modifier = Modifier.padding(top = 64.dp))
                     }
-                    Spacer(
-                        modifier = Modifier.height(10.dp),
-                    )
-
                     TextField(
                         value = query,
                         modifier = Modifier

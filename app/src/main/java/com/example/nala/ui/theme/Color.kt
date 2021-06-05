@@ -22,6 +22,8 @@ val LightYellow = Color(0xfffaf6bb)
 val LightRed = Color(0xFFED9A9A)
 val LightBlue = Color(0xFF90CAF9)
 val LightBeige = Color(0xFFEFE7DB)
+val TextColor = Color(0xFF43404F)
+val GreyBackground = Color(0xFFF5F7FB)
 val TEXT_COLORS: List<Color> = listOf(
     LightGreen,
     LightBlue,

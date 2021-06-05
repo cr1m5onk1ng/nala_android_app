@@ -97,6 +97,7 @@ fun DictionaryDetailScreen(
                 val snackbar = createRef()
                 DefaultSnackbar(
                     modifier = Modifier
+                        .padding(16.dp)
                         .constrainAs(snackbar){
                             bottom.linkTo(parent.bottom)
                             start.linkTo(parent.start)

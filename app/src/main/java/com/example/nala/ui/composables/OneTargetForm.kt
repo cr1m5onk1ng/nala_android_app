@@ -43,6 +43,8 @@ fun OneTargetForm(
     onSentenceAdd: (String) -> Unit,
     onWordAdd: (String) -> Unit,
     onWordSelect: (String) -> Unit,
+    setKanjis: (String) -> Unit,
+    unsetSelectedWord: () -> Unit,
     unsetSharedSentence: () -> Unit,
     addSentenceToReview: (String, String) -> Unit,
     loadSentenceReviews: () -> Unit,
@@ -72,6 +74,7 @@ fun OneTargetForm(
                     IconButton(
                         onClick = {
                             unsetSharedSentence()
+                            unsetSelectedWord()
                             navController.popBackStack()
                         }
                     ) {
@@ -147,8 +150,9 @@ fun OneTargetForm(
                                     icon = Icons.Rounded.ArrowForward,
                                     onCLick = {
                                         if(selectedWord.isNotEmpty()) {
-                                            onSentenceAdd(sentence)
                                             onWordAdd(selectedWord)
+                                            setKanjis(selectedWord)
+                                            onSentenceAdd(sentence)
                                             navController.navigate("study_screen")
                                         }
                                     },
@@ -176,6 +180,7 @@ fun OneTargetForm(
         val snackbar = createRef()
         DefaultSnackbar(
             modifier = Modifier
+                .padding(16.dp)
                 .constrainAs(snackbar){
                     bottom.linkTo(parent.bottom)
                     start.linkTo(parent.start)

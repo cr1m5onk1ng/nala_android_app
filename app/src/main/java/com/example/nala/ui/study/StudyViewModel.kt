@@ -1,11 +1,14 @@
 package com.example.nala.ui.study
 
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nala.domain.model.dictionary.DictionaryModel
+import com.example.nala.domain.model.kanji.KanjiModel
 import com.example.nala.repository.DictionaryRepository
+import com.example.nala.repository.KanjiRepository
 import com.example.nala.repository.ReviewRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -16,6 +19,7 @@ import javax.inject.Inject
 class StudyViewModel @Inject constructor(
     private val dictionaryRepository: DictionaryRepository,
     private val reviewRepository: ReviewRepository,
+    private val kanjiRepository: KanjiRepository,
 ) : ViewModel() {
 
     val currentStudyContext: MutableState<String> = mutableStateOf("")
@@ -23,7 +27,9 @@ class StudyViewModel @Inject constructor(
     val currentStudyTargetWord: MutableState<DictionaryModel> = mutableStateOf(
         DictionaryModel.Empty()
     )
-    //TODO(Substitute simple strings with appropriate model)
+
+    val currentTargetWordKanjis: MutableState<List<String>> = mutableStateOf(listOf())
+
     val similarSentences: MutableState<List<String>> = mutableStateOf(listOf())
 
     val selectedWord: MutableState<String> = mutableStateOf("")
@@ -31,6 +37,8 @@ class StudyViewModel @Inject constructor(
     val contextLoading: MutableState<Boolean> = mutableStateOf(true)
 
     val wordModelLoading: MutableState<Boolean> = mutableStateOf(true)
+
+    val kanjisLoading: MutableState<Boolean> = mutableStateOf(true)
 
     val similarSentencesLoading: MutableState<Boolean> = mutableStateOf(false)
 
@@ -56,6 +64,10 @@ class StudyViewModel @Inject constructor(
         selectedWord.value = text
     }
 
+    fun unsetSelectedWord() {
+        selectedWord.value = ""
+    }
+
     fun setStudyContext(sentence: String?) {
         contextLoading.value = true
         currentStudyContext.value = sentence ?: ""
@@ -75,6 +87,21 @@ class StudyViewModel @Inject constructor(
             }
             currentStudyTargetWord.value = wordModel
             wordModelLoading.value = false
+        }
+    }
+
+    fun setCurrentWordKanjis(word: String) {
+        viewModelScope.launch {
+            kanjisLoading.value = true
+            val kanjiList = mutableListOf<String>()
+            for(k in word) {
+                val kanji = kanjiRepository.getKanjiModel(k.toString())
+                if (!kanji.isEmpty()){
+                    kanjiList.add(kanji.kanji)
+                }
+            }
+            currentTargetWordKanjis.value = kanjiList
+            kanjisLoading.value = false
         }
     }
 

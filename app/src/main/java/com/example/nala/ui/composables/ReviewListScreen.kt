@@ -134,6 +134,7 @@ fun ReviewListScreen(
                     LazyColumn(
                         modifier = Modifier
                             .padding(8.dp)
+                            .fillMaxHeight()
                     ) {
                         when(selectedCategory) {
                             ReviewCategory.Word -> {
@@ -172,15 +173,19 @@ fun ReviewListScreen(
                                 }
                             }
                             ReviewCategory.Kanji -> {
-                                items(count = kanjiReviewItems.size) { index ->
-                                    KanjiReviewCard(
-                                        kanjiReviewItems[index],
-                                        setKanjiItem,
-                                        updateKanjiReviewItem,
-                                        removeKanjiReview,
-                                        dismissKanjiReview,
-                                        navController
-                                    )
+                                if(kanjiReviewItems.isEmpty()) {
+                                    item { ErrorScreen(text = "No kanji added to review", subtitle = "")}
+                                } else {
+                                    items(count = kanjiReviewItems.size) { index ->
+                                        KanjiReviewCard(
+                                            kanjiReviewItems[index],
+                                            setKanjiItem,
+                                            updateKanjiReviewItem,
+                                            removeKanjiReview,
+                                            dismissKanjiReview,
+                                            navController
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -190,6 +195,7 @@ fun ReviewListScreen(
             val snackbar = createRef()
             DefaultSnackbar(
                 modifier = Modifier
+                    .padding(16.dp)
                     .constrainAs(snackbar){
                         bottom.linkTo(parent.bottom)
                         start.linkTo(parent.start)

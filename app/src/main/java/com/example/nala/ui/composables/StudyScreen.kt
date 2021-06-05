@@ -50,9 +50,11 @@ fun StudyScreen(
     contextLoading: Boolean,
     wordLoading: Boolean,
     sentencesLoading: Boolean,
+    kanjisLoading: Boolean,
     setCurrentKanji: (String) -> Unit,
     setCurrentStory: (String) -> Unit,
     setSharedSentence: (String) -> Unit,
+    unsetTargetWord: () -> Unit,
     addSentenceToReview: (String, String) -> Unit,
     loadSentenceReviews: () -> Unit,
     loadSimilarSentences: () -> Unit,
@@ -64,7 +66,7 @@ fun StudyScreen(
     Scaffold(
 
     ) {
-        if(contextLoading || wordLoading){
+        if(contextLoading || wordLoading || kanjisLoading){
             LoadingIndicator()
         }
         else if(wordModel.word.isEmpty()) {
@@ -90,7 +92,12 @@ fun StudyScreen(
                             .padding(top = 20.dp),
                         horizontalArrangement = Arrangement.Start
                     ){
-                        BackButton(navController = navController)
+                        BackButton(
+                            navController = navController,
+                            cleanupFunction = {
+                                unsetTargetWord()
+                            }
+                        )
                     }
 
                     LazyColumn(
@@ -160,6 +167,7 @@ fun StudyScreen(
                                             addSentenceToReview = addSentenceToReview,
                                             loadSentenceReviews = loadSentenceReviews,
                                             setSharedSentence = setSharedSentence,
+                                            unsetTargetWord = unsetTargetWord,
                                             showReviewSnackbar = showReviewSnackbar,
                                             showSaveSnackbar = showSaveSnackbar,
                                             navController = navController,
@@ -173,6 +181,7 @@ fun StudyScreen(
                 val snackbar = createRef()
                 DefaultSnackbar(
                     modifier = Modifier
+                        .padding(16.dp)
                         .constrainAs(snackbar){
                             bottom.linkTo(parent.bottom)
                             start.linkTo(parent.start)
@@ -196,6 +205,7 @@ fun SentenceCard(
     addSentenceToReview: (String, String) -> Unit,
     loadSentenceReviews: () -> Unit,
     setSharedSentence: (String) -> Unit,
+    unsetTargetWord: () -> Unit,
     showReviewSnackbar: () -> Unit,
     showSaveSnackbar: () -> Unit,
     navController: NavController,
@@ -283,6 +293,7 @@ fun SentenceCard(
                         //addSentenceToReview(targetWord ?: "", sentence)
                         //showReviewSnackbar()
                         //loadSentenceReviews()
+                        unsetTargetWord()
                         setSharedSentence(sentence)
                         navController.navigate("sentence_form_screen")
                               },
