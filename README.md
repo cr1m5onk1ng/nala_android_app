@@ -52,4 +52,4 @@ Home
 
 ## 🔖 LICENCE
 
-[Apache-2.0](https://github.com/cr1m5onk1ng/nala_android_app/blob/dev/LICENSE)
+[GPL](https://github.com/cr1m5onk1ng/nala_android_app/blob/dev/LICENSE)
