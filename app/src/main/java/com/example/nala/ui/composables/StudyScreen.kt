@@ -2,6 +2,7 @@ package com.example.nala.ui.composables
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -54,6 +55,7 @@ fun StudyScreen(
     setCurrentKanji: (String) -> Unit,
     setCurrentStory: (String) -> Unit,
     setSharedSentence: (String) -> Unit,
+    setCurrentWord: (String) -> Unit,
     unsetTargetWord: () -> Unit,
     addSentenceToReview: (String, String) -> Unit,
     loadSentenceReviews: () -> Unit,
@@ -105,6 +107,7 @@ fun StudyScreen(
                     ) {
                         item {
                             Spacer(modifier = Modifier.padding(vertical=3.dp))
+                            /*
                             WordSection(
                                 reading = reading,
                                 word = word,
@@ -113,6 +116,12 @@ fun StudyScreen(
                                 setCurrentKanji,
                                 setCurrentStory,
                                 fromStudy = true
+                            )*/
+                            WordRow(
+                                reading = wordModel.reading,
+                                word = wordModel.word,
+                                setCurrentWord = setCurrentWord,
+                                navController = navController,
                             )
                             ContextSection( word = word, parts = parts)
                             SmallButton(
@@ -194,6 +203,41 @@ fun StudyScreen(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun WordRow(
+    reading: String,
+    word: String,
+    setCurrentWord: (String) -> Unit,
+    navController: NavController,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 32.dp, top = 32.dp)
+            .clickable{
+                setCurrentWord(word)
+                navController.navigate("detail_screen")
+            }
+    ){
+        Text(
+            reading,
+            style = TextStyle(
+                fontFamily = Quicksand,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.W500
+            )
+        )
+        Text(
+            word,
+            style = TextStyle(
+                fontSize = 46.sp,
+                fontWeight = FontWeight.Bold,
+                textDecoration = TextDecoration.Underline
+            )
+        )
     }
 }
 

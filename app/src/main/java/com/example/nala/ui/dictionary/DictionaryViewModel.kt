@@ -241,9 +241,27 @@ class DictionaryViewModel @Inject constructor(
             wordReviewModel?.let{
                 val model = reviewRepository.getWordData(wordReviewModel)
                 currentWordModel.value = model
+                setCurrentWordKanjis(model.word)
                 currentSentence.value = ""
-                searchLoading.value = false
             }
+            searchLoading.value = false
+        }
+    }
+
+    fun setCurrentWordFromStudy(word: String) {
+        viewModelScope.launch {
+            searchLoading.value = true
+            val dbModel = reviewRepository.getWordReview(word)
+            var model: DictionaryModel
+            if(dbModel != null) {
+                model = reviewRepository.getWordData(dbModel)
+            } else {
+                model = dictRepository.search(word)
+            }
+            currentWordModel.value = model
+            setCurrentWordKanjis(model.word)
+            currentSentence.value = ""
+            searchLoading.value = false
         }
     }
 

@@ -38,6 +38,7 @@ class StudyScreenFragment : CustomFragment() {
                     setCurrentKanji = viewModel::setCurrentKanji,
                     setCurrentStory = viewModel::setCurrentStory,
                     setSharedSentence = viewModel::setSharedSentence,
+                    setCurrentWord = viewModel::setCurrentWordFromStudy,
                     unsetTargetWord = studyViewModel::unsetSelectedWord,
                     contextLoading = studyViewModel.contextLoading.value,
                     wordLoading = studyViewModel.wordModelLoading.value,
