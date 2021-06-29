@@ -1,22 +1,31 @@
 package com.example.nala.ui
 
+import android.app.PendingIntent
 import android.content.Intent
+import android.graphics.Color
+import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
+import android.webkit.URLUtil
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.SnackbarDuration
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.core.graphics.drawable.DrawableCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.nala.R
 import com.example.nala.ui.composables.*
 import com.example.nala.ui.dictionary.DictionaryEvent
 import dagger.hilt.android.AndroidEntryPoint
@@ -52,7 +61,11 @@ class MainActivity : AppCompatActivity() {
                 if ("text/plain" == intent.type) {
                     intent.getStringExtra(Intent.EXTRA_TEXT)?.let {
                         Log.d("SHARED", "SHARED TEXT: $it")
-                        viewModel.setSharedSentence(it)
+                        if(URLUtil.isValidUrl(it)) {
+                            startCustomTabIntent(it)
+                        } else {
+                            viewModel.setSharedSentence(it)
+                        }
                     }
                 } else {
                     Log.d("SHARED", "DIDNT PROCESS TEXT!")
@@ -219,6 +232,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+    }
+
     private fun showSnackbar(
         scaffoldState: ScaffoldState,
         message: String,
@@ -232,5 +249,28 @@ class MainActivity : AppCompatActivity() {
                 duration = duration
             )
         }
+    }
+
+    private fun startCustomTabIntent(url: String) {
+        // Create in-app intent
+        val sendLinkIntent = Intent(this, MainActivity::class.java)
+        sendLinkIntent.setType("text/plain")
+        sendLinkIntent.action = Intent.ACTION_SEND
+        sendLinkIntent.putExtra(Intent.EXTRA_SUBJECT,"This is the link you were exploring")
+        val pendingSendLink = PendingIntent.getActivity(
+            this,0,sendLinkIntent,PendingIntent.FLAG_UPDATE_CURRENT)
+        // Set the action button
+        val builder = CustomTabsIntent.Builder();
+        AppCompatResources.getDrawable(this, R.drawable.abc_vector_test)?.let {
+            DrawableCompat.setTint(it, Color.WHITE)
+            builder.setActionButton(
+                it.toBitmap(),
+                "Add this link to your dig",
+                pendingSendLink,
+                false
+            )
+        }
+        val customTabsIntent = builder.build();
+        customTabsIntent.launchUrl(this, Uri.parse(url));
     }
 }

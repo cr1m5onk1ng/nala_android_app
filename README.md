@@ -30,6 +30,8 @@ The app makes also use of the incredibly useful [Jisho](https://jisho.org/) API 
 - [ ] Find the most frequent words that use a certain kanji
 - [ ] Search for semantically related words saved locally
 - [ ] Share words/sentences with AnkiDroid
+- [ ] Import articles and other media from the web
+- [ ] OCR functionality for non-textual content
 
 ## 📸 Screenshots
 
