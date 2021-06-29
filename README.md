@@ -13,6 +13,7 @@ The [Jetpack Toolkit](https://developer.android.com/jetpack) was used to build t
 For the on-device neural language models, I used [pytorch mobile](https://pytorch.org/mobile/home/)
 
 A [personal Web API](https://github.com/cr1m5onk1ng/semantic-search-api/tree/master) built with FastApi was used as a base for the semantic search service used in the app.
+Working on an improved and more feature-rich version using AWS Lambda
 
 The app makes also use of the incredibly useful [Jisho](https://jisho.org/) API for words lookup
 
