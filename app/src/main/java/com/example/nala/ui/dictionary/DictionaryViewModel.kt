@@ -118,6 +118,9 @@ class DictionaryViewModel @Inject constructor(
     fun setSharedText(text: String?) {
         textReceived.value = true
         query.value = text ?: ""
+        viewModelScope.launch {
+            searchWord()
+        }
     }
 
     fun setSharedSentence(text: String?) {

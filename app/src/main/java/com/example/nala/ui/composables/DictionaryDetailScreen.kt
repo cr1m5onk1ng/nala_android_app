@@ -1,5 +1,6 @@
 package com.example.nala.ui.composables
 
+import android.app.Activity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -26,12 +28,12 @@ import com.example.nala.domain.model.kanji.KanjiModel
 import com.example.nala.ui.theme.*
 import kotlin.random.Random
 
-
 @Composable
 fun DictionaryDetailScreen(
     wordModel: DictionaryModel,
     sentence: String? = null,
     isLoading: Boolean,
+    fromLookup: Boolean = false,
     navController: NavController,
     wordKanjis: List<String>,
     setCurrentKanji: (String) -> Unit,
@@ -42,6 +44,7 @@ fun DictionaryDetailScreen(
     scaffoldState: ScaffoldState,
     showSnackbar: (ScaffoldState) -> Unit
 ) {
+    val activity = (LocalContext.current as? Activity)
 
     Scaffold(
         scaffoldState = scaffoldState,
@@ -67,7 +70,12 @@ fun DictionaryDetailScreen(
                     ){
                         BackButton(
                             navController = navController,
-                            cleanupFunction = { unsetSharedWord() }
+                            cleanupFunction = {
+                                if (!fromLookup)
+                                    unsetSharedWord()
+                                else
+                                    activity!!.finish()
+                            }
                         )
                     }
                     if(wordModel.word.isEmpty()) {

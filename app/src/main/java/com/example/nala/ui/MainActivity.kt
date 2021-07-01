@@ -1,5 +1,6 @@
 package com.example.nala.ui
 
+import android.app.Activity
 import android.app.PendingIntent
 import android.content.Intent
 import android.graphics.Color
@@ -8,8 +9,10 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.ActionMode
 import android.view.WindowManager
 import android.webkit.URLUtil
+import android.webkit.WebView
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
@@ -25,7 +28,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.nala.R
 import com.example.nala.ui.composables.*
 import com.example.nala.ui.dictionary.DictionaryEvent
 import dagger.hilt.android.AndroidEntryPoint
@@ -35,6 +37,12 @@ import com.example.nala.ui.review.ReviewViewModel
 import com.example.nala.ui.study.StudyViewModel
 import com.example.nala.ui.theme.AppTheme
 import kotlinx.coroutines.launch
+import android.os.Handler
+import android.view.Menu
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavController
+
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -42,6 +50,7 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var app: BaseApplication
 
+    lateinit var myWebView: WebView
     private val viewModel: DictionaryViewModel by viewModels()
     private val reviewViewModel: ReviewViewModel by viewModels()
     private val studyViewModel: StudyViewModel by viewModels()
@@ -50,10 +59,15 @@ class MainActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        var startDestination = "home_screen"
+        // flag that checks if the dictionary was called from an article
+        var fromLookup = false
         when (intent?.action) {
             Intent.ACTION_PROCESS_TEXT -> {
                 if (intent.hasExtra(Intent.EXTRA_PROCESS_TEXT)){
                     viewModel.setSharedText(intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT) )
+                    startDestination = "detail_screen"
+                    fromLookup = true
                 }
             }
             Intent.ACTION_SEND -> {
@@ -65,6 +79,8 @@ class MainActivity : AppCompatActivity() {
                             startCustomTabIntent(it)
                         } else {
                             viewModel.setSharedSentence(it)
+                            startDestination = "sentence_form_screen"
+                            fromLookup = true
                         }
                     }
                 } else {
@@ -82,13 +98,7 @@ class MainActivity : AppCompatActivity() {
                 val scaffoldState = rememberScaffoldState()
 
                 // Navigate to detail screen if a word was searched from another app
-                val startDestination = "home_screen"/* if(viewModel.textReceived.value) {
-                    "detail_screen"
-                } else if(viewModel.sentenceReceived.value) {
-                    "sentence_form_screen"
-                } else{
-                    "home_screen"
-                } */
+
 
                 NavHost(navController=navController, startDestination) {
                     composable("home_screen"){
@@ -112,6 +122,7 @@ class MainActivity : AppCompatActivity() {
                         DictionaryDetailScreen(
                             viewModel.currentWordModel.value,
                             isLoading = viewModel.searchLoading.value,
+                            fromLookup = fromLookup,
                             navController = navController,
                             wordKanjis = viewModel.currentWordKanjis.value,
                             setCurrentKanji = viewModel::setCurrentKanji,
@@ -187,6 +198,7 @@ class MainActivity : AppCompatActivity() {
                             tokens = viewModel.sharedSentenceTokens.value,
                             tokensIndexMap = viewModel.sharedSentenceTokensIndexMap.value,
                             sentenceLoading = viewModel.sentenceLoading.value,
+                            fromLookup = fromLookup,
                             selectedWord = studyViewModel.selectedWord.value,
                             onSentenceAdd = studyViewModel::setStudyContext,
                             setKanjis = studyViewModel::setCurrentWordKanjis,
@@ -236,6 +248,36 @@ class MainActivity : AppCompatActivity() {
         super.onNewIntent(intent)
     }
 
+    override fun onActionModeStarted(mode: ActionMode?) {
+        val menu: Menu = mode!!.menu
+
+        // you can remove original menu: copy, cut, select all, share ... or not
+
+        // you can remove original menu: copy, cut, select all, share ... or not
+        menu.clear()
+
+        // here i will get text selection by user
+
+        // here i will get text selection by user
+        menu.add(com.example.nala.R.string.app_name)
+            .setEnabled(true)
+            .setVisible(true)
+            .setOnMenuItemClickListener { item ->
+                if (myWebView != null) {
+                    myWebView.evaluateJavascript("window.getSelection().toString()") { value ->
+                        if (value != null) {
+                            Log.d("WEBVIEW", "Value is: $value")
+                        }
+                    }
+                }
+                // Post a delayed runnable to avoid a race condition
+                // between evaluateScript() result and mode.finish()
+                Handler().postDelayed(Runnable { mode.finish() }, 200)
+                true
+            }
+        super.onActionModeStarted(mode)
+    }
+
     private fun showSnackbar(
         scaffoldState: ScaffoldState,
         message: String,
@@ -253,24 +295,22 @@ class MainActivity : AppCompatActivity() {
 
     private fun startCustomTabIntent(url: String) {
         // Create in-app intent
-        val sendLinkIntent = Intent(this, MainActivity::class.java)
-        sendLinkIntent.setType("text/plain")
-        sendLinkIntent.action = Intent.ACTION_SEND
-        sendLinkIntent.putExtra(Intent.EXTRA_SUBJECT,"This is the link you were exploring")
-        val pendingSendLink = PendingIntent.getActivity(
-            this,0,sendLinkIntent,PendingIntent.FLAG_UPDATE_CURRENT)
+    /*
+        val sendTextIntent = Intent(this, DictionaryActivity::class.java)
+        sendTextIntent.setType("text/plain")
+        sendTextIntent.action = Intent.ACTION_PROCESS_TEXT
+        sendTextIntent.putExtra(Intent.EXTRA_SUBJECT,"Text sent for lookup")
+        val pendingSendText = PendingIntent.getActivity(
+            this,0,sendTextIntent,PendingIntent.FLAG_UPDATE_CURRENT)
         // Set the action button
+
+     */
         val builder = CustomTabsIntent.Builder();
-        AppCompatResources.getDrawable(this, R.drawable.abc_vector_test)?.let {
-            DrawableCompat.setTint(it, Color.WHITE)
-            builder.setActionButton(
-                it.toBitmap(),
-                "Add this link to your dig",
-                pendingSendLink,
-                false
-            )
-        }
+
+        //builder.addMenuItem("dictionary", pendingSendText)
+
         val customTabsIntent = builder.build();
         customTabsIntent.launchUrl(this, Uri.parse(url));
     }
+
 }

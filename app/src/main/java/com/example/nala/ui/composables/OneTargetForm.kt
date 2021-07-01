@@ -1,5 +1,6 @@
 package com.example.nala.ui.composables
 
+import android.app.Activity
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -20,6 +21,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -38,6 +40,7 @@ fun OneTargetForm(
     sentence: String,
     selectedWord: String,
     sentenceLoading: Boolean,
+    fromLookup: Boolean = false,
     tokens: List<String>,
     tokensIndexMap: Map<Pair<Int, Int>, String>,
     onSentenceAdd: (String) -> Unit,
@@ -52,7 +55,7 @@ fun OneTargetForm(
     scaffoldState: ScaffoldState,
     showSnackbar: (ScaffoldState) -> Unit
 ) {
-
+    val activity = (LocalContext.current as? Activity)
     ConstraintLayout{
         Column(
             modifier = Modifier
@@ -75,7 +78,10 @@ fun OneTargetForm(
                         onClick = {
                             unsetSharedSentence()
                             unsetSelectedWord()
-                            navController.popBackStack()
+                            if (fromLookup)
+                                activity!!.finish()
+                            else
+                                navController.popBackStack()
                         }
                     ) {
                         Icon(Icons.Rounded.Close, contentDescription = "close icon")
