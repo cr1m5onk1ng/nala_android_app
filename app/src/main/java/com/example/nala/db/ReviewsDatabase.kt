@@ -2,6 +2,8 @@ package com.example.nala.db
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+import com.example.nala.db.converters.TimeConverter
 import com.example.nala.db.dao.ReviewDao
 import com.example.nala.db.models.review.*
 
@@ -16,8 +18,10 @@ import com.example.nala.db.models.review.*
     KanjiReviewModel::class,
     KanjiMeanings::class,
     KanjiOn::class,
-    KanjiKun::class],
-    version=1)
+    KanjiKun::class,
+    Articles::class],
+    version=2)
+@TypeConverters(TimeConverter::class)
 abstract class ReviewDatabase : RoomDatabase() {
     abstract  fun reviewDao() : ReviewDao
 

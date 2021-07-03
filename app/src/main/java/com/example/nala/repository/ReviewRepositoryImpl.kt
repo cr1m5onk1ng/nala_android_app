@@ -1,6 +1,8 @@
 package com.example.nala.repository
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.example.nala.db.dao.ReviewDao
 import com.example.nala.db.models.review.*
 import com.example.nala.domain.model.dictionary.DictionaryModel
@@ -8,6 +10,7 @@ import com.example.nala.domain.model.dictionary.Sense
 import com.example.nala.domain.model.kanji.KanjiModel
 import com.example.nala.domain.model.review.SentenceReviewModel
 import com.example.nala.domain.util.SuperMemo2
+import java.time.Instant
 import java.util.*
 import javax.inject.Inject
 
@@ -325,6 +328,15 @@ class ReviewRepositoryImpl @Inject constructor(
 
     override suspend fun removeWordReview(wordReview: WordReviewModel) {
         reviewDao.deleteWordReview(wordReview)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    override suspend fun addArticleToFavorites(url: String) {
+        val article = Articles(
+            url = url,
+            timeAdded = Date.from(Instant.now())
+        )
+        reviewDao.addArticle(article)
     }
 
     private suspend fun getWordTags(word: String): List<String> {

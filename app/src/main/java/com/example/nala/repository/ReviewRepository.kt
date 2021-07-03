@@ -1,5 +1,6 @@
 package com.example.nala.repository
 
+import com.example.nala.db.models.review.Articles
 import com.example.nala.db.models.review.KanjiReviewModel
 import com.example.nala.db.models.review.WordReviewModel
 import com.example.nala.domain.model.dictionary.DictionaryModel
@@ -63,5 +64,9 @@ interface ReviewRepository {
     suspend fun updateWordReviewParameters(quality: Int, wordModel: WordReviewModel)
 
     suspend fun removeWordReview(wordReview: WordReviewModel)
+
+    // ARTICLES
+
+    suspend fun addArticleToFavorites(url: String)
 
 }

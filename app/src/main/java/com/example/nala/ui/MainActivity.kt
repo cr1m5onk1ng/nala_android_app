@@ -1,9 +1,9 @@
 package com.example.nala.ui
 
-import android.app.Activity
 import android.app.PendingIntent
 import android.content.Intent
-import android.graphics.Color
+import android.graphics.BitmapFactory
+import android.graphics.drawable.VectorDrawable
 import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
@@ -16,14 +16,11 @@ import android.webkit.WebView
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
-import androidx.appcompat.content.res.AppCompatResources
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.SnackbarDuration
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.core.graphics.drawable.DrawableCompat
-import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -39,9 +36,11 @@ import com.example.nala.ui.theme.AppTheme
 import kotlinx.coroutines.launch
 import android.os.Handler
 import android.view.Menu
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
-import androidx.navigation.NavController
+import androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_LIGHT
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.drawable.toBitmap
+import com.example.nala.R
+import com.example.nala.service.background.ArticleService
 
 
 @AndroidEntryPoint
@@ -50,7 +49,6 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var app: BaseApplication
 
-    lateinit var myWebView: WebView
     private val viewModel: DictionaryViewModel by viewModels()
     private val reviewViewModel: ReviewViewModel by viewModels()
     private val studyViewModel: StudyViewModel by viewModels()
@@ -73,12 +71,13 @@ class MainActivity : AppCompatActivity() {
             Intent.ACTION_SEND -> {
                 Log.d("SHARED", "ACTION SEND CALLED!")
                 if ("text/plain" == intent.type) {
-                    intent.getStringExtra(Intent.EXTRA_TEXT)?.let {
-                        Log.d("SHARED", "SHARED TEXT: $it")
-                        if(URLUtil.isValidUrl(it)) {
-                            startCustomTabIntent(it)
+                    intent.getStringExtra(Intent.EXTRA_TEXT)?.let { url ->
+                        Log.d("SHARED", "SHARED TEXT: $url")
+                        if(URLUtil.isValidUrl(url)) {
+                            reviewViewModel.addArticleToChronology(url)
+                            startCustomTabIntent(url)
                         } else {
-                            viewModel.setSharedSentence(it)
+                            viewModel.setSharedSentence(url)
                             startDestination = "sentence_form_screen"
                             fromLookup = true
                         }
@@ -248,36 +247,6 @@ class MainActivity : AppCompatActivity() {
         super.onNewIntent(intent)
     }
 
-    override fun onActionModeStarted(mode: ActionMode?) {
-        val menu: Menu = mode!!.menu
-
-        // you can remove original menu: copy, cut, select all, share ... or not
-
-        // you can remove original menu: copy, cut, select all, share ... or not
-        menu.clear()
-
-        // here i will get text selection by user
-
-        // here i will get text selection by user
-        menu.add(com.example.nala.R.string.app_name)
-            .setEnabled(true)
-            .setVisible(true)
-            .setOnMenuItemClickListener { item ->
-                if (myWebView != null) {
-                    myWebView.evaluateJavascript("window.getSelection().toString()") { value ->
-                        if (value != null) {
-                            Log.d("WEBVIEW", "Value is: $value")
-                        }
-                    }
-                }
-                // Post a delayed runnable to avoid a race condition
-                // between evaluateScript() result and mode.finish()
-                Handler().postDelayed(Runnable { mode.finish() }, 200)
-                true
-            }
-        super.onActionModeStarted(mode)
-    }
-
     private fun showSnackbar(
         scaffoldState: ScaffoldState,
         message: String,
@@ -294,21 +263,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startCustomTabIntent(url: String) {
-        // Create in-app intent
-    /*
-        val sendTextIntent = Intent(this, DictionaryActivity::class.java)
-        sendTextIntent.setType("text/plain")
-        sendTextIntent.action = Intent.ACTION_PROCESS_TEXT
-        sendTextIntent.putExtra(Intent.EXTRA_SUBJECT,"Text sent for lookup")
-        val pendingSendText = PendingIntent.getActivity(
-            this,0,sendTextIntent,PendingIntent.FLAG_UPDATE_CURRENT)
+        // Create explicit intent
+        val addToFavoritesIntent = Intent(this, ArticleService::class.java)
+        addToFavoritesIntent.putExtra("url", url)
+        val pendingAddToFavorites = PendingIntent.getActivity(
+            this,0 ,addToFavoritesIntent, PendingIntent.FLAG_UPDATE_CURRENT)
         // Set the action button
-
-     */
         val builder = CustomTabsIntent.Builder();
+       /* val bitmap = (ResourcesCompat.getDrawable(
+            this.resources,
+            R.drawable.save_to_favorites_icon,
+            null) as VectorDrawable).toBitmap()
 
-        //builder.addMenuItem("dictionary", pendingSendText)
-
+        builder.setActionButton(bitmap, "favorites", pendingAddToFavorites, true)*/
         val customTabsIntent = builder.build();
         customTabsIntent.launchUrl(this, Uri.parse(url));
     }

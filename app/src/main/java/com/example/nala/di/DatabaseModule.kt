@@ -29,7 +29,9 @@ object DatabaseModule {
             context,
             ReviewDatabase::class.java,
             ReviewDatabase.DATABASE_NAME
-        ).fallbackToDestructiveMigration().build()
+        )
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     @Singleton
@@ -55,14 +57,6 @@ object DatabaseModule {
     @Provides
     fun provideKanjiReviewMapper(reviewDao: ReviewDao) : KanjiReviewDbDtoMapper {
         return KanjiReviewDbDtoMapper(reviewDao)
-    }
-
-    val MIGRATION_1_2 = object : Migration(1, 2) {
-        override fun migrate(database: SupportSQLiteDatabase) {
-            database.execSQL(
-                    "DROP TABLE kanji_meanings"
-            )
-        }
     }
 
     @Singleton

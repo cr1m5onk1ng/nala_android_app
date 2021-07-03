@@ -193,4 +193,9 @@ interface ReviewDao : DatabaseDao{
     @Update
     suspend fun updateWordReviewItem(wordModel: WordReviewModel)
 
+    // ARTICLES
+
+    @Insert
+    suspend fun addArticle(article: Articles)
+
 }
