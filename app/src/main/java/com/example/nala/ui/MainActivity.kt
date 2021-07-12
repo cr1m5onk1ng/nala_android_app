@@ -59,6 +59,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         var startDestination = "home_screen"
         // flag that checks if the dictionary was called from an article
+        // TODO improve the checking logic
         var fromLookup = false
         when (intent?.action) {
             Intent.ACTION_PROCESS_TEXT -> {
@@ -103,8 +104,7 @@ class MainActivity : AppCompatActivity() {
                     composable("home_screen"){
                         HomeScreen(
                             query = viewModel.query.value,
-                            mightForgetItems = viewModel.mightForgetItems.value,
-                            mightForgetItemsLoaded = viewModel.mightForgetItemsLoaded.value,
+                            mightForgetItemsState = viewModel.mightForgetItemsState.value,
                             onQueryChange = viewModel::onQueryChanged,
                             onClick = {viewModel.onTriggerEvent(DictionaryEvent.SearchWordEvent)},
                             textReceived = viewModel.textReceived.value,
@@ -119,8 +119,7 @@ class MainActivity : AppCompatActivity() {
 
                     composable("detail_screen") {
                         DictionaryDetailScreen(
-                            viewModel.currentWordModel.value,
-                            isLoading = viewModel.searchLoading.value,
+                            searchState = viewModel.wordSearchState.value,
                             fromLookup = fromLookup,
                             navController = navController,
                             wordKanjis = viewModel.currentWordKanjis.value,
@@ -136,10 +135,8 @@ class MainActivity : AppCompatActivity() {
 
                     composable("kanji_detail_screen"){
                         KanjiDetailScreen(
-                            kanji = viewModel.currentKanji.value,
-                            story = viewModel.currentStory.value,
-                            kanjiSet = viewModel.kanjiSet.value,
-                            storySet = viewModel.storySet.value,
+                            kanjiSearchState = viewModel.kanjiSearchState.value,
+                            kanjiStoryState = viewModel.kanjiStoryState.value,
                             storyFormActive = viewModel.editStoryFormActive.value,
                             addKanjiToReview = viewModel::addKanjiToReview,
                             updateKanjiStory = viewModel::updateKanjiStory,
@@ -193,10 +190,9 @@ class MainActivity : AppCompatActivity() {
 
                     composable("sentence_form_screen"){
                         OneTargetForm(
-                            sentence = viewModel.sharedSentence.value,
+                            sentenceState = viewModel.sentenceState.value,
                             tokens = viewModel.sharedSentenceTokens.value,
                             tokensIndexMap = viewModel.sharedSentenceTokensIndexMap.value,
-                            sentenceLoading = viewModel.sentenceLoading.value,
                             fromLookup = fromLookup,
                             selectedWord = studyViewModel.selectedWord.value,
                             onSentenceAdd = studyViewModel::setStudyContext,
@@ -216,20 +212,13 @@ class MainActivity : AppCompatActivity() {
 
                     composable("study_screen") {
                         StudyScreen(
-                            context = studyViewModel.currentStudyContext.value ?: "",
-                            wordModel = studyViewModel.currentStudyTargetWord.value,
-                            similarSentences = studyViewModel.similarSentences.value,
-                            wordKanjis = studyViewModel.currentTargetWordKanjis.value,
+                            studyContextState = studyViewModel.studyContextState.value,
+                            targetWordState = studyViewModel.targetWordState.value,
+                            similarSentencesState = studyViewModel.similarSentencesState.value,
                             navController = navController,
-                            setCurrentKanji = viewModel::setCurrentKanji,
-                            setCurrentStory = viewModel::setCurrentStory,
                             setSharedSentence = viewModel::setSharedSentence,
                             setCurrentWord = viewModel::setCurrentWordFromStudy,
                             unsetTargetWord = studyViewModel::unsetSelectedWord,
-                            contextLoading = studyViewModel.contextLoading.value,
-                            wordLoading = studyViewModel.wordModelLoading.value,
-                            sentencesLoading = studyViewModel.similarSentencesLoading.value,
-                            kanjisLoading = studyViewModel.kanjisLoading.value,
                             addSentenceToReview = viewModel::addSentenceToReview,
                             loadSentenceReviews = reviewViewModel::loadSentenceReviewItems,
                             loadSimilarSentences = studyViewModel::loadSimilarSentences,

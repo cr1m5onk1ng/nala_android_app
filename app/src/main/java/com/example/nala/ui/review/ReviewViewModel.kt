@@ -21,7 +21,6 @@ class ReviewViewModel @Inject constructor(
 
     val reviewsLoading: MutableState<Boolean> = mutableStateOf(false)
     val addedToReview: MutableState<Boolean> = mutableStateOf(false)
-    val currentWordSet: MutableState<Boolean> = mutableStateOf(false)
     val wordReviewItems: MutableState<List<WordReviewModel>> = mutableStateOf(listOf())
     val sentenceReviewItems: MutableState<List<SentenceReviewModel>> = mutableStateOf(listOf())
     val kanjiReviewItems: MutableState<List<KanjiReviewModel>> = mutableStateOf(listOf())

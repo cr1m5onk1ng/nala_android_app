@@ -40,8 +40,7 @@ class DictionaryHomeFragment : Fragment() {
                 AppTheme(darkTheme = false) {
                     HomeScreen(
                         query = viewModel.query.value,
-                        mightForgetItems = viewModel.mightForgetItems.value,
-                        mightForgetItemsLoaded = viewModel.mightForgetItemsLoaded.value,
+                        mightForgetItemsState = viewModel.mightForgetItemsState.value,
                         onQueryChange = viewModel::onQueryChanged,
                         onClick = {viewModel.onTriggerEvent(DictionaryEvent.SearchWordEvent)},
                         textReceived = viewModel.textReceived.value,
@@ -50,7 +49,7 @@ class DictionaryHomeFragment : Fragment() {
                         isReviewsSelected = viewModel.isReviewSelected.value,
                         toggleHome = viewModel::toggleHome,
                         toggleReviews = viewModel::toggleReviews,
-                        navController = findNavController()
+                        navController = findNavController(),
                     )
                 }
             }

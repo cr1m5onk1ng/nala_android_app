@@ -32,14 +32,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
+import com.example.nala.ui.DataState
 import com.example.nala.ui.theme.*
 import kotlinx.coroutines.launch
 
 @Composable
 fun OneTargetForm(
-    sentence: String,
+    sentenceState: DataState<String>,
     selectedWord: String,
-    sentenceLoading: Boolean,
     fromLookup: Boolean = false,
     tokens: List<String>,
     tokensIndexMap: Map<Pair<Int, Int>, String>,
@@ -56,149 +56,149 @@ fun OneTargetForm(
     showSnackbar: (ScaffoldState) -> Unit
 ) {
     val activity = (LocalContext.current as? Activity)
-    ConstraintLayout{
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 48.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+    Scaffold(){ paddingValue ->
+        ConstraintLayout(
+            modifier = Modifier.padding(paddingValue)
         ){
-            if(sentenceLoading) {
-                LoadingIndicator()
-            } else{
-                //Close Button
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 26.dp, end = 32.dp),
-                    horizontalArrangement = Arrangement.End
-                ){
-                    IconButton(
-                        onClick = {
-                            unsetSharedSentence()
-                            unsetSelectedWord()
-                            if (fromLookup)
-                                activity!!.finish()
-                            else
-                                navController.popBackStack()
-                        }
-                    ) {
-                        Icon(Icons.Rounded.Close, contentDescription = "close icon")
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 48.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ){
+                when(sentenceState) {
+                    is DataState.Initial<*>, DataState.Loading -> {
+                        LoadingIndicator()
                     }
-                }
-                //Body
-                val listState = rememberLazyListState()
-                // Remember a CoroutineScope to be able to launch
-                val coroutineScope = rememberCoroutineScope()
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    item{
-                        Column() {
-                            Text(
-                                text = "Tap to select your target word: ",
-                                modifier = Modifier.padding(5.dp),
-                                style = TextStyle(
-                                    fontFamily = Quicksand,
-                                    fontWeight = FontWeight.Light,
-                                    fontSize = 20.sp
-                                ),
-                            )
-                            CustomClickableText(
-                                modifier = Modifier
-                                    .padding(8.dp),
-                                tokens = tokens,
-                                tokensMap = tokensIndexMap,
-                                selectedToken = selectedWord,
-                                onClick = onWordSelect,
-                                fontSize = 24.sp,
-                            )
-                            // ADD A WORD SECTIONs
-                            /*
-                            Text(
-                                text = "Target word:",
-                                modifier = Modifier.padding(8.dp),
-                                style = TextStyle(
-                                    fontFamily = Quicksand,
-                                    fontWeight = FontWeight.W400,
-                                    fontSize = 20.sp
-                                ),
-                            ) */
-                            Spacer(modifier = Modifier.padding(vertical=8.dp))
-                            // SELECTED WORD
-                            Text(
-                                if(selectedWord.isNotEmpty()) selectedWord else "No word selected",
-                                modifier = Modifier.fillMaxWidth().padding(8.dp),
-                                textAlign = TextAlign.Center,
-                                style = TextStyle(
-                                    fontFamily = Quicksand,
-                                    fontSize = if(selectedWord.isNotEmpty()) 42.sp else 18.sp,
-                                    fontWeight = if(selectedWord.isNotEmpty()) FontWeight.Bold else FontWeight.Light,
-                                    color = Color.Black,
-                                ),
-                            )
-                            Spacer(modifier = Modifier.padding(vertical=16.dp))
-                            // Buttons row
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(8.dp),
-                                horizontalArrangement = Arrangement.SpaceEvenly
+                    is DataState.Error -> {
+                        ErrorScreen(text = "Data invalid", "Try to import a valid sentence")
+                    }
+                    is DataState.Success<String> -> {
+                        val sentence = sentenceState.data
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 26.dp, end = 32.dp),
+                            horizontalArrangement = Arrangement.End
+                        ){
+                            IconButton(
+                                onClick = {
+                                    unsetSharedSentence()
+                                    unsetSelectedWord()
+                                    if (fromLookup)
+                                        activity!!.finish()
+                                    else
+                                        navController.popBackStack()
+                                }
                             ) {
-                                SmallerButton(
-                                    backgroundColor = LightGreen,
-                                    text = "Study",
-                                    icon = Icons.Rounded.ArrowForward,
-                                    onCLick = {
-                                        if(selectedWord.isNotEmpty()) {
-                                            onWordAdd(selectedWord)
-                                            setKanjis(selectedWord)
-                                            onSentenceAdd(sentence)
-                                            navController.navigate("study_screen")
-                                        }
-                                    },
-                                    height = 50.dp,
-                                )
-                                SmallerButton(
-                                    backgroundColor = LightBlue,
-                                    text = "Review",
-                                    icon = Icons.Rounded.Add,
-                                    onCLick = {
-                                        if (selectedWord.isNotEmpty()) {
-                                            addSentenceToReview(selectedWord, sentence)
-                                            showSnackbar(scaffoldState)
-                                            loadSentenceReviews()
-                                        }
-                                    },
-                                    height = 50.dp,
-                                )
+                                Icon(Icons.Rounded.Close, contentDescription = "close icon")
+                            }
+                        }
+                        //Body
+                        val listState = rememberLazyListState()
+                        // Remember a CoroutineScope to be able to launch
+                        val coroutineScope = rememberCoroutineScope()
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            item{
+                                Column() {
+                                    Text(
+                                        text = "Tap to select your target word: ",
+                                        modifier = Modifier.padding(5.dp),
+                                        style = TextStyle(
+                                            fontFamily = Quicksand,
+                                            fontWeight = FontWeight.Light,
+                                            fontSize = 20.sp
+                                        ),
+                                    )
+                                    CustomClickableText(
+                                        modifier = Modifier
+                                            .padding(8.dp),
+                                        tokens = tokens,
+                                        tokensMap = tokensIndexMap,
+                                        selectedToken = selectedWord,
+                                        onClick = onWordSelect,
+                                        fontSize = 24.sp,
+                                    )
+                                    Spacer(modifier = Modifier.padding(vertical=8.dp))
+                                    // SELECTED WORD
+                                    Text(
+                                        if(selectedWord.isNotEmpty()) selectedWord else "No word selected",
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(8.dp),
+                                        textAlign = TextAlign.Center,
+                                        style = TextStyle(
+                                            fontFamily = Quicksand,
+                                            fontSize = if(selectedWord.isNotEmpty()) 42.sp else 18.sp,
+                                            fontWeight = if(selectedWord.isNotEmpty()) FontWeight.Bold else FontWeight.Light,
+                                            color = Color.Black,
+                                        ),
+                                    )
+                                    Spacer(modifier = Modifier.padding(vertical=16.dp))
+                                    // Buttons row
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(8.dp),
+                                        horizontalArrangement = Arrangement.SpaceEvenly
+                                    ) {
+                                        SmallerButton(
+                                            backgroundColor = LightGreen,
+                                            text = "Study",
+                                            icon = Icons.Rounded.ArrowForward,
+                                            onCLick = {
+                                                if(selectedWord.isNotEmpty()) {
+                                                    onWordAdd(selectedWord)
+                                                    setKanjis(selectedWord)
+                                                    onSentenceAdd(sentence)
+                                                    navController.navigate("study_screen")
+                                                }
+                                            },
+                                            height = 50.dp,
+                                        )
+                                        SmallerButton(
+                                            backgroundColor = LightBlue,
+                                            text = "Review",
+                                            icon = Icons.Rounded.Add,
+                                            onCLick = {
+                                                if (selectedWord.isNotEmpty()) {
+                                                    addSentenceToReview(selectedWord, sentence)
+                                                    showSnackbar(scaffoldState)
+                                                    loadSentenceReviews()
+                                                }
+                                            },
+                                            height = 50.dp,
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
+            val snackbar = createRef()
+            DefaultSnackbar(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .constrainAs(snackbar) {
+                        bottom.linkTo(parent.bottom)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                    },
+                snackbarHostState = scaffoldState.snackbarHostState,
+                onDismiss = {
+                    scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                }
+            )
         }
-        val snackbar = createRef()
-        DefaultSnackbar(
-            modifier = Modifier
-                .padding(16.dp)
-                .constrainAs(snackbar){
-                    bottom.linkTo(parent.bottom)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                },
-            snackbarHostState = scaffoldState.snackbarHostState,
-            onDismiss = {
-                scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
-            }
-        )
     }
-
 }
 
 @Composable

@@ -10,6 +10,7 @@ import com.example.nala.domain.model.kanji.KanjiModel
 import com.example.nala.repository.DictionaryRepository
 import com.example.nala.repository.KanjiRepository
 import com.example.nala.repository.ReviewRepository
+import com.example.nala.ui.DataState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -22,33 +23,27 @@ class StudyViewModel @Inject constructor(
     private val kanjiRepository: KanjiRepository,
 ) : ViewModel() {
 
-    val currentStudyContext: MutableState<String> = mutableStateOf("")
+    val studyContextState: MutableState<DataState<String>> = mutableStateOf(DataState.Initial(""))
 
-    val currentStudyTargetWord: MutableState<DictionaryModel> = mutableStateOf(
-        DictionaryModel.Empty()
-    )
+    val similarSentencesState: MutableState<DataState<List<String>>> =
+        mutableStateOf(DataState.Initial(listOf()))
 
-    val currentTargetWordKanjis: MutableState<List<String>> = mutableStateOf(listOf())
+    val targetWordState: MutableState<DataState< DictionaryModel>> =
+        mutableStateOf(DataState.Initial( DictionaryModel.Empty()))
 
-    val similarSentences: MutableState<List<String>> = mutableStateOf(listOf())
+    val targetWordKanjisState: MutableState<DataState<List<String>>> =
+        mutableStateOf(DataState.Initial( listOf()))
 
     val selectedWord: MutableState<String> = mutableStateOf("")
 
-    val contextLoading: MutableState<Boolean> = mutableStateOf(true)
-
-    val wordModelLoading: MutableState<Boolean> = mutableStateOf(true)
-
-    val kanjisLoading: MutableState<Boolean> = mutableStateOf(true)
-
-    val similarSentencesLoading: MutableState<Boolean> = mutableStateOf(false)
 
     //TODO
     fun loadSimilarSentences() {
 
         viewModelScope.launch {
-            similarSentencesLoading.value = true
+            similarSentencesState.value = DataState.Loading
             delay(2000)
-            similarSentences.value = listOf(
+            val similarSentences = listOf(
                 "ボーカル・ギター担当。青森県上北郡横浜町出身[4]。デビュー当時はむつ市に在住[5]して活動していたが、2014年頃より青森市在住[6]。\n" +
                         "音楽を始めたきっかけは、小学校6年生の時に姉が聴いていたTM NETWORKに憧れて",
                 "ギター・プログラミング・楽器演奏・サウンドプロデュース担当[17]。バンドマスターおよびギターサポートライブ演奏[18]。LIVE TOUR 2017「メッセージボトル」福岡市民会館公演を最後にライブ活動を休止。",
@@ -56,7 +51,11 @@ class StudyViewModel @Inject constructor(
                 "同日、中島美嘉のトリビュートアルバム『MIKA NAKASHIMA TRIBUTE』リリース、本作で秋田の弾き語りによる「僕が死のうと思ったのは」のセルフカバーが初のCD音源化。",
                 "自身初のベストアルバム『メッセージボトル』リリース。同年1月7日より放送のテレビ東京系深夜ドラマ「銀と金」の主題歌に選ばれた新曲「ヒーロー」のほか、限定盤にはあまざらし名義のミニアルバム『光、再考』などを収録",
             )
-            similarSentencesLoading.value = false
+            if(similarSentences.isEmpty()) {
+                similarSentencesState.value = DataState.Error("No sentences found")
+            } else {
+               similarSentencesState.value = DataState.Success(similarSentences)
+            }
         }
     }
 
@@ -69,30 +68,35 @@ class StudyViewModel @Inject constructor(
     }
 
     fun setStudyContext(sentence: String?) {
-        contextLoading.value = true
-        currentStudyContext.value = sentence ?: ""
-        similarSentences.value = listOf()
-        contextLoading.value = false
+        studyContextState.value = DataState.Loading
+        val currentStudyContext = sentence ?: ""
+        if(currentStudyContext.isEmpty()) {
+            studyContextState.value = DataState.Error("Couldn't fetch target sentence")
+        } else {
+            studyContextState.value = DataState.Success(currentStudyContext)
+        }
     }
 
     fun setStudyTargetWord(word: String) {
         viewModelScope.launch {
-            wordModelLoading.value = true
-            var wordModel: DictionaryModel
+            targetWordState.value = DataState.Loading
             val cachedWord = reviewRepository.getWordReview(word)
-            wordModel = if(cachedWord == null){
+            val wordModel = if(cachedWord == null){
                 dictionaryRepository.search(word)
             } else {
                 reviewRepository.getWordData(cachedWord)
             }
-            currentStudyTargetWord.value = wordModel
-            wordModelLoading.value = false
+            if(wordModel.isEmpty()) {
+                targetWordState.value = DataState.Error("Couldn't fetch target word")
+            } else {
+                targetWordState.value = DataState.Success(wordModel)
+            }
         }
     }
 
     fun setCurrentWordKanjis(word: String) {
         viewModelScope.launch {
-            kanjisLoading.value = true
+            targetWordKanjisState.value = DataState.Loading
             val kanjiList = mutableListOf<String>()
             for(k in word) {
                 val kanji = kanjiRepository.getKanjiModel(k.toString())
@@ -100,8 +104,7 @@ class StudyViewModel @Inject constructor(
                     kanjiList.add(kanji.kanji)
                 }
             }
-            currentTargetWordKanjis.value = kanjiList
-            kanjisLoading.value = false
+            targetWordKanjisState.value = DataState.Success(kanjiList)
         }
     }
 

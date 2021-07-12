@@ -25,21 +25,20 @@ import androidx.navigation.NavController
 import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.domain.model.dictionary.Sense
 import com.example.nala.domain.model.kanji.KanjiModel
+import com.example.nala.ui.DataState
 import com.example.nala.ui.theme.*
 import kotlin.random.Random
 
 @Composable
 fun DictionaryDetailScreen(
-    wordModel: DictionaryModel,
-    sentence: String? = null,
-    isLoading: Boolean,
+    searchState: DataState<DictionaryModel>,
     fromLookup: Boolean = false,
     navController: NavController,
     wordKanjis: List<String>,
     setCurrentKanji: (String) -> Unit,
     setCurrentStory: (String) -> Unit,
     unsetSharedWord: () -> Unit,
-    addToReview: () -> Unit,
+    addToReview: (DictionaryModel) -> Unit,
     loadWordReviews: () -> Unit,
     scaffoldState: ScaffoldState,
     showSnackbar: (ScaffoldState) -> Unit
@@ -52,12 +51,12 @@ fun DictionaryDetailScreen(
             scaffoldState.snackbarHostState
         }
     ) { paddingValue ->
-        if(isLoading){
-            LoadingIndicator()
-        }  else {
-            ConstraintLayout(
-                modifier = Modifier.padding(paddingValue)
-            ) {
+
+        when(searchState) {
+            is DataState.Initial<*>, DataState.Loading -> {
+                LoadingIndicator()
+            }
+            is DataState.Error -> {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -67,7 +66,7 @@ fun DictionaryDetailScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 22.dp, start = 16.dp)
-                    ){
+                    ) {
                         BackButton(
                             navController = navController,
                             cleanupFunction = {
@@ -78,17 +77,41 @@ fun DictionaryDetailScreen(
                             }
                         )
                     }
-                    if(wordModel.word.isEmpty()) {
-                        ErrorScreen(
-                            text = "No word found in Jisho dictionary",
-                            subtitle = "¯\\_(ツ)_/¯")
-                    }
-                    else{
+                    ErrorScreen(
+                        text = "No word found in Jisho dictionary",
+                        subtitle = "¯\\_(ツ)_/¯"
+                    )
+
+                }
+            }
+            is DataState.Success<DictionaryModel> -> {
+                ConstraintLayout(
+                    modifier = Modifier.padding(paddingValue)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 22.dp, start = 16.dp)
+                        ){
+                            BackButton(
+                                navController = navController,
+                                cleanupFunction = {
+                                    if (!fromLookup)
+                                        unsetSharedWord()
+                                    else
+                                        activity!!.finish()
+                                }
+                            )
+                        }
                         LazyColumn{
-                            item() {
+                            item{
                                 DataSection(
-                                    wordModel,
-                                    sentence = sentence,
+                                    searchState.data,
                                     navController,
                                     wordKanjis,
                                     setCurrentKanji,
@@ -100,22 +123,23 @@ fun DictionaryDetailScreen(
                                 )
                             }
                         }
+
                     }
+                    val snackbar = createRef()
+                    DefaultSnackbar(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .constrainAs(snackbar) {
+                                bottom.linkTo(parent.bottom)
+                                start.linkTo(parent.start)
+                                end.linkTo(parent.end)
+                            },
+                        snackbarHostState = scaffoldState.snackbarHostState,
+                        onDismiss = {
+                            scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                        }
+                    )
                 }
-                val snackbar = createRef()
-                DefaultSnackbar(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .constrainAs(snackbar){
-                            bottom.linkTo(parent.bottom)
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                        },
-                    snackbarHostState = scaffoldState.snackbarHostState,
-                    onDismiss = {
-                        scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
-                    }
-                )
             }
         }
     }
@@ -124,12 +148,11 @@ fun DictionaryDetailScreen(
 @Composable
 fun DataSection(
     wordModel: DictionaryModel,
-    sentence: String? = null,
     navController: NavController,
     wordKanjis: List<String>,
     setCurrentKanji: (String) -> Unit,
     setCurrentStory: (String) -> Unit,
-    addToReview: () -> Unit,
+    addToReview: (DictionaryModel) -> Unit,
     loadWordReviews: () -> Unit,
     scaffoldState: ScaffoldState,
     onShowSnackbar: (ScaffoldState) -> Unit
@@ -151,7 +174,7 @@ fun DataSection(
         Spacer(
             modifier = Modifier.padding(vertical=5.dp)
         )
-        ButtonSection(addToReview, loadWordReviews, scaffoldState, onShowSnackbar)
+        ButtonSection(wordModel, addToReview, loadWordReviews, scaffoldState, onShowSnackbar)
         Spacer(modifier = Modifier.padding(vertical = 5.dp) )
         val isCommon: Boolean = wordModel?.common ?: false
         val isCommonTag: String = if(isCommon) "Common" else ""
@@ -198,7 +221,7 @@ fun WordSection(
             navController,
             setCurrentKanji,
             setCurrentStory,
-            fromStudy=fromStudy)
+        )
     }
 }
 
@@ -209,7 +232,6 @@ fun KanjiRow(
     navController: NavController,
     setCurrentKanji: (String) -> Unit,
     setCurrentStory: (String) -> Unit,
-    fromStudy: Boolean = false,
 ) {
     Row() {
         for (kanji in kanjis) {
@@ -237,7 +259,8 @@ fun KanjiRow(
 
 @Composable
 fun ButtonSection(
-    addToReview: () -> Unit,
+    wordModel: DictionaryModel,
+    addToReview: (DictionaryModel) -> Unit,
     loadWordReviews: () -> Unit,
     scaffoldState: ScaffoldState,
     onShowSnackbar: (ScaffoldState) -> Unit
@@ -250,7 +273,7 @@ fun ButtonSection(
     ) {
         Button(
             onClick = {
-                addToReview()
+                addToReview(wordModel)
                 onShowSnackbar(scaffoldState)
                 loadWordReviews()
                       },

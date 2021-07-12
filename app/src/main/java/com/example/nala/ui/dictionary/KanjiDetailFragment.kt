@@ -28,10 +28,8 @@ class KanjiDetailFragment : CustomFragment() {
             setContent {
                 val scaffoldState = rememberScaffoldState()
                 KanjiDetailScreen(
-                    kanji = viewModel.currentKanji.value,
-                    story = viewModel.currentStory.value,
-                    kanjiSet = viewModel.kanjiSet.value,
-                    storySet = viewModel.storySet.value,
+                    kanjiSearchState = viewModel.kanjiSearchState.value,
+                    kanjiStoryState = viewModel.kanjiStoryState.value,
                     storyFormActive = viewModel.editStoryFormActive.value,
                     addKanjiToReview = viewModel::addKanjiToReview,
                     updateKanjiStory = viewModel::updateKanjiStory,

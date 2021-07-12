@@ -27,22 +27,22 @@ class SentenceFormFragment : CustomFragment() {
             setContent {
                 val scaffoldState = rememberScaffoldState()
                 OneTargetForm(
-                    sentence = viewModel.sharedSentence.value,
+                    sentenceState = viewModel.sentenceState.value,
                     tokens = viewModel.sharedSentenceTokens.value,
                     tokensIndexMap = viewModel.sharedSentenceTokensIndexMap.value,
-                    sentenceLoading = viewModel.sentenceReceived.value,
+                    fromLookup = false, // TODO move fromLookup to viewModel
                     selectedWord = studyViewModel.selectedWord.value,
                     onSentenceAdd = studyViewModel::setStudyContext,
                     setKanjis = studyViewModel::setCurrentWordKanjis,
                     onWordAdd = studyViewModel::setStudyTargetWord,
                     onWordSelect = studyViewModel::setSelectedWord,
-                    unsetSharedSentence = viewModel::unsetSharedSentence,
-                    unsetSelectedWord = studyViewModel::unsetSelectedWord,
                     addSentenceToReview = viewModel::addSentenceToReview,
                     loadSentenceReviews = reviewViewModel::loadSentenceReviewItems,
-                    scaffoldState = scaffoldState,
+                    unsetSelectedWord = studyViewModel::unsetSelectedWord,
+                    unsetSharedSentence = viewModel::unsetSharedSentence,
                     showSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
-                    navController = findNavController()
+                    scaffoldState = scaffoldState,
+                    navController = findNavController(),
                 )
             }
         }

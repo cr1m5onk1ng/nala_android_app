@@ -36,16 +36,15 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
 import com.example.nala.domain.model.kanji.KanjiModel
+import com.example.nala.ui.DataState
 import com.example.nala.ui.theme.Quicksand
 import org.intellij.lang.annotations.JdkConstants
 
 @ExperimentalComposeUiApi
 @Composable
 fun KanjiDetailScreen(
-    kanji: KanjiModel,
-    story: String,
-    kanjiSet: Boolean,
-    storySet: Boolean,
+    kanjiSearchState: DataState<KanjiModel>,
+    kanjiStoryState: DataState<String>,
     storyFormActive: Boolean,
     addKanjiToReview: (KanjiModel) -> Unit,
     updateKanjiStory: (String, String) -> Unit,
@@ -55,101 +54,111 @@ fun KanjiDetailScreen(
     scaffoldState: ScaffoldState,
     showSnackbar: () -> Unit,
 ) {
-    ConstraintLayout {
-        if (!kanjiSet || !storySet) {
-            LoadingIndicator()
-        }
-        else {
-            LazyColumn (
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-            ){
-                item() {
-                    Column() {
-                        var tags: MutableList<String> = mutableListOf()
-                        var freq = kanji?.freq ?: ""
-                        if(freq.isNotEmpty()) {
-                            freq = "frequency: $freq"
-                            tags.add(freq)
-                        }
+    Scaffold(){ paddingValue ->
+        ConstraintLayout(
+            modifier = Modifier.padding(paddingValue)
+        ) {
+            when(kanjiSearchState){
+                is DataState.Initial<*>, DataState.Loading -> {
+                    LoadingIndicator()
+                }
+                is DataState.Error -> {
+                    ErrorScreen(text = "Couldn't fetch kanji from dictionary", subtitle = "sorry dude")
+                }
+                is DataState.Success<KanjiModel> -> {
+                    val kanji = kanjiSearchState.data
+                    LazyColumn (
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                    ){
+                        item() {
+                            Column() {
+                                var tags: MutableList<String> = mutableListOf()
+                                var freq = kanji.freq ?: ""
+                                if(freq.isNotEmpty()) {
+                                    freq = "frequency: $freq"
+                                    tags.add(freq)
+                                }
 
-                        var jlpt = kanji?.jlpt ?: ""
-                        if(jlpt.isNotEmpty()) {
-                            jlpt = "jlptn-$jlpt"
-                            tags.add(jlpt)
-                        }
+                                var jlpt = kanji.jlpt ?: ""
+                                if(jlpt.isNotEmpty()) {
+                                    jlpt = "jlptn-$jlpt"
+                                    tags.add(jlpt)
+                                }
 
-                        var grade = kanji?.grade ?: ""
-                        if(grade.isNotEmpty()) {
-                            grade = "grade: $grade"
-                            tags.add(grade)
-                        }
+                                var grade = kanji.grade ?: ""
+                                if(grade.isNotEmpty()) {
+                                    grade = "grade: $grade"
+                                    tags.add(grade)
+                                }
 
-                        // SECTIONS
-                        Spacer(modifier = Modifier.padding(vertical = 16.dp))
-                        BackButton(navController)
-                        Spacer(modifier = Modifier.padding(vertical = 16.dp))
-                        KanjiSection(kanji = kanji.kanji)
-                        //Spacer(modifier = Modifier.padding(bottom = 8.dp))
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp),
-                            horizontalArrangement = Arrangement.Center,
-                        ){
-                            AddToReviewButton(
-                                scaffoldState = scaffoldState,
-                                addToReview = {
-                                    addKanjiToReview(kanji)
-                                    showSnackbar()
-                                },
-                                onShowSnackbar = {showSnackbar()}
-                            )
-                        }
-                        TagRow(tags = tags)
-                        StorySection(story = story)
-                        if(storyFormActive){
-                            StoryEditForm(
-                                kanji = kanji.kanji,
-                                onEditStory = updateKanjiStory,
-                                setCurrentStory = setCurrentStory,
-                                toggleStoryEditForm = toggleStoryEditForm,
-                            )
-                        } else{
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(end = 16.dp),
-                                horizontalArrangement = Arrangement.End,
-                            ) {
-                                CustomTextButton(
-                                    text = "Edit story",
-                                    textSize = 16.sp,
-                                    onClick = {
-                                        toggleStoryEditForm(true)
+                                // SECTIONS
+                                Spacer(modifier = Modifier.padding(vertical = 16.dp))
+                                BackButton(navController)
+                                Spacer(modifier = Modifier.padding(vertical = 16.dp))
+                                KanjiSection(kanji = kanji.kanji)
+                                //Spacer(modifier = Modifier.padding(bottom = 8.dp))
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(8.dp),
+                                    horizontalArrangement = Arrangement.Center,
+                                ){
+                                    AddToReviewButton(
+                                        scaffoldState = scaffoldState,
+                                        addToReview = {
+                                            addKanjiToReview(kanji)
+                                            showSnackbar()
+                                        },
+                                        onShowSnackbar = {showSnackbar()}
+                                    )
+                                }
+                                TagRow(tags = tags)
+                                StorySection(storyState = kanjiStoryState)
+                                if(storyFormActive){
+                                    StoryEditForm(
+                                        kanji = kanji.kanji,
+                                        onEditStory = updateKanjiStory,
+                                        setCurrentStory = setCurrentStory,
+                                        toggleStoryEditForm = toggleStoryEditForm,
+                                    )
+                                } else{
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(end = 16.dp),
+                                        horizontalArrangement = Arrangement.End,
+                                    ) {
+                                        CustomTextButton(
+                                            text = "Edit story",
+                                            textSize = 16.sp,
+                                            onClick = {
+                                                toggleStoryEditForm(true)
+                                            }
+                                        )
                                     }
-                                )
+                                }
+                                DetailsSection(kanji)
                             }
                         }
-                        DetailsSection(kanji)
                     }
                 }
             }
+            val snackbar = createRef()
+            DefaultSnackbar(
+                modifier = Modifier
+                    .constrainAs(snackbar){
+                        bottom.linkTo(parent.bottom)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                    },
+                snackbarHostState = scaffoldState.snackbarHostState,
+                onDismiss = {
+                    scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                }
+            )
         }
-        val snackbar = createRef()
-        DefaultSnackbar(
-            modifier = Modifier
-                .constrainAs(snackbar){
-                    bottom.linkTo(parent.bottom)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                },
-            snackbarHostState = scaffoldState.snackbarHostState,
-            onDismiss = {
-                scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
-            }
-        )
     }
 }
 
@@ -176,44 +185,55 @@ fun KanjiSection(
 
 @Composable
 fun StorySection(
-    story: String
+    storyState: DataState<String>,
 ){
-    Column (
-        modifier = Modifier
-            .padding(start = 16.dp, top = 16.dp, end = 16.dp)
-            .fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ){
-        Spacer(
-            modifier = Modifier
-                .border(
-                    border = BorderStroke(
-                        3.dp,
-                        color = Color.LightGray
+    when(storyState){
+        is DataState.Loading -> {
+            LoadingIndicator()
+        }
+        is DataState.Error -> {
+            Text("No story found for this kanji. Add one!")
+        }
+        is DataState.Success<String> -> {
+            Column (
+                modifier = Modifier
+                    .padding(start = 16.dp, top = 16.dp, end = 16.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ){
+                Spacer(
+                    modifier = Modifier
+                        .border(
+                            border = BorderStroke(
+                                3.dp,
+                                color = Color.LightGray
+                            )
+                        )
+                        .padding(vertical = 8.dp)
+                )
+                Text(
+                    storyState.data,
+                    style = TextStyle(
+                        fontFamily = Quicksand,
+                        fontWeight = FontWeight.W500,
+                        fontSize = 16.sp,
+                        color = Color.Black
                     )
                 )
-                .padding(vertical = 8.dp)
-        )
-        Text(
-            story,
-            style = TextStyle(
-                fontFamily = Quicksand,
-                fontWeight = FontWeight.W500,
-                fontSize = 16.sp,
-                color = Color.Black
-            )
-        )
-        Spacer(
-            modifier = Modifier
-                .border(
-                    border = BorderStroke(
-                        3.dp,
-                        color = Color.LightGray
-                    )
+                Spacer(
+                    modifier = Modifier
+                        .border(
+                            border = BorderStroke(
+                                3.dp,
+                                color = Color.LightGray
+                            )
+                        )
+                        .padding(vertical = 8.dp)
                 )
-                .padding(vertical = 8.dp)
-        )
+            }
+        }
     }
+
 }
 
 @Composable

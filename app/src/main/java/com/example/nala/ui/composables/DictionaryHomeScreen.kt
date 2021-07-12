@@ -33,6 +33,7 @@ import androidx.navigation.NavController
 import com.example.nala.R
 import com.example.nala.db.models.review.WordReviewModel
 import com.example.nala.domain.model.dictionary.DictionaryModel
+import com.example.nala.ui.DataState
 import com.example.nala.ui.theme.*
 import kotlin.random.Random
 
@@ -41,8 +42,7 @@ import kotlin.random.Random
 @Composable
 fun HomeScreen(
     query: String,
-    mightForgetItems: List<WordReviewModel>,
-    mightForgetItemsLoaded: Boolean,
+    mightForgetItemsState: DataState<List<WordReviewModel>>,
     onQueryChange: (String) -> Unit,
     onClick: () -> Unit,
     textReceived: Boolean,
@@ -87,26 +87,29 @@ fun HomeScreen(
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if(!mightForgetItemsLoaded) {
-                LoadingIndicator()
-            }
-            else {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        "NaLa",
-                        modifier = Modifier.padding(top = 45.dp),
-                        textAlign = TextAlign.Center,
-                        style = TextStyle(
-                            fontFamily = Quicksand,
-                            fontSize = 42.sp,
-                            color = LightYellow,
-                            fontWeight = FontWeight.Bold
-                        ),
-                    )
-                    Spacer(modifier = Modifier.height(40.dp))
-                    if(mightForgetItems.isNotEmpty()) {
+            when(mightForgetItemsState) {
+                is DataState.Initial, DataState.Loading -> {
+                    LoadingIndicator()
+                }
+                is DataState.Error -> {
+                    Spacer(modifier = Modifier.padding(top = 64.dp))
+                }
+                is DataState.Success<List<WordReviewModel>> -> {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            "NaLa",
+                            modifier = Modifier.padding(top = 45.dp),
+                            textAlign = TextAlign.Center,
+                            style = TextStyle(
+                                fontFamily = Quicksand,
+                                fontSize = 42.sp,
+                                color = LightYellow,
+                                fontWeight = FontWeight.Bold
+                            ),
+                        )
+                        Spacer(modifier = Modifier.height(40.dp))
                         Text(
                             "Words you might forget",
                             modifier = Modifier
@@ -124,8 +127,8 @@ fun HomeScreen(
                                 .height(100.dp),
                             horizontalArrangement = Arrangement.Center
                         ){
-                            items(mightForgetItems.size) { index ->
-                                val word = mightForgetItems[index].word
+                            items(mightForgetItemsState.data.size) { index ->
+                                val word = mightForgetItemsState.data[index].word
                                 Card(
                                     modifier = Modifier
                                         .padding(8.dp)
@@ -157,43 +160,42 @@ fun HomeScreen(
                         Spacer(
                             modifier = Modifier.height(10.dp),
                         )
-                    } else {
-                        Spacer(modifier = Modifier.padding(top = 64.dp))
-                    }
-                    TextField(
-                        value = query,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                            .alpha(0.6f),
-                        onValueChange = onQueryChange,
-                        textStyle = TextStyle(color = MaterialTheme.colors.onSurface, fontSize = 20.sp),
-                        colors = TextFieldDefaults.textFieldColors(
-                            backgroundColor = Blue400,
-                            focusedIndicatorColor =  Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent),
-                        shape = RoundedCornerShape(32.dp),
-                        placeholder = { Text("Search in dictionary") },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Rounded.Search,
-                                contentDescription = "search",
-                                tint = Color.White )
 
-                        },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Search,
-                        ),
-                        keyboardActions = KeyboardActions (
-                            onSearch = {
-                                onClick()
-                                onQueryChange("")
-                                keyboardController?.hide()
-                                navController.navigate("detail_screen")
-                            }
+                        TextField(
+                            value = query,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                                .alpha(0.6f),
+                            onValueChange = onQueryChange,
+                            textStyle = TextStyle(color = MaterialTheme.colors.onSurface, fontSize = 20.sp),
+                            colors = TextFieldDefaults.textFieldColors(
+                                backgroundColor = Blue400,
+                                focusedIndicatorColor =  Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent),
+                            shape = RoundedCornerShape(32.dp),
+                            placeholder = { Text("Search in dictionary") },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Rounded.Search,
+                                    contentDescription = "search",
+                                    tint = Color.White )
+
+                            },
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Search,
+                            ),
+                            keyboardActions = KeyboardActions (
+                                onSearch = {
+                                    onClick()
+                                    onQueryChange("")
+                                    keyboardController?.hide()
+                                    navController.navigate("detail_screen")
+                                }
+                            )
                         )
-                    )
+                    }
                 }
             }
         }

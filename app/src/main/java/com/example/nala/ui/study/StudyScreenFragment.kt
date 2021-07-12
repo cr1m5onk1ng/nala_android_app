@@ -30,20 +30,13 @@ class StudyScreenFragment : CustomFragment() {
             setContent {
                 val scaffoldState = rememberScaffoldState()
                 StudyScreen(
-                    context = studyViewModel.currentStudyContext.value ?: "",
-                    wordModel = studyViewModel.currentStudyTargetWord.value,
-                    similarSentences = studyViewModel.similarSentences.value,
-                    wordKanjis = viewModel.currentWordKanjis.value,
+                    studyContextState = studyViewModel.studyContextState.value,
+                    targetWordState = studyViewModel.targetWordState.value,
+                    similarSentencesState = studyViewModel.similarSentencesState.value,
                     navController = findNavController(),
-                    setCurrentKanji = viewModel::setCurrentKanji,
-                    setCurrentStory = viewModel::setCurrentStory,
                     setSharedSentence = viewModel::setSharedSentence,
                     setCurrentWord = viewModel::setCurrentWordFromStudy,
                     unsetTargetWord = studyViewModel::unsetSelectedWord,
-                    contextLoading = studyViewModel.contextLoading.value,
-                    wordLoading = studyViewModel.wordModelLoading.value,
-                    sentencesLoading = studyViewModel.similarSentencesLoading.value,
-                    kanjisLoading = studyViewModel.kanjisLoading.value,
                     addSentenceToReview = viewModel::addSentenceToReview,
                     loadSentenceReviews = reviewViewModel::loadSentenceReviewItems,
                     loadSimilarSentences = studyViewModel::loadSimilarSentences,

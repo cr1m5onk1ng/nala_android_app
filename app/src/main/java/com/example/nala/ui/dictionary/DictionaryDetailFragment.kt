@@ -30,8 +30,8 @@ class DictionaryDetailFragment : CustomFragment() {
                 val scaffoldState = rememberScaffoldState()
                 AppTheme(darkTheme = false) {
                     DictionaryDetailScreen(
-                        viewModel.currentWordModel.value,
-                        isLoading = viewModel.searchLoading.value,
+                        searchState = viewModel.wordSearchState.value,
+                        fromLookup = false, //TODO move fromLookup to viewModel
                         navController = findNavController(),
                         wordKanjis = viewModel.currentWordKanjis.value,
                         setCurrentKanji = viewModel::setCurrentKanji,
@@ -40,7 +40,7 @@ class DictionaryDetailFragment : CustomFragment() {
                         addToReview =  viewModel::addWordToReview,
                         loadWordReviews = reviewViewModel::loadWordReviewItems,
                         scaffoldState = scaffoldState,
-                        showSnackbar = {showSnackbar(scaffoldState, message="Added to review")}
+                        showSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
                     )
                 }
             }

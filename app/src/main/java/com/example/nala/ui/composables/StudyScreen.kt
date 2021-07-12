@@ -25,6 +25,7 @@ import androidx.navigation.NavController
 import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.domain.model.kanji.KanjiCollection
 import com.example.nala.domain.model.kanji.KanjiModel
+import com.example.nala.ui.DataState
 import com.example.nala.ui.theme.*
 
 val specialStyle = SpanStyle(
@@ -43,17 +44,10 @@ val normalStyle = SpanStyle(
 
 @Composable
 fun StudyScreen(
-    context: String,
-    wordModel: DictionaryModel,
-    similarSentences: List<String>,
-    wordKanjis: List<String>,
+    studyContextState: DataState<String>,
+    targetWordState: DataState<DictionaryModel>,
+    similarSentencesState: DataState<List<String>>,
     navController: NavController,
-    contextLoading: Boolean,
-    wordLoading: Boolean,
-    sentencesLoading: Boolean,
-    kanjisLoading: Boolean,
-    setCurrentKanji: (String) -> Unit,
-    setCurrentStory: (String) -> Unit,
     setSharedSentence: (String) -> Unit,
     setCurrentWord: (String) -> Unit,
     unsetTargetWord: () -> Unit,
@@ -67,140 +61,159 @@ fun StudyScreen(
 
     Scaffold(
 
-    ) {
-        if(contextLoading || wordLoading || kanjisLoading){
-            LoadingIndicator()
-        }
-        else if(wordModel.word.isEmpty()) {
-            ErrorScreen(
-                text = "Target word not found in Jisho dictionary",
-                subtitle = "¯\\_(ツ)_/¯"
-            )
-        }
-        else {
-            ConstraintLayout() {
-                val word = wordModel.word
-                val reading = wordModel.reading
-                val parts = context.split(Regex(word))
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-
-                    ) {
-                    Row (
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 20.dp),
-                        horizontalArrangement = Arrangement.Start
-                    ){
-                        BackButton(
-                            navController = navController,
-                            cleanupFunction = {
-                                unsetTargetWord()
-                            }
+    ) { paddingValue ->
+        when(studyContextState){
+            is DataState.Initial<*>, DataState.Loading -> {
+                LoadingIndicator()
+            }
+            is DataState.Error -> {
+                ErrorScreen(
+                    text = "An error occured while loading study data",
+                    subtitle = "¯\\_(ツ)_/¯"
+                )
+            }
+            is DataState.Success<String> -> {
+                val context = studyContextState.data
+                when(targetWordState) {
+                    is DataState.Initial<*>, DataState.Loading -> {
+                        LoadingIndicator()
+                    }
+                    is DataState.Error -> {
+                        ErrorScreen(
+                            text = "An error occured while loading target word data",
+                            subtitle = "¯\\_(ツ)_/¯"
                         )
                     }
+                    is DataState.Success<DictionaryModel> -> {
+                        val wordModel = targetWordState.data
+                        ConstraintLayout(modifier = Modifier.padding(paddingValue)) {
+                            val word = wordModel.word
+                            val reading = wordModel.reading
+                            val parts = context.split(Regex(word))
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(16.dp),
 
-                    LazyColumn(
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        item {
-                            Spacer(modifier = Modifier.padding(vertical=3.dp))
-                            /*
-                            WordSection(
-                                reading = reading,
-                                word = word,
-                                wordKanjis = wordKanjis,
-                                navController,
-                                setCurrentKanji,
-                                setCurrentStory,
-                                fromStudy = true
-                            )*/
-                            WordRow(
-                                reading = wordModel.reading,
-                                word = wordModel.word,
-                                setCurrentWord = setCurrentWord,
-                                navController = navController,
-                            )
-                            ContextSection( word = word, parts = parts)
-                            SmallButton(
-                                backgroundColor = Blue700,
-                                text = "Add to review",
-                                icon = Icons.Rounded.Add,
-                                onCLick = {
-                                    addSentenceToReview(word, context)
-                                    showReviewSnackbar()
-                                },
-                                height = 50.dp,
-                            )
-                            Spacer(modifier = Modifier.padding(vertical=5.dp))
-
-                            if(similarSentences.isEmpty()) {
-                                if(sentencesLoading){
-                                    LoadingIndicator()
-                                } else {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.End
-                                    ) {
-                                        CustomTextButton(
-                                            text = "See similar sentences",
-                                            onClick = {
-                                                loadSimilarSentences()
-                                            }
-                                        )
-                                    }
-                                }
-                            } else {
-                                Text(
-                                    "Similar sentences",
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    style = TextStyle(
-                                        fontFamily = Quicksand,
-                                        fontSize = 22.sp,
-                                        fontWeight = FontWeight.W500
-                                    )
-                                )
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(8.dp)
                                 ) {
-                                    for(sent in similarSentences) {
-                                        SentenceCard(
-                                            sentence = sent,
-                                            category = "Music",
-                                            addSentenceToReview = addSentenceToReview,
-                                            loadSentenceReviews = loadSentenceReviews,
-                                            setSharedSentence = setSharedSentence,
-                                            unsetTargetWord = unsetTargetWord,
-                                            showReviewSnackbar = showReviewSnackbar,
-                                            showSaveSnackbar = showSaveSnackbar,
+                                Row (
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 20.dp),
+                                    horizontalArrangement = Arrangement.Start
+                                ){
+                                    BackButton(
+                                        navController = navController,
+                                        cleanupFunction = {
+                                            unsetTargetWord()
+                                        }
+                                    )
+                                }
+
+                                LazyColumn(
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    item {
+                                        Spacer(modifier = Modifier.padding(vertical=3.dp))
+                                        /*
+                                        WordSection(
+                                            reading = reading,
+                                            word = word,
+                                            wordKanjis = wordKanjis,
+                                            navController,
+                                            setCurrentKanji,
+                                            setCurrentStory,
+                                            fromStudy = true
+                                        )*/
+                                        WordRow(
+                                            reading = wordModel.reading,
+                                            word = wordModel.word,
+                                            setCurrentWord = setCurrentWord,
                                             navController = navController,
                                         )
+                                        ContextSection( word = word, parts = parts)
+                                        SmallButton(
+                                            backgroundColor = Blue700,
+                                            text = "Add to review",
+                                            icon = Icons.Rounded.Add,
+                                            onCLick = {
+                                                addSentenceToReview(word, context)
+                                                showReviewSnackbar()
+                                            },
+                                            height = 50.dp,
+                                        )
+                                        Spacer(modifier = Modifier.padding(vertical=5.dp))
+                                        when(similarSentencesState) {
+                                            is DataState.Initial<*>, DataState.Loading -> {
+                                                LoadingIndicator()
+                                            }
+                                            is DataState.Error -> {
+                                                Row(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    horizontalArrangement = Arrangement.End
+                                                ) {
+                                                    CustomTextButton(
+                                                        text = "See similar sentences",
+                                                        onClick = {
+                                                            loadSimilarSentences()
+                                                        }
+                                                    )
+                                                }
+                                            }
+                                            is DataState.Success<List<String>> -> {
+                                                val similarSentences = similarSentencesState.data
+                                                Text(
+                                                    "Similar sentences",
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(16.dp),
+                                                    style = TextStyle(
+                                                        fontFamily = Quicksand,
+                                                        fontSize = 22.sp,
+                                                        fontWeight = FontWeight.W500
+                                                    )
+                                                )
+                                                Column(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(8.dp)
+                                                ) {
+                                                    for(sent in similarSentences) {
+                                                        SentenceCard(
+                                                            sentence = sent,
+                                                            category = "Music",
+                                                            addSentenceToReview = addSentenceToReview,
+                                                            loadSentenceReviews = loadSentenceReviews,
+                                                            setSharedSentence = setSharedSentence,
+                                                            unsetTargetWord = unsetTargetWord,
+                                                            showReviewSnackbar = showReviewSnackbar,
+                                                            showSaveSnackbar = showSaveSnackbar,
+                                                            navController = navController,
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
+                            val snackbar = createRef()
+                            DefaultSnackbar(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .constrainAs(snackbar){
+                                        bottom.linkTo(parent.bottom)
+                                        start.linkTo(parent.start)
+                                        end.linkTo(parent.end)
+                                    },
+                                snackbarHostState = scaffoldState.snackbarHostState,
+                                onDismiss = {
+                                    scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                                }
+                            )
                         }
                     }
                 }
-                val snackbar = createRef()
-                DefaultSnackbar(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .constrainAs(snackbar){
-                            bottom.linkTo(parent.bottom)
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                        },
-                    snackbarHostState = scaffoldState.snackbarHostState,
-                    onDismiss = {
-                        scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
-                    }
-                )
             }
         }
     }
