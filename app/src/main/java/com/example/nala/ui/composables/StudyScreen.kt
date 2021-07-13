@@ -68,7 +68,7 @@ fun StudyScreen(
             }
             is DataState.Error -> {
                 ErrorScreen(
-                    text = "An error occured while loading study data",
+                    text = "An error occurred while loading study data",
                     subtitle = "¯\\_(ツ)_/¯"
                 )
             }
@@ -115,16 +115,6 @@ fun StudyScreen(
                                 ) {
                                     item {
                                         Spacer(modifier = Modifier.padding(vertical=3.dp))
-                                        /*
-                                        WordSection(
-                                            reading = reading,
-                                            word = word,
-                                            wordKanjis = wordKanjis,
-                                            navController,
-                                            setCurrentKanji,
-                                            setCurrentStory,
-                                            fromStudy = true
-                                        )*/
                                         WordRow(
                                             reading = wordModel.reading,
                                             word = wordModel.word,
@@ -144,10 +134,7 @@ fun StudyScreen(
                                         )
                                         Spacer(modifier = Modifier.padding(vertical=5.dp))
                                         when(similarSentencesState) {
-                                            is DataState.Initial<*>, DataState.Loading -> {
-                                                LoadingIndicator()
-                                            }
-                                            is DataState.Error -> {
+                                            is DataState.Initial<*> -> {
                                                 Row(
                                                     modifier = Modifier.fillMaxWidth(),
                                                     horizontalArrangement = Arrangement.End
@@ -159,6 +146,15 @@ fun StudyScreen(
                                                         }
                                                     )
                                                 }
+                                            }
+                                            is DataState.Loading -> {
+                                                LoadingIndicator()
+                                            }
+                                            is DataState.Error -> {
+                                                ErrorScreen(
+                                                    text = "Couldn't fetch similar sentences.",
+                                                    subtitle = "¯\\_(ツ)_/¯"
+                                                )
                                             }
                                             is DataState.Success<List<String>> -> {
                                                 val similarSentences = similarSentencesState.data

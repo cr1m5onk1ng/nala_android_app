@@ -37,7 +37,8 @@ class StudyViewModel @Inject constructor(
     val selectedWord: MutableState<String> = mutableStateOf("")
 
 
-    //TODO
+    //This is a demo. The actual function connects to the remote semantic search service on AWS lambda
+    // to retrieve the sentences
     fun loadSimilarSentences() {
 
         viewModelScope.launch {
@@ -59,6 +60,10 @@ class StudyViewModel @Inject constructor(
         }
     }
 
+    private fun unsetSimilarSentences() {
+        similarSentencesState.value = DataState.Initial(listOf())
+    }
+
     fun setSelectedWord(text: String){
         selectedWord.value = text
     }
@@ -68,6 +73,7 @@ class StudyViewModel @Inject constructor(
     }
 
     fun setStudyContext(sentence: String?) {
+        unsetSimilarSentences()
         studyContextState.value = DataState.Loading
         val currentStudyContext = sentence ?: ""
         if(currentStudyContext.isEmpty()) {

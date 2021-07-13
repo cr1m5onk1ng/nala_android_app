@@ -87,29 +87,29 @@ fun HomeScreen(
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            when(mightForgetItemsState) {
-                is DataState.Initial, DataState.Loading -> {
-                    LoadingIndicator()
-                }
-                is DataState.Error -> {
-                    Spacer(modifier = Modifier.padding(top = 64.dp))
-                }
-                is DataState.Success<List<WordReviewModel>> -> {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            "NaLa",
-                            modifier = Modifier.padding(top = 45.dp),
-                            textAlign = TextAlign.Center,
-                            style = TextStyle(
-                                fontFamily = Quicksand,
-                                fontSize = 42.sp,
-                                color = LightYellow,
-                                fontWeight = FontWeight.Bold
-                            ),
-                        )
-                        Spacer(modifier = Modifier.height(40.dp))
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    "NaLa",
+                    modifier = Modifier.padding(top = 45.dp),
+                    textAlign = TextAlign.Center,
+                    style = TextStyle(
+                        fontFamily = Quicksand,
+                        fontSize = 42.sp,
+                        color = LightYellow,
+                        fontWeight = FontWeight.Bold
+                    ),
+                )
+                Spacer(modifier = Modifier.height(40.dp))
+                when(mightForgetItemsState) {
+                    is DataState.Initial, DataState.Loading -> {
+                        LoadingIndicator()
+                    }
+                    is DataState.Error -> {
+                        Spacer(modifier = Modifier.padding(top = 64.dp))
+                    }
+                    is DataState.Success<List<WordReviewModel>> -> {
                         Text(
                             "Words you might forget",
                             modifier = Modifier
@@ -157,46 +157,45 @@ fun HomeScreen(
                                 }
                             }
                         }
-                        Spacer(
-                            modifier = Modifier.height(10.dp),
-                        )
-
-                        TextField(
-                            value = query,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                                .alpha(0.6f),
-                            onValueChange = onQueryChange,
-                            textStyle = TextStyle(color = MaterialTheme.colors.onSurface, fontSize = 20.sp),
-                            colors = TextFieldDefaults.textFieldColors(
-                                backgroundColor = Blue400,
-                                focusedIndicatorColor =  Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent),
-                            shape = RoundedCornerShape(32.dp),
-                            placeholder = { Text("Search in dictionary") },
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Rounded.Search,
-                                    contentDescription = "search",
-                                    tint = Color.White )
-
-                            },
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Search,
-                            ),
-                            keyboardActions = KeyboardActions (
-                                onSearch = {
-                                    onClick()
-                                    onQueryChange("")
-                                    keyboardController?.hide()
-                                    navController.navigate("detail_screen")
-                                }
-                            )
-                        )
                     }
                 }
+                Spacer(
+                    modifier = Modifier.height(10.dp),
+                )
+                TextField(
+                    value = query,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .alpha(0.6f),
+                    onValueChange = onQueryChange,
+                    textStyle = TextStyle(color = MaterialTheme.colors.onSurface, fontSize = 20.sp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        backgroundColor = Blue400,
+                        focusedIndicatorColor =  Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent),
+                    shape = RoundedCornerShape(32.dp),
+                    placeholder = { Text("Search in dictionary") },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Rounded.Search,
+                            contentDescription = "search",
+                            tint = Color.White )
+
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Search,
+                    ),
+                    keyboardActions = KeyboardActions (
+                        onSearch = {
+                            onClick()
+                            onQueryChange("")
+                            keyboardController?.hide()
+                            navController.navigate("detail_screen")
+                        }
+                    )
+                )
             }
         }
 
