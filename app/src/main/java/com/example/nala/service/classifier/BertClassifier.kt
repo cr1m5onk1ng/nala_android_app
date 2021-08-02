@@ -36,8 +36,9 @@ class BertClassifierVocabulary (
             for (n in tokenIds) inTensorBuffer.put(n.toLong())
             for (i in 0 until MODEL_INPUT_LENGTH - tokenIds.size) tokenToIdMap!![PAD]?.let { inTensorBuffer.put(it) }
             val inTensor = Tensor.fromBlob(inTensorBuffer, longArrayOf(1, MODEL_INPUT_LENGTH.toLong()))
-            val outTensors = model!!.forward(IValue.from(inTensor)).toDictStringKey()
-            val logits = outTensors!![0]!!.toTensor().dataAsIntArray
+            val outTensors: Map<String, IValue> = model!!.forward(IValue.from(inTensor)).toDictStringKey()
+            val _logits = outTensors!!["0"]!!
+            val logits = _logits.toTensor().dataAsIntArray
             val predictedClass = argmax(logits)
             val category = IDS_TO_LABELS[predictedClass]
         } catch (e: QAException) {

@@ -27,6 +27,7 @@ import com.example.nala.db.models.review.KanjiReviewModel
 import com.example.nala.db.models.review.WordReviewModel
 import com.example.nala.domain.model.review.ReviewCategory
 import com.example.nala.domain.model.review.SentenceReviewModel
+import com.example.nala.ui.DataState
 import com.example.nala.ui.theme.*
 
 val specialReviewStyle = SpanStyle(
@@ -45,15 +46,11 @@ val normalReviewStyle = SpanStyle(
 
 @Composable
 fun ReviewListScreen(
-    isLoading: Boolean,
     selectedCategory: ReviewCategory,
     setCategory: (ReviewCategory) -> Unit,
-    wordReviewItems: List<WordReviewModel>,
-    sentenceReviewItems: List<SentenceReviewModel>,
-    kanjiReviewItems: List<KanjiReviewModel>,
-    loadWordReviews: () -> Unit,
-    loadSentenceReviews: () -> Unit,
-    loadKanjiReviews: () -> Unit,
+    wordReviewItems: DataState<List<WordReviewModel>>,
+    sentenceReviewItems: DataState<List<SentenceReviewModel>>,
+    kanjiReviewItems: DataState<List<KanjiReviewModel>>,
     setWordItem: (WordReviewModel) -> Unit,
     setSentenceItem: (String) -> Unit,
     setTargetWordItem: (String) -> Unit,
@@ -61,9 +58,9 @@ fun ReviewListScreen(
     removeWordReview: (WordReviewModel) -> Unit,
     removeSentenceReview: (SentenceReviewModel) -> Unit,
     removeKanjiReview: (KanjiReviewModel) -> Unit,
+    dismissKanjiReview: (String) -> Unit,
     dismissWordReview: (String) -> Unit,
     dismissSentenceReview: (String) -> Unit,
-    dismissKanjiReview: (String) -> Unit,
     isHomeSelected: Boolean,
     isReviewsSelected: Boolean,
     toggleHome: (Boolean) -> Unit,
@@ -121,30 +118,25 @@ fun ReviewListScreen(
                 FilterButtonsRow(
                     setCategory = setCategory,
                     selectedCategory,
-                    wordReviewItems = wordReviewItems,
-                    sentenceReviewItems = sentenceReviewItems,
-                    kanjiReviewItems = kanjiReviewItems,
-                    loadKanjiReviews = loadKanjiReviews,
-                    loadSentenceReviews = loadSentenceReviews,
-                    loadWordReviews = loadWordReviews
                 )
-                if (isLoading) {
-                    LoadingIndicator()
-                } else{
-                    LazyColumn(
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .fillMaxHeight()
-                    ) {
-                        when(selectedCategory) {
-                            ReviewCategory.Word -> {
-                                if(wordReviewItems.isEmpty()) {
+                LazyColumn(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .fillMaxHeight()
+                ) {
+                    when(selectedCategory) {
+                        ReviewCategory.Word -> {
+                            when(wordReviewItems){
+                                is DataState.Initial<*>, DataState.Loading  -> {
+                                    item {CircularProgressIndicator()}
+                                }
+                                is DataState.Error -> {
                                     item {ErrorScreen(text = "No word added to review", subtitle = "")}
                                 }
-                                else {
-                                    items(count = wordReviewItems.size) { index ->
+                                is DataState.Success<List<WordReviewModel>>  -> {
+                                    items(count = wordReviewItems.data.size) { index ->
                                         WordReviewCard(
-                                            wordReviewItems[index],
+                                            wordReviewItems.data[index],
                                             setWordItem,
                                             updateWordReviewItem,
                                             removeWordReview,
@@ -154,14 +146,19 @@ fun ReviewListScreen(
                                     }
                                 }
                             }
-                            ReviewCategory.Sentence -> {
-                                if(sentenceReviewItems.isEmpty()) {
-                                    item { ErrorScreen(text = "No sentence added to review", subtitle = "")}
+                        }
+                        ReviewCategory.Sentence -> {
+                            when(sentenceReviewItems){
+                                is DataState.Initial<*>, DataState.Loading -> {
+                                    item {CircularProgressIndicator()}
                                 }
-                                else {
-                                    items(count = sentenceReviewItems.size) { index ->
+                                is DataState.Error -> {
+                                    item {ErrorScreen(text = "No word added to review", subtitle = "")}
+                                }
+                                is DataState.Success<List<SentenceReviewModel>>  -> {
+                                    items(count = sentenceReviewItems.data.size) { index ->
                                         SentenceReviewCard(
-                                            sentenceReviewItems[index],
+                                            sentenceReviewItems.data[index],
                                             setSentenceItem,
                                             setTargetWordItem,
                                             updateSentenceReviewItem,
@@ -172,13 +169,19 @@ fun ReviewListScreen(
                                     }
                                 }
                             }
-                            ReviewCategory.Kanji -> {
-                                if(kanjiReviewItems.isEmpty()) {
-                                    item { ErrorScreen(text = "No kanji added to review", subtitle = "")}
-                                } else {
-                                    items(count = kanjiReviewItems.size) { index ->
+                        }
+                        ReviewCategory.Kanji -> {
+                            when(kanjiReviewItems){
+                                is DataState.Initial<*>, DataState.Loading -> {
+                                    item {CircularProgressIndicator()}
+                                }
+                                is DataState.Error -> {
+                                    item {ErrorScreen(text = "No word added to review", subtitle = "")}
+                                }
+                                is DataState.Success<List<KanjiReviewModel>>  -> {
+                                    items(count = kanjiReviewItems.data.size) { index ->
                                         KanjiReviewCard(
-                                            kanjiReviewItems[index],
+                                            kanjiReviewItems.data[index],
                                             setKanjiItem,
                                             updateKanjiReviewItem,
                                             removeKanjiReview,
@@ -191,12 +194,13 @@ fun ReviewListScreen(
                         }
                     }
                 }
+
             }
             val snackbar = createRef()
             DefaultSnackbar(
                 modifier = Modifier
                     .padding(16.dp)
-                    .constrainAs(snackbar){
+                    .constrainAs(snackbar) {
                         bottom.linkTo(parent.bottom)
                         start.linkTo(parent.start)
                         end.linkTo(parent.end)
@@ -270,7 +274,6 @@ fun KanjiReviewCard(
                     )
                     updateKanjiReviewItem(quality, item)
                     dismissKanjiReview(item.kanji)
-
                 }
             )
             //BUTTONS SECTION
@@ -359,7 +362,6 @@ fun SentenceReviewCard(
                 }
             )
         }
-
     }
 }
 
@@ -582,12 +584,6 @@ fun ButtonsRow(
 fun FilterButtonsRow(
     setCategory: (ReviewCategory) -> Unit,
     selectedCategory: ReviewCategory,
-    wordReviewItems: List<WordReviewModel>,
-    sentenceReviewItems: List<SentenceReviewModel>,
-    kanjiReviewItems: List<KanjiReviewModel>,
-    loadWordReviews: () -> Unit,
-    loadSentenceReviews: () -> Unit,
-    loadKanjiReviews: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -606,9 +602,6 @@ fun FilterButtonsRow(
                                 else Color.White,
             onClick = {
                 setCategory(ReviewCategory.Word)
-                if(wordReviewItems.isEmpty()) {
-                    loadWordReviews()
-                }
             }
         )
         TagButton(
@@ -621,9 +614,6 @@ fun FilterButtonsRow(
                                 else Color.White,
             onClick = {
                 setCategory(ReviewCategory.Sentence)
-                if(sentenceReviewItems.isEmpty()) {
-                    loadSentenceReviews()
-                }
             }
         )
         TagButton(
@@ -636,9 +626,6 @@ fun FilterButtonsRow(
                                 else Color.White,
             onClick = {
                 setCategory(ReviewCategory.Kanji)
-                if(kanjiReviewItems.isEmpty()) {
-                    loadKanjiReviews()
-                }
             }
         )
     }

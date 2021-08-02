@@ -55,9 +55,7 @@ fun KanjiDetailScreen(
     showSnackbar: () -> Unit,
 ) {
     Scaffold(){ paddingValue ->
-        ConstraintLayout(
-            modifier = Modifier.padding(paddingValue)
-        ) {
+
             when(kanjiSearchState){
                 is DataState.Initial<*>, DataState.Loading -> {
                     LoadingIndicator()
@@ -66,85 +64,102 @@ fun KanjiDetailScreen(
                     ErrorScreen(text = "Couldn't fetch kanji from dictionary", subtitle = "sorry dude")
                 }
                 is DataState.Success<KanjiModel> -> {
-                    val kanji = kanjiSearchState.data
-                    LazyColumn (
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                    ){
-                        item() {
-                            Column() {
-                                var tags: MutableList<String> = mutableListOf()
-                                var freq = kanji.freq ?: ""
-                                if(freq.isNotEmpty()) {
-                                    freq = "frequency: $freq"
-                                    tags.add(freq)
-                                }
+                    ConstraintLayout {
+                        val kanji = kanjiSearchState.data
+                        LazyColumn (
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                        ){
+                            item() {
+                                Column() {
+                                    var tags: MutableList<String> = mutableListOf()
+                                    var freq = kanji.freq ?: ""
+                                    if(freq.isNotEmpty()) {
+                                        freq = "frequency: $freq"
+                                        tags.add(freq)
+                                    }
 
-                                var jlpt = kanji.jlpt ?: ""
-                                if(jlpt.isNotEmpty()) {
-                                    jlpt = "jlptn-$jlpt"
-                                    tags.add(jlpt)
-                                }
+                                    var jlpt = kanji.jlpt ?: ""
+                                    if(jlpt.isNotEmpty()) {
+                                        jlpt = "jlptn-$jlpt"
+                                        tags.add(jlpt)
+                                    }
 
-                                var grade = kanji.grade ?: ""
-                                if(grade.isNotEmpty()) {
-                                    grade = "grade: $grade"
-                                    tags.add(grade)
-                                }
+                                    var grade = kanji.grade ?: ""
+                                    if(grade.isNotEmpty()) {
+                                        grade = "grade: $grade"
+                                        tags.add(grade)
+                                    }
 
-                                // SECTIONS
-                                Spacer(modifier = Modifier.padding(vertical = 16.dp))
-                                BackButton(navController)
-                                Spacer(modifier = Modifier.padding(vertical = 16.dp))
-                                KanjiSection(kanji = kanji.kanji)
-                                //Spacer(modifier = Modifier.padding(bottom = 8.dp))
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(8.dp),
-                                    horizontalArrangement = Arrangement.Center,
-                                ){
-                                    AddToReviewButton(
-                                        scaffoldState = scaffoldState,
-                                        addToReview = {
-                                            addKanjiToReview(kanji)
-                                            showSnackbar()
-                                        },
-                                        onShowSnackbar = {showSnackbar()}
-                                    )
-                                }
-                                TagRow(tags = tags)
-                                StorySection(storyState = kanjiStoryState)
-                                if(storyFormActive){
-                                    StoryEditForm(
-                                        kanji = kanji.kanji,
-                                        onEditStory = updateKanjiStory,
-                                        setCurrentStory = setCurrentStory,
-                                        toggleStoryEditForm = toggleStoryEditForm,
-                                    )
-                                } else{
+                                    // SECTIONS
+                                    Spacer(modifier = Modifier.padding(vertical = 16.dp))
+                                    BackButton(navController)
+                                    Spacer(modifier = Modifier.padding(vertical = 16.dp))
+                                    KanjiSection(kanji = kanji.kanji)
+                                    //Spacer(modifier = Modifier.padding(bottom = 8.dp))
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(end = 16.dp),
-                                        horizontalArrangement = Arrangement.End,
-                                    ) {
-                                        CustomTextButton(
-                                            text = "Edit story",
-                                            textSize = 16.sp,
-                                            onClick = {
-                                                toggleStoryEditForm(true)
-                                            }
+                                            .padding(8.dp),
+                                        horizontalArrangement = Arrangement.Center,
+                                    ){
+                                        AddToReviewButton(
+                                            scaffoldState = scaffoldState,
+                                            addToReview = {
+                                                addKanjiToReview(kanji)
+                                                showSnackbar()
+                                            },
+                                            onShowSnackbar = {showSnackbar()}
                                         )
                                     }
+                                    TagRow(tags = tags)
+                                    StorySection(storyState = kanjiStoryState)
+                                    if(storyFormActive){
+                                        StoryEditForm(
+                                            kanji = kanji.kanji,
+                                            onEditStory = updateKanjiStory,
+                                            setCurrentStory = setCurrentStory,
+                                            toggleStoryEditForm = toggleStoryEditForm,
+                                        )
+                                    } else{
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(end = 16.dp),
+                                            horizontalArrangement = Arrangement.End,
+                                        ) {
+                                            CustomTextButton(
+                                                text = "Edit story",
+                                                textSize = 16.sp,
+                                                onClick = {
+                                                    toggleStoryEditForm(true)
+                                                }
+                                            )
+                                        }
+                                    }
+                                    DetailsSection(kanji)
                                 }
-                                DetailsSection(kanji)
                             }
                         }
+                        val snackbar = createRef()
+                        DefaultSnackbar(
+                            modifier = Modifier
+                                .constrainAs(snackbar){
+                                    bottom.linkTo(parent.bottom)
+                                    start.linkTo(parent.start)
+                                    end.linkTo(parent.end)
+                                }.padding(8.dp),
+                            snackbarHostState = scaffoldState.snackbarHostState,
+                            onDismiss = {
+                                scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                            }
+                        )
                     }
+
                 }
             }
+        /*
             val snackbar = createRef()
             DefaultSnackbar(
                 modifier = Modifier
@@ -157,8 +172,8 @@ fun KanjiDetailScreen(
                 onDismiss = {
                     scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
                 }
-            )
-        }
+            ) */
+
     }
 }
 

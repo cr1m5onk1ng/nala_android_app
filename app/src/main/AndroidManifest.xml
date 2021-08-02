@@ -3,6 +3,7 @@
     package="com.example.nala">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
 
     <application
         android:name="com.example.nala.ui.BaseApplication"
@@ -12,6 +13,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Nala">
+        <service
+            android:name=".ui.dictionary.DictionaryForegroundService"
+            android:enabled="true"
+            android:exported="true"/>
         <activity
             android:name="com.example.nala.ui.MainActivity"
             android:exported="true"

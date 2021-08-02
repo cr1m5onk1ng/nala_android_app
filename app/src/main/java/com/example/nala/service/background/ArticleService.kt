@@ -29,10 +29,8 @@ class ArticleService @Inject constructor(
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        intent?.getStringExtra("url").let{ link ->
-            if(link != null) {
-                addArticleToFavorites(link)
-            }
+        intent?.getStringExtra("url")?.let{ link ->
+            addArticleToFavorites(link)
         }
         return START_NOT_STICKY
     }
@@ -44,10 +42,6 @@ class ArticleService @Inject constructor(
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun addArticleToFavorites(url: String) {
-        val article = Articles(
-            url = url,
-            timeAdded = Date.from(Instant.now())
-        )
         scope.launch{
             reviewRepository.addArticleToFavorites(url)
         }

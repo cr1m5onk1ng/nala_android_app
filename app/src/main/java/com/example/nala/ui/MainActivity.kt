@@ -2,17 +2,14 @@ package com.example.nala.ui
 
 import android.app.PendingIntent
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.graphics.drawable.VectorDrawable
 import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.ActionMode
 import android.view.WindowManager
 import android.webkit.URLUtil
-import android.webkit.WebView
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
@@ -34,14 +31,12 @@ import com.example.nala.ui.review.ReviewViewModel
 import com.example.nala.ui.study.StudyViewModel
 import com.example.nala.ui.theme.AppTheme
 import kotlinx.coroutines.launch
-import android.os.Handler
-import android.view.Menu
-import androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_LIGHT
+import com.example.nala.service.background.ArticleService
+import android.provider.Settings
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.example.nala.R
-import com.example.nala.service.background.ArticleService
-
+import com.example.nala.ui.dictionary.DictionaryForegroundService
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -49,6 +44,7 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var app: BaseApplication
 
+    // VIEW MODELS
     private val viewModel: DictionaryViewModel by viewModels()
     private val reviewViewModel: ReviewViewModel by viewModels()
     private val studyViewModel: StudyViewModel by viewModels()
@@ -61,12 +57,15 @@ class MainActivity : AppCompatActivity() {
         // flag that checks if the dictionary was called from an article
         // TODO improve the checking logic
         var fromLookup = false
+
+        // INTENT MATCHING
         when (intent?.action) {
             Intent.ACTION_PROCESS_TEXT -> {
                 if (intent.hasExtra(Intent.EXTRA_PROCESS_TEXT)){
                     viewModel.setSharedText(intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT) )
                     startDestination = "detail_screen"
                     fromLookup = true
+                    viewModel.setIsWordFromIntent()
                 }
             }
             Intent.ACTION_SEND -> {
@@ -75,7 +74,7 @@ class MainActivity : AppCompatActivity() {
                     intent.getStringExtra(Intent.EXTRA_TEXT)?.let { url ->
                         Log.d("SHARED", "SHARED TEXT: $url")
                         if(URLUtil.isValidUrl(url)) {
-                            reviewViewModel.addArticleToChronology(url)
+                            //reviewViewModel.addArticleToChronology(url)
                             startCustomTabIntent(url)
                         } else {
                             viewModel.setSharedSentence(url)
@@ -91,6 +90,8 @@ class MainActivity : AppCompatActivity() {
                 // DONT BOTHER
             }
         }
+
+        // VIEW SETTING
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         setContent{
             AppTheme {
@@ -128,6 +129,8 @@ class MainActivity : AppCompatActivity() {
                             unsetSharedWord = viewModel::unsetSharedText,
                             addToReview =  viewModel::addWordToReview,
                             loadWordReviews = reviewViewModel::loadWordReviewItems,
+                            isWordFromIntent = viewModel.isWordFromIntent.value,
+                            isWordFromForm = viewModel.isWordFromForm.value,
                             scaffoldState = scaffoldState,
                             showSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
                         )
@@ -150,15 +153,11 @@ class MainActivity : AppCompatActivity() {
 
                     composable("review_screen") {
                         ReviewListScreen(
-                            isLoading = reviewViewModel.reviewsLoading.value,
                             selectedCategory = reviewViewModel.selectedCategory.value,
                             setCategory = reviewViewModel::setCategory,
                             wordReviewItems = reviewViewModel.wordReviewItems.value,
                             sentenceReviewItems = reviewViewModel.sentenceReviewItems.value,
                             kanjiReviewItems = reviewViewModel.kanjiReviewItems.value,
-                            loadWordReviews = reviewViewModel::loadWordReviewItems,
-                            loadSentenceReviews = reviewViewModel::loadSentenceReviewItems,
-                            loadKanjiReviews =reviewViewModel::loadKanjiReviewItems,
                             setWordItem = viewModel::setCurrentWordFromReview,
                             setSentenceItem = studyViewModel::setStudyContext,
                             setTargetWordItem = studyViewModel::setStudyTargetWord,
@@ -166,9 +165,9 @@ class MainActivity : AppCompatActivity() {
                             removeWordReview = reviewViewModel::removeWordReviewItem,
                             removeSentenceReview = reviewViewModel::removeSentenceReviewItem,
                             removeKanjiReview = reviewViewModel::removeKanjiReviewItem,
-                            dismissWordReview = reviewViewModel::dismissWordReviewItem,
-                            dismissSentenceReview = reviewViewModel::dismissSentenceReviewItem,
-                            dismissKanjiReview = reviewViewModel::dismissKanjiReviewItem,
+                            dismissWordReview = {},
+                            dismissSentenceReview = {},
+                            dismissKanjiReview = {},
                             isHomeSelected = viewModel.isHomeSelected.value,
                             isReviewsSelected = viewModel.isReviewSelected.value,
                             toggleHome = viewModel::toggleHome,
@@ -222,6 +221,7 @@ class MainActivity : AppCompatActivity() {
                             addSentenceToReview = viewModel::addSentenceToReview,
                             loadSentenceReviews = reviewViewModel::loadSentenceReviewItems,
                             loadSimilarSentences = studyViewModel::loadSimilarSentences,
+                            setIsWordFromForm = viewModel::setIsWordFromForm,
                             scaffoldState = scaffoldState,
                             showReviewSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
                             showSaveSnackbar = {showSnackbar(scaffoldState, message="Sentence added to corpus")}
@@ -232,8 +232,55 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onNewIntent(intent: Intent?) {
-        super.onNewIntent(intent)
+    private fun startDictionaryWindowService(word: String) {
+        val dictionaryIntent = Intent(this, DictionaryForegroundService::class.java)
+        dictionaryIntent.putExtra("word", word)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // check if the user has already granted
+            // the Draw over other apps permission
+            if (Settings.canDrawOverlays(this)) {
+                // start the service based on the android version
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(dictionaryIntent)
+                } else {
+                    startService(dictionaryIntent)
+                }
+            }
+        } else {
+            startService(dictionaryIntent)
+        }
+    }
+
+    private fun startCustomTabIntent(url: String) {
+        // Create explicit intent
+        val addToFavoritesIntent = Intent(this, ArticleService::class.java)
+        addToFavoritesIntent.putExtra("url", url)
+        val pendingAddToFavorites = PendingIntent.getActivity(
+            this,0 ,addToFavoritesIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+        // Set the action button
+        val builder = CustomTabsIntent.Builder();
+        val bitmap = (ResourcesCompat.getDrawable(
+             this.resources,
+             R.drawable.save_to_favorites_icon,
+             null) as VectorDrawable).toBitmap()
+         builder.setActionButton(
+             bitmap,
+             "add to favorites",
+             pendingAddToFavorites,
+             true)
+        val customTabsIntent = builder.build();
+        customTabsIntent.launchUrl(this, Uri.parse(url));
+    }
+
+    // method to ask user to grant the Overlay permission
+    private fun checkOverlayPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Settings.canDrawOverlays(this)) {
+                // send user to the device settings
+                val myIntent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
+                startActivity(myIntent)
+            }
+        }
     }
 
     private fun showSnackbar(
@@ -251,22 +298,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun startCustomTabIntent(url: String) {
-        // Create explicit intent
-        val addToFavoritesIntent = Intent(this, ArticleService::class.java)
-        addToFavoritesIntent.putExtra("url", url)
-        val pendingAddToFavorites = PendingIntent.getActivity(
-            this,0 ,addToFavoritesIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-        // Set the action button
-        val builder = CustomTabsIntent.Builder();
-       /* val bitmap = (ResourcesCompat.getDrawable(
-            this.resources,
-            R.drawable.save_to_favorites_icon,
-            null) as VectorDrawable).toBitmap()
 
-        builder.setActionButton(bitmap, "favorites", pendingAddToFavorites, true)*/
-        val customTabsIntent = builder.build();
-        customTabsIntent.launchUrl(this, Uri.parse(url));
-    }
 
 }

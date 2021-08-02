@@ -3,6 +3,7 @@ package com.example.nala.db.dao
 import androidx.room.*
 import com.example.nala.db.models.review.*
 import com.example.nala.db.models.review.relations.*
+import kotlinx.coroutines.flow.Flow
 
 
 @Dao
@@ -56,10 +57,10 @@ interface ReviewDao : DatabaseDao{
     suspend fun getKanjiReview(kanji: String) : List<KanjiReviewModel>
 
     @Query("SELECT * FROM kanji_review")
-    suspend fun getAllKanjiReviews() : List<KanjiReviewModel>
+    fun getAllKanjiReviews() : Flow<List<KanjiReviewModel>>
 
     @Query("SELECT * FROM kanji_review ORDER BY interval LIMIT :n")
-    suspend fun getNKanjiReviews(n: Int) : List<KanjiReviewModel>
+    fun getNKanjiReviews(n: Int) : Flow<List<KanjiReviewModel>>
 
     @Transaction
     @Query("SELECT * FROM kanji_review WHERE kanji=:kanji")
@@ -84,13 +85,13 @@ interface ReviewDao : DatabaseDao{
     suspend fun deleteSentenceReview(sentenceReview: SentenceReviewModelDto)
 
     @Query("SELECT * FROM sentence_review WHERE sentence=:sentence AND word=:word")
-    suspend fun getSentenceReview(sentence: String, word: String) : List<SentenceReviewModelDto>
+    fun getSentenceReview(sentence: String, word: String) : Flow<List<SentenceReviewModelDto>>
 
     @Query("SELECT * FROM sentence_review")
-    suspend fun getAllSentenceReviews() : List<SentenceReviewModelDto>
+    fun getAllSentenceReviews() : Flow<List<SentenceReviewModelDto>>
 
     @Query("SELECT * FROM sentence_review ORDER BY interval LIMIT :n")
-    suspend fun getNSentenceReviews(n: Int) : List<SentenceReviewModelDto>
+    fun getNSentenceReviews(n: Int) : Flow<List<SentenceReviewModelDto>>
 
     @Update
     suspend fun updateSentenceReviewItem(sentenceReview: SentenceReviewModelDto)
@@ -101,10 +102,10 @@ interface ReviewDao : DatabaseDao{
     suspend fun getReview(word: String) : List<WordReviewModel>
 
     @Query("SELECT * FROM word_review")
-    suspend fun getAllReviews() : List<WordReviewModel>
+    fun getAllReviews() : Flow<List<WordReviewModel>>
 
     @Query("SELECT * FROM word_review ORDER BY interval LIMIT :n")
-    suspend fun getNReviews(n: Int) : List<WordReviewModel>
+    fun getNReviews(n: Int) : Flow<List<WordReviewModel>>
 
     @Transaction
     @Query("SELECT * FROM word_review WHERE word=:word")

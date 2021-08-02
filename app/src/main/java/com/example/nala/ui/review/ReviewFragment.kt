@@ -32,15 +32,11 @@ class ReviewFragment : CustomFragment() {
                 val scaffoldState = rememberScaffoldState()
                 AppTheme(darkTheme = false) {
                     ReviewListScreen(
-                        isLoading = reviewViewModel.reviewsLoading.value,
                         selectedCategory = reviewViewModel.selectedCategory.value,
                         setCategory = reviewViewModel::setCategory,
                         wordReviewItems = reviewViewModel.wordReviewItems.value,
                         sentenceReviewItems = reviewViewModel.sentenceReviewItems.value,
                         kanjiReviewItems = reviewViewModel.kanjiReviewItems.value,
-                        loadWordReviews = reviewViewModel::loadWordReviewItems,
-                        loadSentenceReviews = reviewViewModel::loadSentenceReviewItems,
-                        loadKanjiReviews =reviewViewModel::loadKanjiReviewItems,
                         setWordItem = viewModel::setCurrentWordFromReview,
                         setSentenceItem = studyViewModel::setStudyContext,
                         setTargetWordItem = studyViewModel::setStudyTargetWord,
@@ -48,9 +44,9 @@ class ReviewFragment : CustomFragment() {
                         removeWordReview = reviewViewModel::removeWordReviewItem,
                         removeSentenceReview = reviewViewModel::removeSentenceReviewItem,
                         removeKanjiReview = reviewViewModel::removeKanjiReviewItem,
-                        dismissWordReview = reviewViewModel::dismissWordReviewItem,
-                        dismissSentenceReview = reviewViewModel::dismissSentenceReviewItem,
-                        dismissKanjiReview = reviewViewModel::dismissKanjiReviewItem,
+                        dismissWordReview = {},
+                        dismissSentenceReview = {},
+                        dismissKanjiReview = {},
                         isHomeSelected = viewModel.isHomeSelected.value,
                         isReviewsSelected = viewModel.isReviewSelected.value,
                         toggleHome = viewModel::toggleHome,
@@ -59,13 +55,13 @@ class ReviewFragment : CustomFragment() {
                         updateSentenceReviewItem= reviewViewModel::updateSentenceReviewItem,
                         updateKanjiReviewItem = reviewViewModel::updateKanjiReviewItem,
                         navController = findNavController(),
-                        scaffoldState = scaffoldState,
                         showSnackbar = {
                             showSnackbar(
                                 scaffoldState,
                                 message="Review removed",
                                 actionLabel="Undo",
                             )},
+                        scaffoldState = scaffoldState,
                     )
                 }
             }

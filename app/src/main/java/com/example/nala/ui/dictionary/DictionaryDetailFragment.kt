@@ -39,6 +39,8 @@ class DictionaryDetailFragment : CustomFragment() {
                         unsetSharedWord = viewModel::unsetSharedText,
                         addToReview =  viewModel::addWordToReview,
                         loadWordReviews = reviewViewModel::loadWordReviewItems,
+                        isWordFromIntent = viewModel.isWordFromIntent.value,
+                        isWordFromForm = viewModel.isWordFromForm.value,
                         scaffoldState = scaffoldState,
                         showSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
                     )

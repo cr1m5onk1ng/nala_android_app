@@ -54,6 +54,7 @@ fun StudyScreen(
     addSentenceToReview: (String, String) -> Unit,
     loadSentenceReviews: () -> Unit,
     loadSimilarSentences: () -> Unit,
+    setIsWordFromForm: () -> Unit,
     scaffoldState: ScaffoldState,
     showReviewSnackbar: () -> Unit,
     showSaveSnackbar: () -> Unit,
@@ -119,6 +120,7 @@ fun StudyScreen(
                                             reading = wordModel.reading,
                                             word = wordModel.word,
                                             setCurrentWord = setCurrentWord,
+                                            setIsWordFromForm = setIsWordFromForm,
                                             navController = navController,
                                         )
                                         ContextSection( word = word, parts = parts)
@@ -220,6 +222,7 @@ fun WordRow(
     reading: String,
     word: String,
     setCurrentWord: (String) -> Unit,
+    setIsWordFromForm: () -> Unit,
     navController: NavController,
 ) {
     Column(
@@ -228,6 +231,7 @@ fun WordRow(
             .padding(start = 32.dp, top = 32.dp)
             .clickable{
                 setCurrentWord(word)
+                setIsWordFromForm()
                 navController.navigate("detail_screen")
             }
     ){
@@ -312,8 +316,6 @@ fun SentenceCard(
                     }
                 } else{
                     val parts = sentence.split(Regex(targetWord))
-                    val contextStart = parts[0]
-                    val contextEnd = parts[1]
                     CustomAnnotatedString(
                         parts = parts,
                         word = targetWord,

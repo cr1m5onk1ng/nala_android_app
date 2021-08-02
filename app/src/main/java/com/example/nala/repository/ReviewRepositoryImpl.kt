@@ -10,6 +10,8 @@ import com.example.nala.domain.model.dictionary.Sense
 import com.example.nala.domain.model.kanji.KanjiModel
 import com.example.nala.domain.model.review.SentenceReviewModel
 import com.example.nala.domain.util.SuperMemo2
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import java.time.Instant
 import java.util.*
 import javax.inject.Inject
@@ -29,23 +31,27 @@ class ReviewRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun getNSentenceReviewItems(n: Int): List<SentenceReviewModel> {
+    override fun getNSentenceReviewItems(n: Int): Flow<List<SentenceReviewModel>> {
         val allReviews = reviewDao.getNSentenceReviews(n)
         return allReviews.map {
-            SentenceReviewModel(
-                sentence = it.sentence,
-                targetWord = it.targetWord
-            )
+            it.map{
+                SentenceReviewModel(
+                    sentence = it.sentence,
+                    targetWord = it.targetWord
+                )
+            }
         }
     }
 
-    override suspend fun getAllSentenceReviewItems(): List<SentenceReviewModel> {
+    override fun getAllSentenceReviewItems(): Flow<List<SentenceReviewModel>> {
         val allReviews =  reviewDao.getAllSentenceReviews()
         return allReviews.map {
-            SentenceReviewModel(
-                sentence = it.sentence,
-                targetWord = it.targetWord
-            )
+            it.map {
+                SentenceReviewModel(
+                    sentence = it.sentence,
+                    targetWord = it.targetWord
+                )
+            }
         }
     }
 
@@ -94,11 +100,11 @@ class ReviewRepositoryImpl @Inject constructor(
         return reviewDao.getKanjiReview(kanji).first()
     }
 
-    override suspend fun getNKanjiReviewItems(n: Int): List<KanjiReviewModel> {
+    override fun getNKanjiReviewItems(n: Int): Flow<List<KanjiReviewModel>> {
         return reviewDao.getNKanjiReviews(n)
     }
 
-    override suspend fun getAllKanjiReviewItems() : List<KanjiReviewModel> {
+    override fun getAllKanjiReviewItems() : Flow<List<KanjiReviewModel>> {
         return reviewDao.getAllKanjiReviews()
     }
 
@@ -268,11 +274,11 @@ class ReviewRepositoryImpl @Inject constructor(
         return if(review.isNotEmpty()) review.first() else null
     }
 
-    override suspend fun getWordReviews(): List<WordReviewModel> {
+    override fun getWordReviews(): Flow<List<WordReviewModel>> {
         return reviewDao.getAllReviews()
     }
 
-    override suspend fun getNWordReviews(n: Int) : List<WordReviewModel> {
+    override fun getNWordReviews(n: Int) : Flow<List<WordReviewModel>> {
         return reviewDao.getNReviews(n)
     }
 

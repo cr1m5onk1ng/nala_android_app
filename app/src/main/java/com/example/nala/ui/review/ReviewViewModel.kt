@@ -10,9 +10,11 @@ import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.domain.model.review.ReviewCategory
 import com.example.nala.domain.model.review.SentenceReviewModel
 import com.example.nala.repository.ReviewRepository
+import com.example.nala.ui.DataState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlinx.coroutines.flow.*
 
 @HiltViewModel
 class ReviewViewModel @Inject constructor(
@@ -21,12 +23,17 @@ class ReviewViewModel @Inject constructor(
 
     val reviewsLoading: MutableState<Boolean> = mutableStateOf(false)
     val addedToReview: MutableState<Boolean> = mutableStateOf(false)
-    val wordReviewItems: MutableState<List<WordReviewModel>> = mutableStateOf(listOf())
-    val sentenceReviewItems: MutableState<List<SentenceReviewModel>> = mutableStateOf(listOf())
-    val kanjiReviewItems: MutableState<List<KanjiReviewModel>> = mutableStateOf(listOf())
+    val wordReviewItems: MutableState<DataState<List<WordReviewModel>>> =
+        mutableStateOf(DataState.Initial(listOf()))
+    val sentenceReviewItems: MutableState<DataState<List<SentenceReviewModel>>> =
+        mutableStateOf(DataState.Initial(listOf()))
+    val kanjiReviewItems: MutableState<DataState<List<KanjiReviewModel>>> =
+        mutableStateOf(DataState.Initial(listOf()))
 
     init {
         loadWordReviewItems()
+        loadSentenceReviewItems()
+        loadKanjiReviewItems()
     }
 
     val selectedCategory: MutableState<ReviewCategory> = mutableStateOf(ReviewCategory.Word)
@@ -69,7 +76,7 @@ class ReviewViewModel @Inject constructor(
             reviewRepository.removeKanjiReviewItem(kanjiReview)
         }
     }
-
+    /*
     fun dismissWordReviewItem(word: String) {
         viewModelScope.launch{
             reviewsLoading.value = true
@@ -99,31 +106,47 @@ class ReviewViewModel @Inject constructor(
             }
             reviewsLoading.value = false
         }
-    }
+    } */
 
     fun loadWordReviewItems() {
         viewModelScope.launch {
-            reviewsLoading.value = true
-            wordReviewItems.value = reviewRepository.getNWordReviews(30)
-            reviewsLoading.value = false
+            wordReviewItems.value = DataState.Loading
+            reviewRepository.getNWordReviews(30).collect{
+                if(it.isEmpty()) {
+                    wordReviewItems.value = DataState.Error("No review items present")
+                } else {
+                    wordReviewItems.value = DataState.Success(it)
+                }
+            }
         }
     }
 
     fun loadSentenceReviewItems() {
 
         viewModelScope.launch {
-            reviewsLoading.value = true
-            sentenceReviewItems.value = reviewRepository.getNSentenceReviewItems(30)
-            reviewsLoading.value = false
+            sentenceReviewItems.value = DataState.Loading
+            reviewRepository.getNSentenceReviewItems(30).collect{
+                if(it.isEmpty()) {
+                    sentenceReviewItems.value = DataState.Error("No review items present")
+                } else {
+                    sentenceReviewItems.value = DataState.Success(it)
+                }
+            }
         }
 
     }
 
     fun loadKanjiReviewItems() {
         viewModelScope.launch {
+            kanjiReviewItems.value = DataState.Loading
             reviewsLoading.value = true
-            kanjiReviewItems.value = reviewRepository.getNKanjiReviewItems(30)
-            reviewsLoading.value = false
+            reviewRepository.getNKanjiReviewItems(30).collect {
+                if(it.isEmpty()) {
+                    kanjiReviewItems.value = DataState.Error("No review items present")
+                } else {
+                    kanjiReviewItems.value = DataState.Success(it)
+                }
+            }
         }
 
     }

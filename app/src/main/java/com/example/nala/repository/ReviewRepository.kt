@@ -7,15 +7,16 @@ import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.domain.model.dictionary.Sense
 import com.example.nala.domain.model.kanji.KanjiModel
 import com.example.nala.domain.model.review.SentenceReviewModel
+import kotlinx.coroutines.flow.Flow
 
 interface ReviewRepository {
 
     // SENTENCE REVIEWS SECTION
     suspend fun getSentenceReviewItem(sentence: String, targetWord: String) : SentenceReviewModel?
 
-    suspend fun getNSentenceReviewItems(n: Int) : List<SentenceReviewModel>
+    fun getNSentenceReviewItems(n: Int) : Flow<List<SentenceReviewModel>>
 
-    suspend fun getAllSentenceReviewItems() : List<SentenceReviewModel>
+    fun getAllSentenceReviewItems() : Flow<List<SentenceReviewModel>>
 
     suspend fun addSentenceToReview(sentenceReview: SentenceReviewModel)
 
@@ -26,9 +27,9 @@ interface ReviewRepository {
     // KANJI REVIEWS SECTION
     suspend fun getKanjiReviewItem(kanji: String) : KanjiReviewModel
 
-    suspend fun getNKanjiReviewItems(n: Int) : List<KanjiReviewModel>
+    fun getNKanjiReviewItems(n: Int) : Flow<List<KanjiReviewModel>>
 
-    suspend fun getAllKanjiReviewItems() : List<KanjiReviewModel>
+    fun getAllKanjiReviewItems() : Flow<List<KanjiReviewModel>>
 
     suspend fun addKanjiToReview(kanjiModel: KanjiModel)
 
@@ -55,9 +56,9 @@ interface ReviewRepository {
 
     suspend fun getWordReview(word: String) : WordReviewModel?
 
-    suspend fun getWordReviews() : List<WordReviewModel>
+    fun getWordReviews() : Flow<List<WordReviewModel>>
 
-    suspend fun getNWordReviews(n: Int) : List<WordReviewModel>
+    fun getNWordReviews(n: Int) : Flow<List<WordReviewModel>>
 
     suspend fun getWordData(wordReview: WordReviewModel) : DictionaryModel
 

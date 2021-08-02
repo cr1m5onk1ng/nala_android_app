@@ -56,126 +56,131 @@ fun OneTargetForm(
     showSnackbar: (ScaffoldState) -> Unit
 ) {
     val activity = (LocalContext.current as? Activity)
+
     Scaffold(){ paddingValue ->
         ConstraintLayout(
             modifier = Modifier.padding(paddingValue)
         ){
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(bottom = 48.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ){
-                when(sentenceState) {
-                    is DataState.Initial<*>, DataState.Loading -> {
-                        LoadingIndicator()
-                    }
-                    is DataState.Error -> {
-                        ErrorScreen(text = "Data invalid", "Try to import a valid sentence")
-                    }
-                    is DataState.Success<String> -> {
-                        val sentence = sentenceState.data
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 26.dp, end = 32.dp),
-                            horizontalArrangement = Arrangement.End
-                        ){
-                            IconButton(
-                                onClick = {
-                                    unsetSharedSentence()
-                                    unsetSelectedWord()
-                                    if (fromLookup)
-                                        activity!!.finish()
-                                    else
-                                        navController.popBackStack()
-                                }
-                            ) {
-                                Icon(Icons.Rounded.Close, contentDescription = "close icon")
-                            }
+            Column() {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp, end = 8.dp),
+                    horizontalArrangement = Arrangement.End
+                ){
+                    IconButton(
+                        onClick = {
+                            unsetSharedSentence()
+                            unsetSelectedWord()
+                            if (fromLookup)
+                                activity!!.finish()
+                            else
+                                navController.popBackStack()
                         }
-                        //Body
-                        val listState = rememberLazyListState()
-                        // Remember a CoroutineScope to be able to launch
-                        val coroutineScope = rememberCoroutineScope()
-                        LazyColumn(
-                            state = listState,
-                            modifier = Modifier
-                                .padding(16.dp),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            item{
-                                Column() {
-                                    Text(
-                                        text = "Tap to select your target word: ",
-                                        modifier = Modifier.padding(5.dp),
-                                        style = TextStyle(
-                                            fontFamily = Quicksand,
-                                            fontWeight = FontWeight.Light,
-                                            fontSize = 20.sp
-                                        ),
-                                    )
-                                    CustomClickableText(
-                                        modifier = Modifier
-                                            .padding(8.dp),
-                                        tokens = tokens,
-                                        tokensMap = tokensIndexMap,
-                                        selectedToken = selectedWord,
-                                        onClick = onWordSelect,
-                                        fontSize = 24.sp,
-                                    )
-                                    Spacer(modifier = Modifier.padding(vertical=8.dp))
-                                    // SELECTED WORD
-                                    Text(
-                                        if(selectedWord.isNotEmpty()) selectedWord else "No word selected",
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(8.dp),
-                                        textAlign = TextAlign.Center,
-                                        style = TextStyle(
-                                            fontFamily = Quicksand,
-                                            fontSize = if(selectedWord.isNotEmpty()) 42.sp else 18.sp,
-                                            fontWeight = if(selectedWord.isNotEmpty()) FontWeight.Bold else FontWeight.Light,
-                                            color = Color.Black,
-                                        ),
-                                    )
-                                    Spacer(modifier = Modifier.padding(vertical=16.dp))
-                                    // Buttons row
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(8.dp),
-                                        horizontalArrangement = Arrangement.SpaceEvenly
-                                    ) {
-                                        SmallerButton(
-                                            backgroundColor = LightGreen,
-                                            text = "Study",
-                                            icon = Icons.Rounded.ArrowForward,
-                                            onCLick = {
-                                                if(selectedWord.isNotEmpty()) {
-                                                    onWordAdd(selectedWord)
-                                                    setKanjis(selectedWord)
-                                                    onSentenceAdd(sentence)
-                                                    navController.navigate("study_screen")
-                                                }
-                                            },
-                                            height = 50.dp,
+                    ) {
+                        Icon(Icons.Rounded.Close, contentDescription = "close icon")
+                    }
+                }
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(bottom = 48.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ){
+
+                    when(sentenceState) {
+                        is DataState.Initial<*>, DataState.Loading -> {
+                            LoadingIndicator()
+                        }
+                        is DataState.Error -> {
+                            ErrorScreen(text = "Data invalid", "Try to import a valid sentence")
+                        }
+                        is DataState.Success<String> -> {
+                            val sentence = sentenceState.data
+
+                            //Body
+                            val listState = rememberLazyListState()
+                            // Remember a CoroutineScope to be able to launch
+                            val coroutineScope = rememberCoroutineScope()
+                            LazyColumn(
+                                state = listState,
+                                modifier = Modifier
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                item{
+                                    Column() {
+                                        Text(
+                                            text = "Tap to select your target word: ",
+                                            modifier = Modifier.padding(5.dp),
+                                            style = TextStyle(
+                                                fontFamily = Quicksand,
+                                                fontWeight = FontWeight.Light,
+                                                fontSize = 20.sp
+                                            ),
                                         )
-                                        SmallerButton(
-                                            backgroundColor = LightBlue,
-                                            text = "Review",
-                                            icon = Icons.Rounded.Add,
-                                            onCLick = {
-                                                if (selectedWord.isNotEmpty()) {
-                                                    addSentenceToReview(selectedWord, sentence)
-                                                    showSnackbar(scaffoldState)
-                                                    loadSentenceReviews()
-                                                }
-                                            },
-                                            height = 50.dp,
+                                        CustomClickableText(
+                                            modifier = Modifier
+                                                .padding(8.dp),
+                                            tokens = tokens,
+                                            tokensMap = tokensIndexMap,
+                                            selectedToken = selectedWord,
+                                            onClick = onWordSelect,
+                                            fontSize = 24.sp,
                                         )
+                                        Spacer(modifier = Modifier.padding(vertical=8.dp))
+                                        // SELECTED WORD
+                                        Text(
+                                            if(selectedWord.isNotEmpty()) selectedWord else "No word selected",
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(8.dp),
+                                            textAlign = TextAlign.Center,
+                                            style = TextStyle(
+                                                fontFamily = Quicksand,
+                                                fontSize = if(selectedWord.isNotEmpty()) 42.sp else 18.sp,
+                                                fontWeight = if(selectedWord.isNotEmpty()) FontWeight.Bold else FontWeight.Light,
+                                                color = Color.Black,
+                                            ),
+                                        )
+                                        Spacer(modifier = Modifier.padding(vertical=16.dp))
+                                        // Buttons row
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(8.dp),
+                                            horizontalArrangement = Arrangement.SpaceEvenly
+                                        ) {
+                                            SmallerButton(
+                                                backgroundColor = LightGreen,
+                                                text = "Study",
+                                                icon = Icons.Rounded.ArrowForward,
+                                                onCLick = {
+                                                    if(selectedWord.isNotEmpty()) {
+                                                        onWordAdd(selectedWord)
+                                                        setKanjis(selectedWord)
+                                                        onSentenceAdd(sentence)
+                                                        navController.navigate("study_screen")
+                                                    }
+                                                },
+                                                height = 50.dp,
+                                            )
+                                            SmallerButton(
+                                                backgroundColor = LightBlue,
+                                                text = "Review",
+                                                icon = Icons.Rounded.Add,
+                                                onCLick = {
+                                                    if (selectedWord.isNotEmpty()) {
+                                                        addSentenceToReview(selectedWord, sentence)
+                                                        showSnackbar(scaffoldState)
+                                                        loadSentenceReviews()
+                                                    }
+                                                },
+                                                height = 50.dp,
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -183,6 +188,7 @@ fun OneTargetForm(
                     }
                 }
             }
+
             val snackbar = createRef()
             DefaultSnackbar(
                 modifier = Modifier

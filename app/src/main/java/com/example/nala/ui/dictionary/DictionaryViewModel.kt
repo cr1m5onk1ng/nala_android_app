@@ -18,7 +18,9 @@ import com.example.nala.utils.TAG
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
+import kotlinx.coroutines.flow.*
 
 @HiltViewModel
 class DictionaryViewModel @Inject constructor(
@@ -31,13 +33,13 @@ class DictionaryViewModel @Inject constructor(
     // SHARED TEXT AND SENTENCES STATE
     val sentenceReceived: MutableState<Boolean> = mutableStateOf(false)
     val textReceived: MutableState<Boolean> = mutableStateOf(false)
+    val isWordFromIntent: MutableState<Boolean> = mutableStateOf(false)
+    val isWordFromForm: MutableState<Boolean> = mutableStateOf(false)
 
     // HOME SCREEN STATE
     val sentenceState: MutableState<DataState<String>> = mutableStateOf(DataState.Initial(""))
 
-
-    val mightForgetItemsState: MutableState<DataState<List<WordReviewModel>>> =
-        mutableStateOf(DataState.Initial(listOf()))
+    val mightForgetItemsState = MutableStateFlow<DataState<List<WordReviewModel>>>(DataState.Initial(listOf()))
 
     val addedToReview: MutableState<Boolean> = mutableStateOf(false)
 
@@ -132,6 +134,16 @@ class DictionaryViewModel @Inject constructor(
 
     fun unsetSharedSentence() {
         sentenceReceived.value = false
+    }
+
+    fun setIsWordFromForm(){
+        isWordFromIntent.value = false
+        isWordFromForm.value = true
+    }
+
+    fun setIsWordFromIntent(){
+        isWordFromForm.value = false
+        isWordFromIntent.value = true
     }
 
     fun setCurrentKanji(kanji: String)  {
@@ -277,23 +289,13 @@ class DictionaryViewModel @Inject constructor(
     fun loadMightForgetItems() {
         viewModelScope.launch {
             mightForgetItemsState.value = DataState.Loading
-            val lastItems = reviewRepository.getWordReviews().takeLast(10)
-            if(lastItems.isEmpty()) {
-                mightForgetItemsState.value = DataState.Error("No item in list")
-            } else {
-                mightForgetItemsState.value = DataState.Success(lastItems)
+            reviewRepository.getWordReviews().collect{
+                if(it.isEmpty()) {
+                    mightForgetItemsState.value = DataState.Error("No item in list")
+                } else {
+                    mightForgetItemsState.value = DataState.Success(it)
+                }
             }
         }
     }
-
-    /*
-    fun setCurrentSentenceFromReview(word: String, sentence: String){
-        viewModelScope.launch {
-            searchLoading.value = true
-            val reviewModel = reviewRepository.getWordReview(word)
-            setCurrentWordFromReview(reviewModel)
-            currentSentence.value = sentence
-            searchLoading.value = false
-        }
-    } */
 }

@@ -40,6 +40,8 @@ fun DictionaryDetailScreen(
     unsetSharedWord: () -> Unit,
     addToReview: (DictionaryModel) -> Unit,
     loadWordReviews: () -> Unit,
+    isWordFromIntent: Boolean,
+    isWordFromForm: Boolean,
     scaffoldState: ScaffoldState,
     showSnackbar: (ScaffoldState) -> Unit
 ) {
@@ -52,93 +54,89 @@ fun DictionaryDetailScreen(
         }
     ) { paddingValue ->
 
-        when(searchState) {
-            is DataState.Initial<*>, DataState.Loading -> {
-                LoadingIndicator()
-            }
-            is DataState.Error -> {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 22.dp, start = 16.dp)
-                    ) {
-                        BackButton(
-                            navController = navController,
-                            cleanupFunction = {
-                                if (!fromLookup)
-                                    unsetSharedWord()
-                                else
-                                    activity!!.finish()
-                            }
-                        )
-                    }
-                    ErrorScreen(
-                        text = "No word found in Jisho dictionary",
-                        subtitle = "¯\\_(ツ)_/¯"
-                    )
+        Column(modifier = Modifier.padding(paddingValue)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 22.dp, start = 16.dp)
+            ) {
+                BackButton(
+                    navController = navController,
+                    cleanupFunction = {
+                        /*
+                        if(navController.previousBackStackEntry != null) {
+                            navController.popBackStack()
+                        } else {
+                            activity!!.finish()
+                        }
 
-                }
+                        if (!fromLookup || isWordFromForm)
+                            unsetSharedWord()
+                        else if(!isWordFromForm)
+                            activity!!.finish()
+                            */
+                    }
+                )
             }
-            is DataState.Success<DictionaryModel> -> {
-                ConstraintLayout(
-                    modifier = Modifier.padding(paddingValue)
-                ) {
+            when(searchState) {
+                is DataState.Initial<*>, DataState.Loading -> {
+                    LoadingIndicator()
+                }
+                is DataState.Error -> {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(16.dp),
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 22.dp, start = 16.dp)
-                        ){
-                            BackButton(
-                                navController = navController,
-                                cleanupFunction = {
-                                    if (!fromLookup)
-                                        unsetSharedWord()
-                                    else
-                                        activity!!.finish()
-                                }
-                            )
-                        }
-                        LazyColumn{
-                            item{
-                                DataSection(
-                                    searchState.data,
-                                    navController,
-                                    wordKanjis,
-                                    setCurrentKanji,
-                                    setCurrentStory,
-                                    addToReview,
-                                    loadWordReviews,
-                                    scaffoldState,
-                                    showSnackbar
-                                )
-                            }
-                        }
+
+                        ErrorScreen(
+                            text = "No word found in Jisho dictionary",
+                            subtitle = "¯\\_(ツ)_/¯"
+                        )
 
                     }
-                    val snackbar = createRef()
-                    DefaultSnackbar(
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .constrainAs(snackbar) {
-                                bottom.linkTo(parent.bottom)
-                                start.linkTo(parent.start)
-                                end.linkTo(parent.end)
-                            },
-                        snackbarHostState = scaffoldState.snackbarHostState,
-                        onDismiss = {
-                            scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                }
+                is DataState.Success<DictionaryModel> -> {
+                    ConstraintLayout(
+                        modifier = Modifier.padding(paddingValue)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                        ) {
+                            LazyColumn{
+                                item{
+                                    DataSection(
+                                        searchState.data,
+                                        navController,
+                                        wordKanjis,
+                                        setCurrentKanji,
+                                        setCurrentStory,
+                                        addToReview,
+                                        loadWordReviews,
+                                        scaffoldState,
+                                        showSnackbar
+                                    )
+                                }
+                            }
+
                         }
-                    )
+                        val snackbar = createRef()
+                        DefaultSnackbar(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .constrainAs(snackbar) {
+                                    bottom.linkTo(parent.bottom)
+                                    start.linkTo(parent.start)
+                                    end.linkTo(parent.end)
+                                },
+                            snackbarHostState = scaffoldState.snackbarHostState,
+                            onDismiss = {
+                                scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                            }
+                        )
+                    }
                 }
             }
         }
