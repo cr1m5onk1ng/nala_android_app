@@ -159,21 +159,6 @@ fun KanjiDetailScreen(
 
                 }
             }
-        /*
-            val snackbar = createRef()
-            DefaultSnackbar(
-                modifier = Modifier
-                    .constrainAs(snackbar){
-                        bottom.linkTo(parent.bottom)
-                        start.linkTo(parent.start)
-                        end.linkTo(parent.end)
-                    },
-                snackbarHostState = scaffoldState.snackbarHostState,
-                onDismiss = {
-                    scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
-                }
-            ) */
-
     }
 }
 
