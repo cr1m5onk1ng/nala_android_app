@@ -1,7 +1,10 @@
 package com.example.nala.domain.model.dictionary
 
+import android.os.Parcelable
 import com.example.nala.domain.model.DomainModel
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 class DictionaryModel (
     val word: String,
     val reading: String,
@@ -10,7 +13,7 @@ class DictionaryModel (
     val common: Boolean? = null,
     val dataTags: List<String>,
     val senses: List<Sense>
-) : DomainModel() {
+) : DomainModel(), Parcelable {
     companion object {
         fun Empty() : DictionaryModel {
             return DictionaryModel(

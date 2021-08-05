@@ -1,28 +1,36 @@
 package com.example.nala.ui.dictionary
 
-import android.app.NotificationManager
 import android.app.Notification
 import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
-import android.os.Build
 import android.content.Intent
 import android.graphics.Color
-import androidx.core.app.NotificationCompat
-import com.example.nala.R
+import android.os.Build
 import android.util.Log
+import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
+import com.example.nala.R
+import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.repository.DictionaryRepository
+import com.example.nala.ui.DataState
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-@AndroidEntryPoint
-class DictionaryForegroundService : LifecycleService() {
 
+@AndroidEntryPoint
+class DictionaryLifecycleService : LifecycleService() {
+
+    @Inject lateinit var dictRepository: DictionaryRepository
     lateinit var dictionaryWindow: DictionaryWindow
-    @Inject
-    lateinit var dictRepository: DictionaryRepository
+
+    private val _wordState =
+        MutableStateFlow<DataState<DictionaryModel>>(DataState.Initial(DictionaryModel.Empty()))
+
+    val wordState: StateFlow<DataState<DictionaryModel>> = _wordState
 
     override fun onCreate() {
         super.onCreate()
@@ -31,23 +39,54 @@ class DictionaryForegroundService : LifecycleService() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
-        val word = intent?.getStringExtra("word") ?: ""
         Log.d("DICTIONARYWINDOW", "Inside Service!")
+        val word = intent?.getStringExtra("word")
+        searchWord(word ?: "")
+        //val bundle = intent?.extras
+        //val word: DictionaryModel = bundle?.getParcelable("word") ?: DictionaryModel.Empty()
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
             startCustomForeground()
         else
             startForeground(1, Notification())
-        lifecycleScope.launch{
-            dictionaryWindow.setLoadingScreen()
-            val data = dictRepository.search(word)
-            dictionaryWindow.open(data)
-        }
+        //dictionaryWindow.open(word)
+        setScreen()
         return START_STICKY
     }
 
     override fun onDestroy() {
         super.onDestroy()
         dictionaryWindow.close()
+    }
+
+    private fun setScreen() {
+        Log.d("DICTIONARYWINDOW", "Inside setScreen!")
+        lifecycleScope.launch{
+            wordState.collect {
+                when(it){
+                    is DataState.Initial<*>, DataState.Loading -> {
+                        Log.d("DICTIONARYWINDOW", "Data LOADING")
+                        dictionaryWindow.setLoadingScreen()
+                    }
+                    is DataState.Error -> {
+                        Log.d("DICTIONARYWINDOW", "Data ERROR")
+                    }
+                    is DataState.Success<DictionaryModel> -> {
+                        val data = it.data
+                        Log.d("DICTIONARYWINDOW", "Data SUCCESS. Data: $data")
+                        dictionaryWindow.open(data)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun searchWord(word: String) {
+        lifecycleScope.launch{
+            _wordState.value = DataState.Loading
+            dictRepository.searchFlow(word).collect {
+                _wordState.value = DataState.Success(it)
+            }
+        }
     }
 
     private fun startCustomForeground() {
@@ -70,8 +109,4 @@ class DictionaryForegroundService : LifecycleService() {
             startForeground(2, notification)
         }
     }
-
 }
-
-
-

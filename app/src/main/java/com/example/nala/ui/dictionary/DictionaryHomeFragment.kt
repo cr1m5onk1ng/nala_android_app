@@ -25,9 +25,6 @@ class DictionaryHomeFragment : Fragment() {
 
     private val viewModel: DictionaryViewModel by activityViewModels()
 
-    //TODO(Number of might forget words must be configurable)
-    private val reviewViewModel: ReviewViewModel by activityViewModels()
-
     @ExperimentalComposeUiApi
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -49,6 +46,8 @@ class DictionaryHomeFragment : Fragment() {
                         isReviewsSelected = viewModel.isReviewSelected.value,
                         toggleHome = viewModel::toggleHome,
                         toggleReviews = viewModel::toggleReviews,
+                        onMinimize = {},
+                        onCheckPermissions = {},
                         navController = findNavController(),
                     )
                 }

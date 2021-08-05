@@ -37,6 +37,14 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.example.nala.R
 import com.example.nala.ui.dictionary.DictionaryForegroundService
+import android.app.ActivityManager
+import android.content.Context
+import android.content.DialogInterface
+import androidx.appcompat.app.AlertDialog
+import com.example.nala.domain.model.dictionary.DictionaryModel
+import com.example.nala.repository.DictionaryRepository
+import com.example.nala.ui.dictionary.DictionaryLifecycleService
+
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -53,6 +61,7 @@ class MainActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         var startDestination = "home_screen"
         // flag that checks if the dictionary was called from an article
         // TODO improve the checking logic
@@ -62,10 +71,15 @@ class MainActivity : AppCompatActivity() {
         when (intent?.action) {
             Intent.ACTION_PROCESS_TEXT -> {
                 if (intent.hasExtra(Intent.EXTRA_PROCESS_TEXT)){
+                    /*
                     viewModel.setSharedText(intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT) )
                     startDestination = "detail_screen"
                     fromLookup = true
-                    viewModel.setIsWordFromIntent()
+                    viewModel.setIsWordFromIntent() */
+                    checkOverlayPermissions()
+                    val word = intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT) ?: ""
+                    startDictionaryWindowService(word)
+                    finish()
                 }
             }
             Intent.ACTION_SEND -> {
@@ -100,7 +114,6 @@ class MainActivity : AppCompatActivity() {
 
                 // Navigate to detail screen if a word was searched from another app
 
-
                 NavHost(navController=navController, startDestination) {
                     composable("home_screen"){
                         HomeScreen(
@@ -114,6 +127,8 @@ class MainActivity : AppCompatActivity() {
                             isReviewsSelected = viewModel.isReviewSelected.value,
                             toggleHome = viewModel::toggleHome,
                             toggleReviews = viewModel::toggleReviews,
+                            onMinimize = { startDictionaryWindowService("") },
+                            onCheckPermissions = { checkOverlayPermissions() },
                             navController = navController
                         )
                     }
@@ -232,6 +247,82 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun onMinimizeWindow() {
+        if(checkOverlayDisplayPermissions()) {
+            startService(Intent(this, DictionaryForegroundService::class.java))
+            finish()
+        } else {
+            requestOverlayDisplayPermission()
+        }
+    }
+
+    private fun requestOverlayDisplayPermission() {
+        // An AlertDialog is created
+        val builder = AlertDialog.Builder(this)
+
+        // This dialog can be closed, just by taping
+        // anywhere outside the dialog-box
+        builder.setCancelable(true)
+
+        // The title of the Dialog-box is set
+        builder.setTitle("Screen Overlay Permission Needed")
+
+        // The message of the Dialog-box is set
+        builder.setMessage("Enable 'Display over other apps' from System Settings.")
+
+        // The event of the Positive-Button is set
+        builder.setPositiveButton("Open Settings",
+            DialogInterface.OnClickListener { dialog, which -> // The app will redirect to the 'Display over other apps' in Settings.
+                // This is an Implicit Intent. This is needed when any Action is needed
+                // to perform, here it is
+                // redirecting to an other app(Settings).
+                val intent = Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse(
+                        "package:$packageName"
+                    )
+                )
+
+                // This method will start the intent. It takes two parameter, one is the Intent and the other is
+                // an requestCode Integer. Here it is -1.
+                startActivityForResult(intent, RESULT_OK)
+            })
+        val dialog = builder.create()
+        // The Dialog will
+        // show in the screen
+        dialog.show()
+    }
+
+    private fun isDictionaryServiceRunning() : Boolean {
+        val manager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        for (service in manager.getRunningServices(Int.MAX_VALUE)) {
+            // If this service is found as a running, it will return true or else false.
+            if (DictionaryForegroundService::class.java.name == service.service.className) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun checkOverlayDisplayPermissions() : Boolean {
+        return if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+            // If 'Display over other apps' is not enabled it
+            // will return false or else true
+            Settings.canDrawOverlays(this)
+        } else {
+            true;
+        }
+    }
+
+    private fun checkOverlayPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Settings.canDrawOverlays(this)) {
+                // send user to the device settings
+                val permIntent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
+                startActivity(permIntent)
+            }
+        }
+    }
+
     private fun startDictionaryWindowService(word: String) {
         val dictionaryIntent = Intent(this, DictionaryForegroundService::class.java)
         dictionaryIntent.putExtra("word", word)
@@ -245,6 +336,7 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     startService(dictionaryIntent)
                 }
+                startService(dictionaryIntent)
             }
         } else {
             startService(dictionaryIntent)
@@ -252,7 +344,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startCustomTabIntent(url: String) {
-        // Create explicit intent
+        // Create intent
         val addToFavoritesIntent = Intent(this, ArticleService::class.java)
         addToFavoritesIntent.putExtra("url", url)
         val pendingAddToFavorites = PendingIntent.getActivity(
@@ -270,17 +362,6 @@ class MainActivity : AppCompatActivity() {
              true)
         val customTabsIntent = builder.build();
         customTabsIntent.launchUrl(this, Uri.parse(url));
-    }
-
-    // method to ask user to grant the Overlay permission
-    private fun checkOverlayPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (!Settings.canDrawOverlays(this)) {
-                // send user to the device settings
-                val myIntent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
-                startActivity(myIntent)
-            }
-        }
     }
 
     private fun showSnackbar(

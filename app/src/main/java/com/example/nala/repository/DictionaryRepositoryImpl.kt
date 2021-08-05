@@ -5,6 +5,11 @@ import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.network.model.dictionary.DictionaryModelDtoMapper
 import com.example.nala.network.services.DictionaryService
 import com.example.nala.service.tokenization.JapaneseTokenizerService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class DictionaryRepositoryImpl @Inject constructor(
@@ -16,12 +21,23 @@ class DictionaryRepositoryImpl @Inject constructor(
 
     override suspend fun search(word: String): DictionaryModel {
         try {
-            val result = dictionaryService.search(word);
-            return dictionaryModelMapper.mapToDomainModel(result);
+            val result = dictionaryService.search(word)
+            return dictionaryModelMapper.mapToDomainModel(result)
         } catch (e: Exception){
             e.printStackTrace()
         }
         return DictionaryModel.Empty()
+    }
+
+    override fun searchFlow(word: String): Flow<DictionaryModel> {
+        try {
+            return flow {
+                dictionaryService.search(word)
+            }
+        } catch(e: Exception){
+            e.printStackTrace()
+        }
+        return flow { DictionaryModel.Empty() }
     }
 
     override suspend fun tokenize(text: String) : List<String> {

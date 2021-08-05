@@ -1,5 +1,6 @@
 package com.example.nala.ui.composables
 
+import android.app.Activity
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,6 +13,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Minimize
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,6 +23,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -51,8 +54,11 @@ fun HomeScreen(
     isReviewsSelected: Boolean,
     toggleHome: (Boolean) -> Unit,
     toggleReviews: (Boolean) -> Unit,
+    onMinimize: () -> Unit,
+    onCheckPermissions: () -> Unit,
     navController: NavController
 ) {
+    val activity = (LocalContext.current as? Activity)
     val keyboardController = LocalSoftwareKeyboardController.current
 
     if(textReceived){
@@ -195,6 +201,18 @@ fun HomeScreen(
                             navController.navigate("detail_screen")
                         }
                     )
+                )
+                Spacer(modifier = Modifier.padding(vertical=20.dp))
+                SmallButton(
+                    text = "Minimize",
+                    backgroundColor = Blue700,
+                    icon = Icons.Rounded.Minimize,
+                    onCLick = {
+                        onCheckPermissions()
+                        onMinimize()
+                        activity!!.finish()
+                              },
+                    height = 50.dp,
                 )
             }
         }
