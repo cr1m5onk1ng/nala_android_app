@@ -75,6 +75,17 @@ class KanjiRepositoryImpl @Inject constructor(
         return kanjiDao.getKanjis()
     }
 
+    override suspend fun getWordKanjis(word: String): List<KanjiModel> {
+        val kanjis = mutableListOf<KanjiModel>()
+        word.forEach {
+            val kanjiModel = getKanjiModel(it.toString())
+            if(!kanjiModel.isEmpty()) {
+                kanjis.add(kanjiModel)
+            }
+        }
+        return kanjis
+    }
+
     override suspend fun populateKanjiDatabase(
         kanjiCollection: KanjiCollection,
         storiesCollection: StoriesCollection) {

@@ -2,6 +2,7 @@ package com.example.nala.ui.dictionary
 
 import android.content.Context.WINDOW_SERVICE
 import android.content.Context
+import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.util.Log
 import android.view.*
@@ -16,7 +17,10 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.nala.db.models.kanji.KanjiStories
 import com.example.nala.domain.model.dictionary.DictionaryModel
+import com.example.nala.domain.model.kanji.KanjiModel
+import com.example.nala.ui.adapters.KanjiListAdapter
 import com.example.nala.ui.adapters.SenseItemAdapter
 import com.example.nala.ui.adapters.WordTagAdapter
 
@@ -24,6 +28,10 @@ import com.example.nala.ui.adapters.WordTagAdapter
 class DictionaryWindow (
     private val context: Context,
 ) {
+
+    lateinit var currentWord: DictionaryModel
+    lateinit var wordKanjis: List<KanjiModel>
+    lateinit var kanjiStories: List<KanjiStories>
 
     val metrics: DisplayMetrics = context.applicationContext.resources.displayMetrics
     val width = metrics.widthPixels
@@ -47,10 +55,71 @@ class DictionaryWindow (
 
     private var windowDictionaryView: View = layoutInflater.inflate(R.layout.dictionary_popup, null)
     private var loadingScreenView: View = layoutInflater.inflate(R.layout.data_loading_screen, null)
+    private var kanjiScreenView: View = layoutInflater.inflate(R.layout.kanji_screen, null)
 
 
     init {
-        // set the layout parameters of the window
+        setWindowListeners()
+    }
+
+    fun setWordData(word: DictionaryModel, kanjis: List<KanjiModel>, stories: List<KanjiStories>)  {
+        currentWord = word
+        wordKanjis = kanjis
+        kanjiStories = stories
+    }
+
+    fun openWordDict() {
+        bindWordData()
+        removeView(loadingScreenView)
+        addView(windowDictionaryView, mParams)
+    }
+
+    fun openKanjiDict() {
+        bindKanjiData()
+        removeView(windowDictionaryView)
+        addView(kanjiScreenView, mParams)
+    }
+
+    fun setLoadingScreen() {
+        addView(loadingScreenView, mParams)
+    }
+
+    fun addView(view: View, params: WindowManager.LayoutParams) {
+        try {
+            // check if the view is already
+            // inflated or present in the window
+                /*
+            if (windowDictionaryView.windowToken == null) {
+                if (windowDictionaryView.parent == null) {
+                    overlayWindowManager.addView(view, params)
+                }
+            } */
+            overlayWindowManager.addView(view, params)
+        } catch (e: Exception) {
+            Log.d("DICTWINDOWDEBUG", "Error while opening window: $e")
+        }
+    }
+
+    fun removeView(view: View) {
+        try {
+            // remove the view from the window
+            (context.getSystemService(WINDOW_SERVICE) as WindowManager).removeView(view)
+            // invalidate the view
+            view.invalidate()
+            // remove all views
+            (view.parent as ViewGroup).removeAllViews()
+
+            // the above steps are necessary when you are adding and removing
+            // the view simultaneously, it might give some exceptions
+        } catch (e: Exception) {
+            Log.d("DICTWINDOWDEBUG", "Error while closing window: $e")
+        }
+    }
+
+    fun setWindowListeners() {
+        // Here go the button listeners
+        //  this function will be called in the service onCreate
+        // to set up all the needed listeners
         windowDictionaryView.findViewById<ImageView>(R.id.window_close).setOnClickListener{
             close()
         }
@@ -83,54 +152,9 @@ class DictionaryWindow (
         mParams.gravity = Gravity.CENTER
         mParams.x = 0
         mParams.y = 0
-    }
-
-    fun addView(view: View, params: WindowManager.LayoutParams) {
-        try {
-            // check if the view is already
-            // inflated or present in the window
-            if (windowDictionaryView.windowToken == null) {
-                if (windowDictionaryView.parent == null) {
-                    overlayWindowManager.addView(view, params)
-                }
-            }
-        } catch (e: Exception) {
-            Log.d("DICTWINDOWDEBUG", "Error while opening window: $e")
-        }
-    }
-
-    fun open(word: DictionaryModel) {
-        removeView(loadingScreenView)
-        bindData(word)
-        addView(windowDictionaryView, mParams)
-    }
-
-    fun setLoadingScreen() {
-        addView(loadingScreenView, mParams)
-    }
-
-    fun removeView(view: View) {
-        try {
-            // remove the view from the window
-            (context.getSystemService(WINDOW_SERVICE) as WindowManager).removeView(view)
-            // invalidate the view
-            view.invalidate()
-            // remove all views
-            (view.parent as ViewGroup).removeAllViews()
-
-            // the above steps are necessary when you are adding and removing
-            // the view simultaneously, it might give some exceptions
-        } catch (e: Exception) {
-            Log.d("DICTWINDOWDEBUG", "Error while closing window: $e")
-        }
-    }
-
-    fun setListeners() {
-        // Here go the button listeners
-        //  this function will be called in the service onCreate
-        // to set up all the needed listeners
 
     }
+
 
     fun close() {
         try {
@@ -148,32 +172,35 @@ class DictionaryWindow (
         }
     }
 
-    private fun bindData(word: DictionaryModel) {
-        if (!word.isEmpty()) {
-            val definitions: List<String> = word?.senses?.map {
+    private fun bindWordData() {
+        if (!currentWord.isEmpty()) {
+
+            val definitions: List<String> = currentWord?.senses?.map {
                 val definitions = it?.englishDefinitions ?: listOf()
                 val defString = definitions.joinToString(separator=", ")
                 defString
             }
             val tags = mutableListOf<String>()
-            word.jlpt?.let{
-                tags.add(it)
+            currentWord.jlpt?.let{
+                if(it.isNotEmpty()) tags.add(it)
             }
-            if(word.common == true) {
+            if(currentWord.common == true) {
                 tags.add("common")
             }
-            word.pos?.let{
-                tags.add(it)
+            currentWord.pos?.let{
+                if(it.isNotEmpty()) tags.add(it)
             }
-            word.dataTags.forEach{
-                tags.add(it)
+            currentWord.dataTags.forEach{
+                if(it.isNotEmpty()) tags.add(it)
             }
+
             val sensesAdapter = SenseItemAdapter().apply {
                 submitList(definitions)
             }
             val wordTagsAdapter = WordTagAdapter().apply{
                 submitList(tags)
             }
+
             windowDictionaryView.findViewById<RecyclerView>(R.id.rvSensesList).apply{
                 layoutManager = LinearLayoutManager(context)
                 adapter = sensesAdapter
@@ -182,8 +209,38 @@ class DictionaryWindow (
                 layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
                 adapter = wordTagsAdapter
             }
-            windowDictionaryView.findViewById<TextView>(R.id.tvWord).text = word.word
-            windowDictionaryView.findViewById<TextView>(R.id.tvFurigana).text = word.reading
+
+
+            windowDictionaryView.findViewById<TextView>(R.id.tvWord).apply{
+                text = currentWord.word
+                val kanjis = wordKanjis.map{it.kanji}
+                for(char in text) {
+                    if (kanjis.contains(char.toString())){
+                        this.paintFlags = Paint.UNDERLINE_TEXT_FLAG
+                        break
+                    }
+                }
+            }
+
+            windowDictionaryView.findViewById<TextView>(R.id.tvFurigana).text = currentWord.reading
+            windowDictionaryView.findViewById<TextView>(R.id.tvWord).setOnClickListener {
+                openKanjiDict()
+            }
+        }
+    }
+
+    private fun bindKanjiData() {
+        val kanjisAdapter = KanjiListAdapter(context).apply{
+            sumbitKanjisData(wordKanjis)
+            sumbitStoriesData(kanjiStories.map{it.story})
+        }
+        kanjiScreenView.findViewById<RecyclerView>(R.id.rvKanjisContainer).apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = kanjisAdapter
+        }
+        kanjiScreenView.findViewById<ImageView>(R.id.kanjiClose).setOnClickListener {
+            removeView(kanjiScreenView)
+            addView(windowDictionaryView, mParams)
         }
     }
 

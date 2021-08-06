@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/word_tag_container"
+    android:id="@+id/kanji_tag_container"
     android:layout_height="32dp"
     android:layout_width="wrap_content"
     android:layout_margin="3dp"
     android:padding="5dp"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    app:cardElevation="5dp"
+    app:cardElevation="8dp"
     app:cardCornerRadius="24dp"
     app:cardBackgroundColor="@color/skyBlue"
     xmlns:app="http://schemas.android.com/apk/res-auto">
@@ -16,7 +16,7 @@
         android:layout_height="match_parent">
 
         <TextView
-            android:id="@+id/tvWordTag"
+            android:id="@+id/tvKanjiTag"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:text="TextView"

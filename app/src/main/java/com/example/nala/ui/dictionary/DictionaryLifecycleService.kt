@@ -73,7 +73,7 @@ class DictionaryLifecycleService : LifecycleService() {
                     is DataState.Success<DictionaryModel> -> {
                         val data = it.data
                         Log.d("DICTIONARYWINDOW", "Data SUCCESS. Data: $data")
-                        dictionaryWindow.open(data)
+                        //dictionaryWindow.openWordDict(data)
                     }
                 }
             }

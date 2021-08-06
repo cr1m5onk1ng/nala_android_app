@@ -15,15 +15,31 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/tvFurigana"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="TextView"
+        <ImageView
+            android:id="@+id/window_close"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_margin="5dp"
+            android:contentDescription="close window"
+            android:src="@drawable/ic_baseline_close_24"
+            app:layout_constraintBottom_toTopOf="@+id/tvFurigana"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.049"
+            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/window_close" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="1.0" />
+
+        <ImageView
+            android:id="@+id/see_word_details"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="164dp"
+            android:src="@drawable/ic_baseline_arrow_forward_24"
+            app:layout_constraintBottom_toBottomOf="@+id/add_to_favorites"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/add_to_favorites"
+            app:layout_constraintVertical_bias="1.0" />
 
         <TextView
             android:id="@+id/tvWord"
@@ -33,20 +49,40 @@
             android:textSize="28sp"
             app:layout_constraintBottom_toTopOf="@id/rvWordTags"
             app:layout_constraintStart_toStartOf="@+id/tvFurigana"
-            app:layout_constraintTop_toBottomOf="@id/tvFurigana"
-            tools:listitem="@layout/word_tag_item" />
+            app:layout_constraintTop_toBottomOf="@id/tvFurigana" />
+
+        <ImageView
+            android:id="@+id/add_to_favorites"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="24dp"
+            android:src="@drawable/ic_baseline_star_outline_24"
+            app:layout_constraintBottom_toBottomOf="@+id/tvWord"
+            app:layout_constraintEnd_toStartOf="@+id/see_word_details"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toEndOf="@+id/tvWord"
+            app:layout_constraintTop_toTopOf="@+id/tvWord" />
+
+        <TextView
+            android:id="@+id/tvFurigana"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TextView"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.049"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/window_close" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvWordTags"
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:layout_centerVertical="true"
+            android:layout_marginHorizontal="3dp"
             android:background="@color/background"
             android:orientation="horizontal"
-            android:layout_marginHorizontal="3dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toTopOf="@id/rvSensesList"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tvWord" />
 
@@ -61,19 +97,6 @@
             app:layout_constraintTop_toBottomOf="@+id/rvWordTags"
             tools:listitem="@layout/sense_card" />
 
-        <ImageView
-            android:id="@+id/window_close"
-            android:layout_width="38dp"
-            android:layout_height="31dp"
-            android:layout_margin="5dp"
-            android:contentDescription="close window"
-            android:src="@drawable/ic_baseline_close_24"
-            app:layout_constraintBottom_toTopOf="@+id/tvFurigana"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="1.0" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
