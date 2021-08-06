@@ -4,7 +4,7 @@
     android:id="@+id/dict_card"
     android:layout_height="match_parent"
     android:layout_width="match_parent"
-    android:background="@color/background"
+    android:padding="8dp"
     app:cardBackgroundColor="@color/background"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     app:cardElevation="12dp"
@@ -13,52 +13,64 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/dict_screen"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp">
+        android:layout_height="wrap_content">
 
         <TextView
             android:id="@+id/tvFurigana"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="TextView"
-            app:layout_constraintBottom_toTopOf="@+id/tvWord"
-            app:layout_constraintStart_toStartOf="@+id/tvWord"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="1.0" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.049"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/window_close" />
 
         <TextView
             android:id="@+id/tvWord"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="72dp"
-            android:layout_marginTop="52dp"
             android:text="TextView"
-            android:textSize="24sp"
+            android:textSize="28sp"
+            app:layout_constraintBottom_toTopOf="@id/rvWordTags"
+            app:layout_constraintStart_toStartOf="@+id/tvFurigana"
+            app:layout_constraintTop_toBottomOf="@id/tvFurigana"
+            tools:listitem="@layout/word_tag_item" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvWordTags"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_centerVertical="true"
+            android:background="@color/background"
+            android:orientation="horizontal"
+            android:layout_marginHorizontal="3dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintBottom_toTopOf="@id/rvSensesList"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/tvWord" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvSensesList"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@color/background"
             android:padding="8dp"
-            android:visibility="visible"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/tvWord"
-            app:layout_constraintTop_toBottomOf="@+id/tvWord"
-            app:layout_constraintVertical_bias="1.0"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/rvWordTags"
             tools:listitem="@layout/sense_card" />
 
         <ImageView
             android:id="@+id/window_close"
             android:layout_width="38dp"
             android:layout_height="31dp"
+            android:layout_margin="5dp"
             android:contentDescription="close window"
             android:src="@drawable/ic_baseline_close_24"
             app:layout_constraintBottom_toTopOf="@+id/tvFurigana"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.986"
+            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="1.0" />
@@ -66,4 +78,3 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.cardview.widget.CardView>
-

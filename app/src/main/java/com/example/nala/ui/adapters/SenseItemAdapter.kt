@@ -12,7 +12,7 @@ class SenseItemAdapter : RecyclerView.Adapter<SenseItemAdapter.SenseItemViewHold
 
     private var senses: List<String> = ArrayList()
 
-    class SenseItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class SenseItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val senseDefView: TextView = itemView.findViewById(R.id.tvDefinition)
     }
 
@@ -22,7 +22,7 @@ class SenseItemAdapter : RecyclerView.Adapter<SenseItemAdapter.SenseItemViewHold
     }
 
     override fun onBindViewHolder(holder: SenseItemViewHolder, position: Int) {
-        holder.senseDefView.text = (position+1).toString() + "." + " " +  senses[position]
+        holder.senseDefView.text = (position+1).toString() + "." + " " + senses[position]
     }
 
     override fun getItemCount(): Int {

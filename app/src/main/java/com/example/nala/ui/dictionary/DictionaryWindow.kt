@@ -7,9 +7,6 @@ import android.util.Log
 import android.view.*
 import java.lang.Exception
 import android.view.LayoutInflater
-import android.widget.Button
-import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
 import com.example.nala.R
 import android.os.Build
 import android.util.DisplayMetrics
@@ -17,17 +14,11 @@ import android.view.WindowManager
 import android.view.Gravity
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.cardview.widget.CardView
-import androidx.core.view.MotionEventCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.nala.domain.model.dictionary.DictionaryModel
-import com.example.nala.repository.DictionaryRepository
 import com.example.nala.ui.adapters.SenseItemAdapter
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
+import com.example.nala.ui.adapters.WordTagAdapter
 
 
 class DictionaryWindow (
@@ -164,13 +155,32 @@ class DictionaryWindow (
                 val defString = definitions.joinToString(separator=", ")
                 defString
             }
-            val listAdapter = SenseItemAdapter().apply {
+            val tags = mutableListOf<String>()
+            word.jlpt?.let{
+                tags.add(it)
+            }
+            if(word.common == true) {
+                tags.add("common")
+            }
+            word.pos?.let{
+                tags.add(it)
+            }
+            word.dataTags.forEach{
+                tags.add(it)
+            }
+            val sensesAdapter = SenseItemAdapter().apply {
                 submitList(definitions)
             }
-            val sensesView =  windowDictionaryView.findViewById<RecyclerView>(R.id.rvSensesList)
-            sensesView.apply{
+            val wordTagsAdapter = WordTagAdapter().apply{
+                submitList(tags)
+            }
+            windowDictionaryView.findViewById<RecyclerView>(R.id.rvSensesList).apply{
                 layoutManager = LinearLayoutManager(context)
-                adapter = listAdapter
+                adapter = sensesAdapter
+            }
+            windowDictionaryView.findViewById<RecyclerView>(R.id.rvWordTags).apply{
+                layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+                adapter = wordTagsAdapter
             }
             windowDictionaryView.findViewById<TextView>(R.id.tvWord).text = word.word
             windowDictionaryView.findViewById<TextView>(R.id.tvFurigana).text = word.reading
