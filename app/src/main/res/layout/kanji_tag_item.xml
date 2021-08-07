@@ -23,6 +23,7 @@
             android:layout_margin="5dp"
             app:flow_verticalAlign="center"
             app:flow_horizontalAlign="center"
+            android:fontFamily="@font/quicksand_medium"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

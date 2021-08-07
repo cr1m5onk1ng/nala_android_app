@@ -202,18 +202,6 @@ fun HomeScreen(
                         }
                     )
                 )
-                Spacer(modifier = Modifier.padding(vertical=20.dp))
-                SmallButton(
-                    text = "Minimize",
-                    backgroundColor = Blue700,
-                    icon = Icons.Rounded.Minimize,
-                    onCLick = {
-                        onCheckPermissions()
-                        onMinimize()
-                        activity!!.finish()
-                              },
-                    height = 50.dp,
-                )
             }
         }
 

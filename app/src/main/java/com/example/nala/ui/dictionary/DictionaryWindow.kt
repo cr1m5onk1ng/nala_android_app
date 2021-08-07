@@ -226,6 +226,9 @@ class DictionaryWindow (
             windowDictionaryView.findViewById<TextView>(R.id.tvWord).setOnClickListener {
                 openKanjiDict()
             }
+            windowDictionaryView.findViewById<ImageView>(R.id.add_to_favorites).setOnClickListener{
+
+            }
         }
     }
 

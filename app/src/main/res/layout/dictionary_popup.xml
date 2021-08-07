@@ -30,28 +30,6 @@
             app:layout_constraintVertical_bias="1.0" />
 
         <ImageView
-            android:id="@+id/see_word_details"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginEnd="164dp"
-            android:src="@drawable/ic_baseline_arrow_forward_24"
-            app:layout_constraintBottom_toBottomOf="@+id/add_to_favorites"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/add_to_favorites"
-            app:layout_constraintVertical_bias="1.0" />
-
-        <TextView
-            android:id="@+id/tvWord"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="TextView"
-            android:textSize="28sp"
-            app:layout_constraintBottom_toTopOf="@id/rvWordTags"
-            app:layout_constraintStart_toStartOf="@+id/tvFurigana"
-            app:layout_constraintTop_toBottomOf="@id/tvFurigana" />
-
-        <ImageView
             android:id="@+id/add_to_favorites"
             android:layout_width="24dp"
             android:layout_height="24dp"
@@ -61,7 +39,19 @@
             app:layout_constraintEnd_toStartOf="@+id/see_word_details"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toEndOf="@+id/tvWord"
-            app:layout_constraintTop_toTopOf="@+id/tvWord" />
+            app:layout_constraintTop_toTopOf="@+id/tvWord"
+            app:layout_constraintVertical_bias="0.571" />
+
+        <ImageView
+            android:id="@+id/see_word_details"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="36dp"
+            android:src="@drawable/ic_baseline_arrow_forward_24"
+            app:layout_constraintBottom_toBottomOf="@+id/add_to_favorites"
+            app:layout_constraintStart_toStartOf="@+id/add_to_favorites"
+            app:layout_constraintTop_toTopOf="@+id/add_to_favorites"
+            app:layout_constraintVertical_bias="1.0" />
 
         <TextView
             android:id="@+id/tvFurigana"
@@ -69,10 +59,22 @@
             android:layout_height="wrap_content"
             android:text="TextView"
             android:textSize="12sp"
+            android:fontFamily="@font/quicksand_light"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.049"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/window_close" />
+
+        <TextView
+            android:id="@+id/tvWord"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TextView"
+            android:textSize="28sp"
+            android:fontFamily="@font/quicksand_bold"
+            app:layout_constraintBottom_toTopOf="@id/rvWordTags"
+            app:layout_constraintStart_toStartOf="@+id/tvFurigana"
+            app:layout_constraintTop_toBottomOf="@id/tvFurigana" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvWordTags"

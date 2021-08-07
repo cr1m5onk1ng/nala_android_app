@@ -3,7 +3,7 @@
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/KanjisScreen"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:layout_width="match_parent"
     android:padding="16dp"
     app:cardBackgroundColor="@color/background"
@@ -17,8 +17,8 @@
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvKanjisContainer"
-            android:layout_width="385dp"
-            android:layout_height="717dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_marginHorizontal="16dp"
             android:layout_marginTop="18dp"
             android:padding="8dp"

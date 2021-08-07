@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.nala.R
 
@@ -13,6 +14,7 @@ class WordTagAdapter : RecyclerView.Adapter<WordTagAdapter.WordTagViewHolder>(){
 
     inner class WordTagViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val wordTagView: TextView = itemView.findViewById(R.id.tvWordTag)
+        val wordTagContainerView: CardView = itemView.findViewById(R.id.word_tag_container)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WordTagViewHolder {
@@ -22,6 +24,15 @@ class WordTagAdapter : RecyclerView.Adapter<WordTagAdapter.WordTagViewHolder>(){
 
     override fun onBindViewHolder(holder: WordTagViewHolder, position: Int) {
         holder.wordTagView.text = wordTags[position]
+        holder.wordTagContainerView.apply {
+            if(position % 3 == 0) {
+                setCardBackgroundColor(resources.getColor(R.color.lightBlue))
+            } else if(position % 3 == 1) {
+                setCardBackgroundColor(resources.getColor(R.color.lightGreen))
+            } else if(position % 3 == 2) {
+                setCardBackgroundColor(resources.getColor(R.color.lightRed))
+            }
+        }
     }
 
     override fun getItemCount(): Int {
