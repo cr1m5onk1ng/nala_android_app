@@ -46,11 +46,10 @@ class KanjiListAdapter(
                 toggle()
             }
         }
-        holder.kanjiMeanings.text = "Meanings: " + kanjis[position].meaning?.joinToString(separator=", ")
-        holder.kanjiOns.text = "Onyomi: " +  kanjis[position].onReadings?.joinToString(separator=", ")
-        holder.kanjiKun.text = "Kunyomi: " + kanjis[position].kunReadings?.joinToString(separator=", ")
+        holder.kanjiMeanings.text = kanjis[position].meaning?.joinToString(separator=", ")
+        holder.kanjiOns.text = kanjis[position].onReadings?.joinToString(separator=", ")
+        holder.kanjiKun.text = kanjis[position].kunReadings?.joinToString(separator=", ")
         val currentKanji = kanjis[position]
-        Log.d("DICTWINDOWDEBUG", "Current KANJI: $currentKanji")
         var tags = mutableListOf<String>()
         currentKanji.jlpt?.let{
             tags.add("jlpt-"+it)
@@ -61,8 +60,6 @@ class KanjiListAdapter(
         currentKanji.grade?.let{
             tags.add("grade: "+it)
         }
-
-        Log.d("DICTWINDOWDEBUG", "KANJI TAGS: $tags")
 
         val tagsAdapter = KanjiTagsAdapter().apply {
             submitList(tags)
