@@ -31,17 +31,9 @@ class DictionaryForegroundService : LifecycleService() {
     @Inject lateinit var dictRepository: DictionaryRepository
     @Inject lateinit var kanjiRepository: KanjiRepository
     @Inject lateinit var reviewRepository: ReviewRepository
-    private lateinit var viewModel: DictionaryViewModel
 
     override fun onCreate() {
         super.onCreate()
-
-        viewModel = DictionaryViewModel(
-            dictRepository,
-            kanjiRepository,
-            reviewRepository,
-            applicationContext
-        )
 
         dictionaryWindow = DictionaryWindow(
             applicationContext,
