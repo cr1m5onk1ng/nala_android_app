@@ -34,7 +34,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_marginStart="24dp"
-            android:src="@drawable/ic_baseline_star_outline_24"
+            android:src="@drawable/favorites_button_inactive"
             app:layout_constraintBottom_toBottomOf="@+id/tvWord"
             app:layout_constraintEnd_toStartOf="@+id/see_word_details"
             app:layout_constraintHorizontal_bias="0.0"

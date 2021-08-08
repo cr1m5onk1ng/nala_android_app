@@ -11,24 +11,43 @@ import androidx.core.app.NotificationCompat
 import com.example.nala.R
 import android.util.Log
 import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import com.example.nala.db.models.kanji.KanjiStories
+import com.example.nala.domain.model.dictionary.DictionaryModel
+import com.example.nala.domain.model.kanji.KanjiModel
 import com.example.nala.repository.DictionaryRepository
 import com.example.nala.repository.KanjiRepository
+import com.example.nala.repository.ReviewRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlinx.coroutines.flow.*
 
 @AndroidEntryPoint
 class DictionaryForegroundService : LifecycleService() {
 
-    lateinit var dictionaryWindow: DictionaryWindow
+    private lateinit var dictionaryWindow: DictionaryWindow
     @Inject lateinit var dictRepository: DictionaryRepository
     @Inject lateinit var kanjiRepository: KanjiRepository
+    @Inject lateinit var reviewRepository: ReviewRepository
+    private lateinit var viewModel: DictionaryViewModel
 
     override fun onCreate() {
         super.onCreate()
-        dictionaryWindow = DictionaryWindow(applicationContext)
+
+        viewModel = DictionaryViewModel(
+            dictRepository,
+            kanjiRepository,
+            reviewRepository,
+            applicationContext
+        )
+
+        dictionaryWindow = DictionaryWindow(
+            applicationContext,
+            reviewRepository,
+            lifecycleScope
+        )
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -44,11 +63,20 @@ class DictionaryForegroundService : LifecycleService() {
             val wordData = dictRepository.search(word)
             val kanjis = kanjiRepository.getWordKanjis(wordData.word)
             val stories = mutableListOf<KanjiStories>()
+            var wordReviews = reviewRepository.getWordReviewsAsString() as MutableList<String>
+            var kanjiReviews = reviewRepository.getKanjiReviewsAsString() as MutableList<String>
+            /*
+            reviewRepository.getWordReviews().collect{ reviews ->
+                wordReviews = reviews.map{ it.word }
+            }
+            reviewRepository.getAllKanjiReviewItems().collect{ reviews ->
+                kanjiReviews = reviews.map{ it.kanji }
+            } */
             kanjis.forEach {
                 val story = kanjiRepository.getKanjiStory(it.kanji)
                 stories.add(KanjiStories(kanji=it.kanji, story=story))
             }
-            dictionaryWindow.setWordData(wordData, kanjis, stories)
+            dictionaryWindow.setWordData(wordData, kanjis, stories, wordReviews, kanjiReviews)
             dictionaryWindow.openWordDict()
             //dictionaryWindow.openKanjiDict()
         }

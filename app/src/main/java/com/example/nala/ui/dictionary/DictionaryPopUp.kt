@@ -1,46 +1,32 @@
 package com.example.nala.ui.dictionary
 
-import android.annotation.SuppressLint
-import android.content.Context.WINDOW_SERVICE
 import android.content.Context
 import android.graphics.Paint
 import android.graphics.PixelFormat
-import android.util.Log
-import android.view.*
-import java.lang.Exception
-import android.view.LayoutInflater
-import com.example.nala.R
 import android.os.Build
 import android.util.DisplayMetrics
-import android.view.WindowManager
-import android.view.Gravity
+import android.util.Log
+import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.nala.db.models.kanji.KanjiStories
-import com.example.nala.db.models.review.WordReviewModel
+import com.example.nala.R
 import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.domain.model.kanji.KanjiModel
-import com.example.nala.repository.ReviewRepository
-import com.example.nala.ui.adapters.KanjiListAdapter
+import com.example.nala.ui.adapters.KanjiListAdapterV2
 import com.example.nala.ui.adapters.SenseItemAdapter
 import com.example.nala.ui.adapters.WordTagAdapter
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
+import java.lang.Exception
 
-
-class DictionaryWindow (
+class DictionaryPopUp(
     private val context: Context,
-    private val reviewRepo: ReviewRepository,
-    private val scope: CoroutineScope,
-) {
-
-    private lateinit var currentWord: DictionaryModel
-    private lateinit var wordKanjis: List<KanjiModel>
-    private lateinit var kanjiStories: List<KanjiStories>
-    private lateinit var wordReviews: MutableList<String>
-    private lateinit var kanjiReviews: MutableList<String>
+    private val viewModel: DictServiceViewModel,
+)
+{
+    lateinit var currentWord: DictionaryModel
+    lateinit var wordKanjis: List<KanjiModel>
+    lateinit var kanjiStories: List<String>
 
     val metrics: DisplayMetrics = context.applicationContext.resources.displayMetrics
     val width = metrics.widthPixels
@@ -52,12 +38,12 @@ class DictionaryWindow (
         WindowManager.LayoutParams.WRAP_CONTENT,
         WindowManager.LayoutParams.WRAP_CONTENT,
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-         else WindowManager.LayoutParams.TYPE_PHONE,
+        else WindowManager.LayoutParams.TYPE_PHONE,
         WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
         // through any transparent parts
         PixelFormat.TRANSLUCENT
     )
-    private var overlayWindowManager: WindowManager = context.getSystemService(WINDOW_SERVICE) as WindowManager
+    private var overlayWindowManager: WindowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
     private var layoutInflater: LayoutInflater =
         context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -71,18 +57,10 @@ class DictionaryWindow (
         setWindowListeners()
     }
 
-    fun setWordData(
-        word: DictionaryModel,
-        kanjis: List<KanjiModel>,
-        stories: List<KanjiStories>,
-        wReviews: MutableList<String>,
-        kReviews: MutableList<String>,
-    )  {
+    fun setWordData(word: DictionaryModel, kanjis: List<KanjiModel>, stories: List<String>)  {
         currentWord = word
         wordKanjis = kanjis
         kanjiStories = stories
-        wordReviews = wReviews
-        kanjiReviews = kReviews
     }
 
     fun openWordDict() {
@@ -105,12 +83,12 @@ class DictionaryWindow (
         try {
             // check if the view is already
             // inflated or present in the window
-                /*
-            if (windowDictionaryView.windowToken == null) {
-                if (windowDictionaryView.parent == null) {
-                    overlayWindowManager.addView(view, params)
-                }
-            } */
+            /*
+        if (windowDictionaryView.windowToken == null) {
+            if (windowDictionaryView.parent == null) {
+                overlayWindowManager.addView(view, params)
+            }
+        } */
             overlayWindowManager.addView(view, params)
         } catch (e: Exception) {
             Log.d("DICTWINDOWDEBUG", "Error while opening window: $e")
@@ -120,7 +98,7 @@ class DictionaryWindow (
     fun removeView(view: View) {
         try {
             // remove the view from the window
-            (context.getSystemService(WINDOW_SERVICE) as WindowManager).removeView(view)
+            (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).removeView(view)
             // invalidate the view
             view.invalidate()
             // remove all views
@@ -176,7 +154,7 @@ class DictionaryWindow (
     fun close() {
         try {
             // remove the view from the window
-            (context.getSystemService(WINDOW_SERVICE) as WindowManager).removeView(windowDictionaryView)
+            (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).removeView(windowDictionaryView)
             // invalidate the view
             windowDictionaryView.invalidate()
             // remove all views
@@ -189,7 +167,6 @@ class DictionaryWindow (
         }
     }
 
-    @SuppressLint("ResourceAsColor")
     private fun bindWordData() {
         if (!currentWord.isEmpty()) {
 
@@ -244,36 +221,16 @@ class DictionaryWindow (
             windowDictionaryView.findViewById<TextView>(R.id.tvWord).setOnClickListener {
                 openKanjiDict()
             }
-            val favoritesButtons = windowDictionaryView.findViewById<ImageView>(R.id.add_to_favorites)
-            var isInReview = wordReviews.contains(currentWord.word)
-            if(isInReview){
-                favoritesButtons.setImageResource(R.drawable.favorites_button_active)
-            } else {
-                favoritesButtons.setImageResource(R.drawable.favorites_button_inactive)
-            }
-            favoritesButtons.setOnClickListener{ btn ->
-                if(isInReview) {
-                    favoritesButtons.setImageResource(R.drawable.favorites_button_inactive)
-                    scope.launch{
-                        reviewRepo.removeWordReviewFromId(currentWord.word)
-                        isInReview = false
-                    }
-                } else{
-                    favoritesButtons.setImageResource(R.drawable.favorites_button_active)
-                    scope.launch {
-                        reviewRepo.addWordToReview(currentWord)
-                        isInReview = true
-                    }
-                }
+            windowDictionaryView.findViewById<ImageView>(R.id.add_to_favorites).setOnClickListener{
+                viewModel.addWordToFavorites(currentWord)
             }
         }
     }
 
     private fun bindKanjiData() {
-        val kanjisAdapter = KanjiListAdapter(context, reviewRepo, scope).apply{
+        val kanjisAdapter = KanjiListAdapterV2(context, viewModel::addKanjiToFavorites).apply{
             sumbitKanjisData(wordKanjis)
-            sumbitStoriesData(kanjiStories.map{it.story})
-            sumbitReviewKanjisData(kanjiReviews)
+            sumbitStoriesData(kanjiStories)
         }
         kanjiScreenView.findViewById<RecyclerView>(R.id.rvKanjisContainer).apply {
             layoutManager = LinearLayoutManager(context)

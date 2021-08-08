@@ -31,6 +31,8 @@ interface ReviewRepository {
 
     fun getAllKanjiReviewItems() : Flow<List<KanjiReviewModel>>
 
+    suspend fun getKanjiReviewsAsString() : List<String>
+
     suspend fun addKanjiToReview(kanjiModel: KanjiModel)
 
     suspend fun addKanjiMeaningsToReview(meanings: List<String>, kanji: String)
@@ -41,7 +43,11 @@ interface ReviewRepository {
 
     suspend fun removeKanjiReviewItem(kanjiModel: KanjiReviewModel)
 
+    suspend fun removeKanjiReviewItemFromId(kanji: String)
+
     suspend fun updateKanjiReviewParameters(quality: Int, kanjiModel: KanjiReviewModel)
+
+    suspend fun isKanjiInReview(kanji: KanjiModel) : Boolean
 
     // WORD REVIEWS SECTION
     suspend fun addWordToReview(wordModel: DictionaryModel)
@@ -56,6 +62,8 @@ interface ReviewRepository {
 
     suspend fun getWordReview(word: String) : WordReviewModel?
 
+    suspend fun getWordReviewsAsString() : List<String>
+
     fun getWordReviews() : Flow<List<WordReviewModel>>
 
     fun getNWordReviews(n: Int) : Flow<List<WordReviewModel>>
@@ -65,6 +73,10 @@ interface ReviewRepository {
     suspend fun updateWordReviewParameters(quality: Int, wordModel: WordReviewModel)
 
     suspend fun removeWordReview(wordReview: WordReviewModel)
+
+    suspend fun removeWordReviewFromId(word: String)
+
+    suspend fun isWordInReview(word: DictionaryModel) : Boolean
 
     // ARTICLES
 

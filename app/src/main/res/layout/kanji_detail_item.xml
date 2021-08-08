@@ -18,9 +18,8 @@
 
         <TextView
             android:id="@+id/tvKanji"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
             android:layout_marginHorizontal="16dp"
             android:fontFamily="@font/quicksand_bold"
             android:text="TextView"
@@ -34,7 +33,6 @@
             android:id="@+id/rvKanjiTags"
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:layout_margin="3dp"
             android:layout_marginHorizontal="16dp"
             android:background="@color/white"
             android:orientation="horizontal"
@@ -61,9 +59,9 @@
             android:id="@+id/meaningsTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Meanings"
             android:layout_marginHorizontal="8dp"
             android:fontFamily="@font/quicksand_semibold"
+            android:text="Meanings"
             app:layout_constraintBottom_toBottomOf="@+id/tvKanjiMeanings"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tvKanjiStory"
@@ -71,7 +69,7 @@
 
         <TextView
             android:id="@+id/tvKanjiMeanings"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:fontFamily="@font/quicksand_regular"
@@ -87,9 +85,9 @@
             android:id="@+id/kunTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
             android:fontFamily="@font/quicksand_semibold"
             android:text="Kunyomi"
-            android:layout_marginHorizontal="8dp"
             app:layout_constraintBottom_toTopOf="@+id/tvKanjiKun"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tvKanjiMeanings"
@@ -97,7 +95,7 @@
 
         <TextView
             android:id="@+id/tvKanjiKun"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:fontFamily="@font/quicksand_regular"
@@ -117,13 +115,13 @@
             android:layout_marginHorizontal="8dp"
             android:fontFamily="@font/quicksand_semibold"
             android:text="Onyomi"
-            app:layout_constraintTop_toBottomOf="@+id/tvKanjiKun"
+            app:layout_constraintBottom_toTopOf="@+id/tvKanjiOn"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/tvKanjiOn" />
+            app:layout_constraintTop_toBottomOf="@+id/tvKanjiKun" />
 
         <TextView
             android:id="@+id/tvKanjiOn"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:layout_marginBottom="8dp"
@@ -136,6 +134,28 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/onTitle"
             app:layout_constraintVertical_bias="0.0" />
+
+        <ImageView
+            android:id="@+id/addKanjiToFavorites"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="5dp"
+            android:src="@drawable/favorites_button_inactive"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/seeKanjiDetail"
+            app:layout_constraintTop_toBottomOf="@+id/tvKanjiOn" />
+
+        <ImageView
+            android:id="@+id/seeKanjiDetail"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="5dp"
+            android:src="@drawable/ic_baseline_arrow_forward_24"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvKanjiOn" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

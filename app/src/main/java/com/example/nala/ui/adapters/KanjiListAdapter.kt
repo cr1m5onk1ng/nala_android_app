@@ -5,20 +5,28 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.nala.R
 import com.example.nala.domain.model.kanji.KanjiModel
+import com.example.nala.repository.ReviewRepository
 import it.mike5v.viewmoretextview.ViewMoreTextView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class KanjiListAdapter(
-    private val context: Context
+    private val context: Context,
+    private val reviewRepository: ReviewRepository,
+    private val scope: CoroutineScope,
     ) : RecyclerView.Adapter<KanjiListAdapter.KanjiListViewHolder>() {
 
     private var kanjis = listOf<KanjiModel>()
     private var stories = listOf<String>()
+    private var reviewKanjis = listOf<String>()
 
     inner class KanjiListViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
         val kanji = itemView.findViewById<TextView>(R.id.tvKanji)
@@ -27,6 +35,7 @@ class KanjiListAdapter(
         val kanjiOns = itemView.findViewById<TextView>(R.id.tvKanjiOn)
         val kanjiKun = itemView.findViewById<TextView>(R.id.tvKanjiKun)
         val kanjiTags = itemView.findViewById<RecyclerView>(R.id.rvKanjiTags)
+        val addKanjiToFavorites = itemView.findViewById<ImageView>(R.id.addKanjiToFavorites)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): KanjiListViewHolder {
@@ -68,6 +77,29 @@ class KanjiListAdapter(
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
             adapter = tagsAdapter
         }
+
+        var isInReview = reviewKanjis.contains(kanjis[position].kanji)
+
+        if(isInReview){
+            holder.addKanjiToFavorites.setImageResource(R.drawable.favorites_button_active)
+        } else {
+            holder.addKanjiToFavorites.setImageResource(R.drawable.favorites_button_inactive)
+        }
+        holder.addKanjiToFavorites.setOnClickListener {
+            if(isInReview) {
+                holder.addKanjiToFavorites.setImageResource(R.drawable.favorites_button_inactive)
+                scope.launch {
+                    reviewRepository.removeKanjiReviewItemFromId(kanjis[position].kanji)
+                    isInReview = false
+                }
+            }else{
+                holder.addKanjiToFavorites.setImageResource(R.drawable.favorites_button_active)
+                scope.launch {
+                    reviewRepository.addKanjiToReview(kanjis[position])
+                    isInReview = true
+                }
+            }
+        }
     }
 
     override fun getItemCount(): Int {
@@ -80,5 +112,9 @@ class KanjiListAdapter(
 
     fun sumbitStoriesData(storiesData: List<String>) {
         stories = storiesData
+    }
+
+    fun sumbitReviewKanjisData(kanjisData: List<String>) {
+        reviewKanjis = kanjisData
     }
 }

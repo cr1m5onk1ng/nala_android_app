@@ -76,37 +76,6 @@ class ReviewViewModel @Inject constructor(
             reviewRepository.removeKanjiReviewItem(kanjiReview)
         }
     }
-    /*
-    fun dismissWordReviewItem(word: String) {
-        viewModelScope.launch{
-            reviewsLoading.value = true
-            wordReviewItems.value = wordReviewItems.value.filter {
-                it.word != word
-            }
-            reviewsLoading.value = false
-        }
-    }
-
-    fun dismissSentenceReviewItem(sentence: String){
-        viewModelScope.launch{
-            reviewsLoading.value = true
-            sentenceReviewItems.value = sentenceReviewItems.value.filter {
-                it.sentence != sentence
-            }
-            reviewsLoading.value = false
-        }
-    }
-
-    fun dismissKanjiReviewItem(kanji: String){
-
-        viewModelScope.launch{
-            reviewsLoading.value = true
-            kanjiReviewItems.value = kanjiReviewItems.value.filter {
-                it.kanji != kanji
-            }
-            reviewsLoading.value = false
-        }
-    } */
 
     fun loadWordReviewItems() {
         viewModelScope.launch {

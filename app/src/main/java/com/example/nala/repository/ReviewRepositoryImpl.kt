@@ -105,7 +105,11 @@ class ReviewRepositoryImpl @Inject constructor(
     }
 
     override fun getAllKanjiReviewItems() : Flow<List<KanjiReviewModel>> {
-        return reviewDao.getAllKanjiReviews()
+        return reviewDao.getKanjiReviewsAsFlow()
+    }
+
+    override suspend fun getKanjiReviewsAsString(): List<String> {
+        return reviewDao.getKanjiReviews().map{ it.kanji }
     }
 
     override suspend fun addKanjiToReview(kanjiModel: KanjiModel) {
@@ -170,6 +174,14 @@ class ReviewRepositoryImpl @Inject constructor(
         reviewDao.deleteKanjiReview(kanjiModel)
     }
 
+    override suspend fun removeKanjiReviewItemFromId(kanji: String) {
+        reviewDao.removeKanjiReviewFromId(kanji)
+    }
+
+    override suspend fun removeWordReviewFromId(word: String) {
+        reviewDao.removeWordReviewFromId(word)
+    }
+
     override suspend fun updateKanjiReviewParameters(
         quality: Int,
         kanjiModel: KanjiReviewModel
@@ -192,6 +204,11 @@ class ReviewRepositoryImpl @Inject constructor(
             interval = updatedParams.interval,
         )
         reviewDao.updateKanjiReviewItem(updatedKanjiReview)
+    }
+
+    override suspend fun isKanjiInReview(kanji: KanjiModel): Boolean {
+        val kanjiReview = reviewDao.getKanjiReview(kanji.kanji)
+        return kanjiReview.isNotEmpty()
     }
 
     override suspend fun addWordToReview(wordModel: DictionaryModel) {
@@ -274,8 +291,12 @@ class ReviewRepositoryImpl @Inject constructor(
         return if(review.isNotEmpty()) review.first() else null
     }
 
+    override suspend fun getWordReviewsAsString(): List<String> {
+        return reviewDao.getWordReviews().map{ it.word }
+    }
+
     override fun getWordReviews(): Flow<List<WordReviewModel>> {
-        return reviewDao.getAllReviews()
+        return reviewDao.getWordReviewsAsFlow()
     }
 
     override fun getNWordReviews(n: Int) : Flow<List<WordReviewModel>> {
@@ -334,6 +355,10 @@ class ReviewRepositoryImpl @Inject constructor(
 
     override suspend fun removeWordReview(wordReview: WordReviewModel) {
         reviewDao.deleteWordReview(wordReview)
+    }
+
+    override suspend fun isWordInReview(word: DictionaryModel): Boolean {
+        return reviewDao.getReview(word.word).isNotEmpty()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

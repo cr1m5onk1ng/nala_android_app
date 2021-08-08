@@ -57,10 +57,16 @@ interface ReviewDao : DatabaseDao{
     suspend fun getKanjiReview(kanji: String) : List<KanjiReviewModel>
 
     @Query("SELECT * FROM kanji_review")
-    fun getAllKanjiReviews() : Flow<List<KanjiReviewModel>>
+    fun getKanjiReviewsAsFlow() : Flow<List<KanjiReviewModel>>
+
+    @Query("SELECT * FROM kanji_review")
+    suspend fun getKanjiReviews() : List<KanjiReviewModel>
 
     @Query("SELECT * FROM kanji_review ORDER BY interval LIMIT :n")
     fun getNKanjiReviews(n: Int) : Flow<List<KanjiReviewModel>>
+
+    @Query("DELETE FROM kanji_review WHERE kanji=:kanji")
+    suspend fun removeKanjiReviewFromId(kanji: String)
 
     @Transaction
     @Query("SELECT * FROM kanji_review WHERE kanji=:kanji")
@@ -102,7 +108,10 @@ interface ReviewDao : DatabaseDao{
     suspend fun getReview(word: String) : List<WordReviewModel>
 
     @Query("SELECT * FROM word_review")
-    fun getAllReviews() : Flow<List<WordReviewModel>>
+    fun getWordReviewsAsFlow() : Flow<List<WordReviewModel>>
+
+    @Query("SELECT * FROM word_review")
+    suspend fun getWordReviews() : List<WordReviewModel>
 
     @Query("SELECT * FROM word_review ORDER BY interval LIMIT :n")
     fun getNReviews(n: Int) : Flow<List<WordReviewModel>>
@@ -160,6 +169,9 @@ interface ReviewDao : DatabaseDao{
 
     @Query("DELETE FROM word_tag")
     suspend fun deleteAllTags()
+
+    @Query("DELETE FROM word_review WHERE word=:word")
+    suspend fun removeWordReviewFromId(word: String)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addWordReview(word: WordReviewModel)
