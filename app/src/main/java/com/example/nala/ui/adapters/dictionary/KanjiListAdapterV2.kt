@@ -1,4 +1,4 @@
-package com.example.nala.ui.adapters
+package com.example.nala.ui.adapters.dictionary
 
 import android.content.Context
 import android.view.LayoutInflater

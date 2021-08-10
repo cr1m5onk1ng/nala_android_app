@@ -40,10 +40,21 @@ import com.example.nala.ui.dictionary.DictionaryForegroundService
 import android.app.ActivityManager
 import android.content.Context
 import android.content.DialogInterface
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.appcompat.app.AlertDialog
+import androidx.viewpager2.widget.ViewPager2
 import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.repository.DictionaryRepository
+import com.example.nala.ui.adapters.yt.YoutubeFragmentAdapter
+import com.example.nala.ui.composables.yt.VideoScreen
 import com.example.nala.ui.dictionary.DictionaryLifecycleService
+import com.example.nala.ui.yt.YoutubeViewModel
+import com.example.nala.utils.InputStringType
+import com.example.nala.utils.Utils
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.tabs.TabLayout
 
 
 @AndroidEntryPoint
@@ -56,49 +67,25 @@ class MainActivity : AppCompatActivity() {
     private val viewModel: DictionaryViewModel by viewModels()
     private val reviewViewModel: ReviewViewModel by viewModels()
     private val studyViewModel: StudyViewModel by viewModels()
+    private val ytViewModel: YoutubeViewModel by viewModels()
+
+    // ROUTING VARIABLES
+    var startDestination = "home_screen"
+    // flag that checks if the dictionary was called from an article
+    var fromLookup = false
 
     @ExperimentalComposeUiApi
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        var startDestination = "home_screen"
-        // flag that checks if the dictionary was called from an article
-        // TODO improve the checking logic
-        var fromLookup = false
-
         // INTENT MATCHING
         when (intent?.action) {
             Intent.ACTION_PROCESS_TEXT -> {
-                if (intent.hasExtra(Intent.EXTRA_PROCESS_TEXT)){
-                    /*
-                    viewModel.setSharedText(intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT) )
-                    startDestination = "detail_screen"
-                    fromLookup = true
-                    viewModel.setIsWordFromIntent() */
-                    checkOverlayPermissions()
-                    val word = intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT) ?: ""
-                    startDictionaryWindowService(word)
-                    finish()
-                }
+                handleSharedWord()
             }
             Intent.ACTION_SEND -> {
-                Log.d("SHARED", "ACTION SEND CALLED!")
-                if ("text/plain" == intent.type) {
-                    intent.getStringExtra(Intent.EXTRA_TEXT)?.let { url ->
-                        Log.d("SHARED", "SHARED TEXT: $url")
-                        if(URLUtil.isValidUrl(url)) {
-                            //reviewViewModel.addArticleToChronology(url)
-                            startCustomTabIntent(url)
-                        } else {
-                            viewModel.setSharedSentence(url)
-                            startDestination = "sentence_form_screen"
-                            fromLookup = true
-                        }
-                    }
-                } else {
-                    Log.d("SHARED", "DIDNT PROCESS TEXT!")
-                }
+                handleSharedText()
             }
             else -> {
                 // DONT BOTHER
@@ -242,65 +229,65 @@ class MainActivity : AppCompatActivity() {
                             showSaveSnackbar = {showSnackbar(scaffoldState, message="Sentence added to corpus")}
                         )
                     }
+
+                    composable("video_screen") {
+                        VideoScreen(
+                            lifecycle = lifecycle,
+                            captionsState = ytViewModel.captionsState.value,
+                            videoId = ytViewModel.currentVideoId.value,
+                            playerPosition = ytViewModel.currentPlayerPosition.value,
+                            onPlayerTimeElapsed = ytViewModel::onPlayerTimeElapsed,
+                            onClickCaption = ytViewModel::onSeekTo,
+                            onAddToFavorites = viewModel::setSharedSentence,
+                            onSetPlayerPosition = ytViewModel::setPlayerPosition,
+                            activeCaption = ytViewModel.activeCaption.value,
+                            navController = navController,
+                        )
+                    }
                 }
             }
         }
     }
 
-    private fun onMinimizeWindow() {
-        if(checkOverlayDisplayPermissions()) {
-            startService(Intent(this, DictionaryForegroundService::class.java))
-            finish()
-        } else {
-            requestOverlayDisplayPermission()
-        }
-    }
-
-    private fun requestOverlayDisplayPermission() {
-        // An AlertDialog is created
-        val builder = AlertDialog.Builder(this)
-
-        // This dialog can be closed, just by taping
-        // anywhere outside the dialog-box
-        builder.setCancelable(true)
-
-        // The title of the Dialog-box is set
-        builder.setTitle("Screen Overlay Permission Needed")
-
-        // The message of the Dialog-box is set
-        builder.setMessage("Enable 'Display over other apps' from System Settings.")
-
-        // The event of the Positive-Button is set
-        builder.setPositiveButton("Open Settings",
-            DialogInterface.OnClickListener { dialog, which -> // The app will redirect to the 'Display over other apps' in Settings.
-                // This is an Implicit Intent. This is needed when any Action is needed
-                // to perform, here it is
-                // redirecting to an other app(Settings).
-                val intent = Intent(
-                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse(
-                        "package:$packageName"
-                    )
-                )
-
-                // This method will start the intent. It takes two parameter, one is the Intent and the other is
-                // an requestCode Integer. Here it is -1.
-                startActivityForResult(intent, RESULT_OK)
-            })
-        val dialog = builder.create()
-        // The Dialog will
-        // show in the screen
-        dialog.show()
-    }
-
-    private fun isDictionaryServiceRunning() : Boolean {
-        val manager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        for (service in manager.getRunningServices(Int.MAX_VALUE)) {
-            // If this service is found as a running, it will return true or else false.
-            if (DictionaryForegroundService::class.java.name == service.service.className) {
-                return true
+    /*
+    private fun setupYoutubeScreenTabs() {
+        val tabLayout = findViewById<TabLayout>(R.id.ytTabLayout)
+        val pager = findViewById<ViewPager2>(R.id.ytViewPager)
+        val adapter = YoutubeFragmentAdapter(supportFragmentManager, lifecycle)
+        pager.adapter = adapter
+        tabLayout.addTab(tabLayout.newTab().setText("Comments"))
+        tabLayout.addTab(tabLayout.newTab().setText("Subtitles"))
+        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener{
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                pager.currentItem = tab!!.position
             }
+
+            override fun onTabUnselected(tab: TabLayout.Tab?) {
+                TODO("Not yet implemented")
+            }
+
+            override fun onTabReselected(tab: TabLayout.Tab?) {
+                TODO("Not yet implemented")
+            }
+        })
+        pager.registerOnPageChangeCallback(object: ViewPager2.OnPageChangeCallback(){
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                tabLayout.selectTab(tabLayout.getTabAt(position))
+            }
+        })
+    } */
+
+    private fun openWebView(url: String) {
+        val articleView = findViewById<WebView>(R.id.articleView)
+        articleView.apply{
+            webViewClient = WebViewClient()
+            loadUrl(url)
         }
-        return false
+        findViewById<FloatingActionButton>(R.id.fab).setOnClickListener {
+            reviewViewModel.saveArticle(url)
+            Snackbar.make(articleView, "Article saved", Snackbar.LENGTH_SHORT).show()
+        }
     }
 
     private fun checkOverlayDisplayPermissions() : Boolean {
@@ -376,6 +363,51 @@ class MainActivity : AppCompatActivity() {
                 actionLabel = actionLabel,
                 duration = duration
             )
+        }
+    }
+
+    private fun handleSharedText() {
+        Log.d("SHARED", "ACTION SEND CALLED!")
+        if ("text/plain" == intent.type) {
+            intent.getStringExtra(Intent.EXTRA_TEXT)?.let { inputString ->
+                Log.d("SHARED", "SHARED TEXT: $inputString")
+                val sharedStringType = Utils.parseInputString(inputString)
+                when(sharedStringType) {
+                    InputStringType.Sentence -> {
+                        viewModel.setSharedSentence(inputString)
+                        startDestination = "sentence_form_screen"
+                        fromLookup = true
+                    }
+                    InputStringType.ArticleUrl -> {
+                        setContentView(R.layout.article_view)
+                        openWebView(inputString)
+                    }
+                    InputStringType.YoutubeUrl -> {
+                        Log.d("YOUTUBEDEBUG", "URL: $inputString")
+                        val videoId = Utils.parseVideoIdFromUrl(inputString)
+                        Log.d("YOUTUBEDEBUG", "VIDEO ID: $inputString")
+                        ytViewModel.setVideoId(videoId)
+                        ytViewModel.loadCaptions()
+                        startDestination = "video_screen"
+                    }
+                }
+            }
+        } else {
+            Log.d("SHARED", "DIDNT PROCESS TEXT!")
+        }
+    }
+
+    private fun handleSharedWord() {
+        if (intent.hasExtra(Intent.EXTRA_PROCESS_TEXT)){
+            /*
+            viewModel.setSharedText(intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT) )
+            startDestination = "detail_screen"
+            fromLookup = true
+            viewModel.setIsWordFromIntent() */
+            checkOverlayPermissions()
+            val word = intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT) ?: ""
+            startDictionaryWindowService(word)
+            finish()
         }
     }
 

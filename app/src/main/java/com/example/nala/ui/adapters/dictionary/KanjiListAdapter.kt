@@ -1,9 +1,9 @@
-package com.example.nala.ui.adapters
+package com.example.nala.ui.adapters.dictionary
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
@@ -15,7 +15,6 @@ import com.example.nala.domain.model.kanji.KanjiModel
 import com.example.nala.repository.ReviewRepository
 import it.mike5v.viewmoretextview.ViewMoreTextView
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class KanjiListAdapter(
@@ -44,7 +43,8 @@ class KanjiListAdapter(
     }
 
     override fun onBindViewHolder(holder: KanjiListViewHolder, position: Int) {
-        holder.kanji.text = kanjis[position].kanji
+        val kanji = kanjis[position]
+        holder.kanji.text = kanji.kanji
         holder.story.text = stories[position]
         holder.story.apply{
             setAnimationDuration(200)
@@ -55,10 +55,18 @@ class KanjiListAdapter(
                 toggle()
             }
         }
-        holder.kanjiMeanings.text = kanjis[position].meaning?.joinToString(separator=", ")
-        holder.kanjiOns.text = kanjis[position].onReadings?.joinToString(separator=", ")
-        holder.kanjiKun.text = kanjis[position].kunReadings?.joinToString(separator=", ")
-        val currentKanji = kanjis[position]
+        holder.kanjiMeanings.text = kanji.meaning?.joinToString(separator=", ")
+        if(kanji.onReadings == null || kanji.onReadings.isEmpty()) {
+            holder.kanjiOns.visibility = GONE
+        } else {
+            holder.kanjiOns.text = kanji.onReadings?.joinToString(separator=", ")
+        }
+        if(kanji.kunReadings == null || kanji.kunReadings.isEmpty()){
+            holder.kanjiKun.visibility = GONE
+        } else {
+            holder.kanjiKun.text = kanji.kunReadings?.joinToString(separator=", ")
+        }
+        val currentKanji = kanji
         var tags = mutableListOf<String>()
         currentKanji.jlpt?.let{
             tags.add("jlpt-"+it)
@@ -78,7 +86,7 @@ class KanjiListAdapter(
             adapter = tagsAdapter
         }
 
-        var isInReview = reviewKanjis.contains(kanjis[position].kanji)
+        var isInReview = reviewKanjis.contains(kanji.kanji)
 
         if(isInReview){
             holder.addKanjiToFavorites.setImageResource(R.drawable.favorites_button_active)
@@ -89,13 +97,13 @@ class KanjiListAdapter(
             if(isInReview) {
                 holder.addKanjiToFavorites.setImageResource(R.drawable.favorites_button_inactive)
                 scope.launch {
-                    reviewRepository.removeKanjiReviewItemFromId(kanjis[position].kanji)
+                    reviewRepository.removeKanjiReviewItemFromId(kanji.kanji)
                     isInReview = false
                 }
             }else{
                 holder.addKanjiToFavorites.setImageResource(R.drawable.favorites_button_active)
                 scope.launch {
-                    reviewRepository.addKanjiToReview(kanjis[position])
+                    reviewRepository.addKanjiToReview(kanji)
                     isInReview = true
                 }
             }

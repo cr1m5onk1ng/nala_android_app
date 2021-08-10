@@ -124,7 +124,7 @@ class ReviewViewModel @Inject constructor(
         selectedCategory.value = category
     }
 
-    fun addArticleToChronology(url: String) {
+    fun saveArticle(url: String) {
         viewModelScope.launch{
             reviewRepository.addArticleToFavorites(url)
         }

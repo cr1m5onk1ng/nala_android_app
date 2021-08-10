@@ -8,6 +8,8 @@ import com.example.nala.network.model.dictionary.DictionaryModelDtoMapper
 import com.example.nala.network.model.kanji.KanjiCollectionDtoMapper
 import com.example.nala.network.model.kanji.StoriesCollectionDtoMapper
 import com.example.nala.network.services.DictionaryService
+import com.example.nala.network.services.YouTubeApiService
+import com.example.nala.network.services.YoutubeCaptionsService
 import com.example.nala.repository.*
 import com.example.nala.service.tokenization.JapaneseTokenizerService
 import dagger.Module
@@ -63,6 +65,18 @@ object RepositoryModule {
             //wordSensesMapper,
             //sentenceReviewMapper,
             //kanjiReviewMapper
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideYoutubeRepository(
+        youtubeCaptionsService: YoutubeCaptionsService,
+        youTubeApiService: YouTubeApiService,
+    ) : YouTubeRepository {
+        return YoutubeRepositoryImpl(
+            youtubeCaptionsService,
+            youTubeApiService
         )
     }
 

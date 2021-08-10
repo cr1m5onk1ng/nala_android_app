@@ -14,9 +14,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.nala.R
 import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.domain.model.kanji.KanjiModel
-import com.example.nala.ui.adapters.KanjiListAdapterV2
-import com.example.nala.ui.adapters.SenseItemAdapter
-import com.example.nala.ui.adapters.WordTagAdapter
+import com.example.nala.ui.adapters.dictionary.KanjiListAdapterV2
+import com.example.nala.ui.adapters.dictionary.SenseItemAdapter
+import com.example.nala.ui.adapters.dictionary.WordTagAdapter
 import java.lang.Exception
 
 class DictionaryPopUp(
