@@ -1,5 +1,6 @@
 package com.example.nala.ui
 
+import android.app.Activity
 import android.app.PendingIntent
 import android.content.Intent
 import android.graphics.drawable.VectorDrawable
@@ -38,6 +39,7 @@ import com.example.nala.R
 import com.example.nala.ui.dictionary.DictionaryForegroundService
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.compose.ui.platform.LocalContext
 import com.example.nala.ui.composables.yt.VideoScreen
 import com.example.nala.ui.yt.YoutubeViewModel
 import com.example.nala.utils.InputStringType
@@ -221,6 +223,14 @@ class MainActivity : AppCompatActivity() {
                         VideoScreen(
                             lifecycle = lifecycle,
                             captionsState = ytViewModel.captionsState.value,
+                            inspectedCaption = ytViewModel.inspectedCaption.value,
+                            inspectedComment = ytViewModel.inspectedComment.value,
+                            onSetInspectedCaption = ytViewModel::onInspectCaption,
+                            onSetInspectedComment = ytViewModel::onInspectComment,
+                            onSetSelectedWord = ytViewModel::setSelectedWord,
+                            selectedWord = ytViewModel.inspectedElementSelectedWord.value,
+                            tokens = ytViewModel.inspectedElementTokens.value,
+                            tokensMap = ytViewModel.inspectedElementTokensMap.value,
                             commentsState = ytViewModel.commentsState.value,
                             videoId = ytViewModel.currentVideoId.value,
                             player = ytViewModel.ytPlayer.value,
@@ -232,6 +242,9 @@ class MainActivity : AppCompatActivity() {
                             onChangeSelectedTab = ytViewModel::setSelectedTab,
                             onAddCaptionToFavorites = viewModel::setSharedSentence,
                             onAddCommentToFavorites = viewModel::setSharedSentence,
+                            onSearchWord = {
+                                startDictionaryWindowService(ytViewModel.inspectedElementSelectedWord.value)
+                                           },
                             onSetPlayerPosition = ytViewModel::setPlayerPosition,
                             activeCaption = ytViewModel.activeCaption.value,
                             navController = navController,
@@ -242,35 +255,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /*
-    private fun setupYoutubeScreenTabs() {
-        val tabLayout = findViewById<TabLayout>(R.id.ytTabLayout)
-        val pager = findViewById<ViewPager2>(R.id.ytViewPager)
-        val adapter = YoutubeFragmentAdapter(supportFragmentManager, lifecycle)
-        pager.adapter = adapter
-        tabLayout.addTab(tabLayout.newTab().setText("Comments"))
-        tabLayout.addTab(tabLayout.newTab().setText("Subtitles"))
-        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener{
-            override fun onTabSelected(tab: TabLayout.Tab?) {
-                pager.currentItem = tab!!.position
-            }
-
-            override fun onTabUnselected(tab: TabLayout.Tab?) {
-                TODO("Not yet implemented")
-            }
-
-            override fun onTabReselected(tab: TabLayout.Tab?) {
-                TODO("Not yet implemented")
-            }
-        })
-        pager.registerOnPageChangeCallback(object: ViewPager2.OnPageChangeCallback(){
-            override fun onPageSelected(position: Int) {
-                super.onPageSelected(position)
-                tabLayout.selectTab(tabLayout.getTabAt(position))
-            }
-        })
-    } */
-
     private fun openWebView(url: String) {
         val articleView = findViewById<WebView>(R.id.articleView)
         articleView.apply{
@@ -280,16 +264,6 @@ class MainActivity : AppCompatActivity() {
         findViewById<FloatingActionButton>(R.id.fab).setOnClickListener {
             reviewViewModel.saveArticle(url)
             Snackbar.make(articleView, "Article saved", Snackbar.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun checkOverlayDisplayPermissions() : Boolean {
-        return if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
-            // If 'Display over other apps' is not enabled it
-            // will return false or else true
-            Settings.canDrawOverlays(this)
-        } else {
-            true;
         }
     }
 

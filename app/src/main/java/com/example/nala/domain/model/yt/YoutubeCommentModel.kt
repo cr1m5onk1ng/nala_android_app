@@ -9,4 +9,12 @@ data class YoutubeCommentModel(
     val authorProfileImageUrl: String? = null,
     val likeCount: Int,
     val dislikesCount: Int,
-)
+) {
+    override fun equals(other: Any?) =
+        other is YoutubeCommentModel &&
+                other.commentId == this.commentId
+
+    override fun hashCode(): Int {
+        return commentId.hashCode()
+    }
+}

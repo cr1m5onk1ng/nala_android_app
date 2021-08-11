@@ -14,4 +14,14 @@ data class YoutubeCaptionModel(
             )
         }
     }
+
+    override fun equals(other: Any?) =
+        other is YoutubeCaptionModel &&
+                caption == other.caption &&
+                start == other.start &&
+                duration == other.duration
+
+    override fun hashCode(): Int {
+        return caption.hashCode() + start.hashCode()
+    }
 }

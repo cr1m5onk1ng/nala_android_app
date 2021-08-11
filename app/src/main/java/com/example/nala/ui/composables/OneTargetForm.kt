@@ -2,7 +2,6 @@ package com.example.nala.ui.composables
 
 import android.app.Activity
 import android.util.Log
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,7 +9,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
@@ -34,7 +32,6 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
 import com.example.nala.ui.DataState
 import com.example.nala.ui.theme.*
-import kotlinx.coroutines.launch
 
 @Composable
 fun OneTargetForm(
@@ -127,7 +124,7 @@ fun OneTargetForm(
                                             tokens = tokens,
                                             tokensMap = tokensIndexMap,
                                             selectedToken = selectedWord,
-                                            onClick = onWordSelect,
+                                            onSelectWord = onWordSelect,
                                             fontSize = 24.sp,
                                         )
                                         Spacer(modifier = Modifier.padding(vertical=8.dp))

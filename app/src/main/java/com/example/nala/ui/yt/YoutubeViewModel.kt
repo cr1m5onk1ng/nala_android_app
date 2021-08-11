@@ -9,8 +9,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nala.domain.model.review.SentenceReviewModel
 import com.example.nala.domain.model.yt.YoutubeCaptionModel
+import com.example.nala.domain.model.yt.YoutubeCommentModel
 import com.example.nala.domain.model.yt.YoutubeCommentsList
 import com.example.nala.network.model.yt.captions.CaptionsMapEntry
+import com.example.nala.repository.DictionaryRepository
 import com.example.nala.repository.ReviewRepository
 import com.example.nala.repository.YouTubeRepository
 import com.example.nala.service.tokenization.TokenizerService
@@ -24,7 +26,7 @@ import javax.inject.Inject
 @HiltViewModel
 class YoutubeViewModel @Inject constructor(
     private val youtubeRepository: YouTubeRepository,
-    private val reviewRepository: ReviewRepository,
+    private val dictRepository: DictionaryRepository,
 ) : ViewModel() {
 
     val ytPlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
@@ -57,6 +59,66 @@ class YoutubeViewModel @Inject constructor(
         mutableStateOf(LazyListState( firstVisibleItemIndex = 0, firstVisibleItemScrollOffset = 0))
 
     val selectedTab: MutableState<Int> = mutableStateOf(0)
+
+    private val _inspectedComment = MutableStateFlow<YoutubeCommentModel?>(null)
+
+    val inspectedComment: StateFlow<YoutubeCommentModel?> = _inspectedComment
+
+    private val _inspectedCaption = MutableStateFlow<YoutubeCaptionModel?>(null)
+
+    val inspectedCaption: StateFlow<YoutubeCaptionModel?> = _inspectedCaption
+
+    val inspectedCaptionIndex: MutableState<Int?> = mutableStateOf(null)
+
+    val inspectedCommentIndex: MutableState<Int?> = mutableStateOf(null)
+
+    val inspectedElementTokens: MutableState<List<String>> = mutableStateOf(listOf())
+
+    val inspectedElementTokensMap : MutableState<Map<Pair<Int, Int>, String>> = mutableStateOf(mapOf())
+
+    val inspectedElementSelectedWord: MutableState<String> = mutableStateOf("")
+
+    private val inspectedCaptionTokensFlow = _inspectedCaption.mapLatest { caption ->
+        caption?.caption?.let{
+           dictRepository.tokenize(it)
+        }
+    }
+
+    private val inspectedCommentTokensFlow = _inspectedComment.mapLatest { comment ->
+        comment?.content?.let{
+            dictRepository.tokenize(it)
+        }
+    }
+
+    fun setSelectedWord(word: String) {
+        inspectedElementSelectedWord.value = word
+    }
+
+    fun onInspectComment(comment: YoutubeCommentModel) {
+        viewModelScope.launch {
+            _inspectedComment.value = comment
+            inspectedCommentTokensFlow.collect {
+                inspectedElementTokens.value = it ?: listOf()
+                inspectedElementTokensMap.value = dictRepository.tokensToIndexMap(
+                    tokens = it ?: listOf(),
+                    text = inspectedComment.value?.content ?: ""
+                )
+            }
+        }
+    }
+
+    fun onInspectCaption(caption: YoutubeCaptionModel) {
+        viewModelScope.launch {
+            _inspectedCaption.value = caption
+            inspectedCaptionTokensFlow.collect {
+                inspectedElementTokens.value = it ?: listOf()
+                inspectedElementTokensMap.value = dictRepository.tokensToIndexMap(
+                    tokens = it ?: listOf(),
+                    text = inspectedCaption.value?.caption ?: ""
+                )
+            }
+        }
+    }
 
     fun initPlayer(player: YouTubePlayer) {
         ytPlayer.value = player
