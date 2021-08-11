@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
-import android.webkit.URLUtil
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
@@ -37,24 +36,14 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.example.nala.R
 import com.example.nala.ui.dictionary.DictionaryForegroundService
-import android.app.ActivityManager
-import android.content.Context
-import android.content.DialogInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import androidx.appcompat.app.AlertDialog
-import androidx.viewpager2.widget.ViewPager2
-import com.example.nala.domain.model.dictionary.DictionaryModel
-import com.example.nala.repository.DictionaryRepository
-import com.example.nala.ui.adapters.yt.YoutubeFragmentAdapter
 import com.example.nala.ui.composables.yt.VideoScreen
-import com.example.nala.ui.dictionary.DictionaryLifecycleService
 import com.example.nala.ui.yt.YoutubeViewModel
 import com.example.nala.utils.InputStringType
 import com.example.nala.utils.Utils
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.tabs.TabLayout
 
 
 @AndroidEntryPoint
@@ -98,8 +87,6 @@ class MainActivity : AppCompatActivity() {
             AppTheme {
                 val navController = rememberNavController()
                 val scaffoldState = rememberScaffoldState()
-
-                // Navigate to detail screen if a word was searched from another app
 
                 NavHost(navController=navController, startDestination) {
                     composable("home_screen"){
@@ -234,11 +221,17 @@ class MainActivity : AppCompatActivity() {
                         VideoScreen(
                             lifecycle = lifecycle,
                             captionsState = ytViewModel.captionsState.value,
+                            commentsState = ytViewModel.commentsState.value,
                             videoId = ytViewModel.currentVideoId.value,
+                            player = ytViewModel.ytPlayer.value,
+                            selectedTab = ytViewModel.selectedTab.value,
                             playerPosition = ytViewModel.currentPlayerPosition.value,
+                            onInitPlayer = ytViewModel::initPlayer,
                             onPlayerTimeElapsed = ytViewModel::onPlayerTimeElapsed,
                             onClickCaption = ytViewModel::onSeekTo,
-                            onAddToFavorites = viewModel::setSharedSentence,
+                            onChangeSelectedTab = ytViewModel::setSelectedTab,
+                            onAddCaptionToFavorites = viewModel::setSharedSentence,
+                            onAddCommentToFavorites = viewModel::setSharedSentence,
                             onSetPlayerPosition = ytViewModel::setPlayerPosition,
                             activeCaption = ytViewModel.activeCaption.value,
                             navController = navController,
@@ -388,6 +381,7 @@ class MainActivity : AppCompatActivity() {
                         Log.d("YOUTUBEDEBUG", "VIDEO ID: $inputString")
                         ytViewModel.setVideoId(videoId)
                         ytViewModel.loadCaptions()
+                        ytViewModel.loadComments()
                         startDestination = "video_screen"
                     }
                 }

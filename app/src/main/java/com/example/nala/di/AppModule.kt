@@ -2,6 +2,8 @@ package com.example.nala.di
 
 import android.content.Context
 import com.example.nala.repository.DictionaryRepository
+import com.example.nala.service.tokenization.JapaneseTokenizerService
+import com.example.nala.service.tokenization.TokenizerService
 import com.example.nala.ui.BaseApplication
 import com.example.nala.ui.dictionary.DictionaryForegroundService
 import com.example.nala.ui.dictionary.DictionaryWindow
@@ -20,6 +22,12 @@ object AppModule {
     @Provides
     fun provideApplication(@ApplicationContext app: Context) : BaseApplication {
         return app as BaseApplication
+    }
+
+    @Singleton
+    @Provides
+    fun provideTokenizerService() : TokenizerService {
+        return JapaneseTokenizerService()
     }
 
 }

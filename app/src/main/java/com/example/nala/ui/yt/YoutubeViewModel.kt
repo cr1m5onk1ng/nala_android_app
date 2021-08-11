@@ -13,6 +13,7 @@ import com.example.nala.domain.model.yt.YoutubeCommentsList
 import com.example.nala.network.model.yt.captions.CaptionsMapEntry
 import com.example.nala.repository.ReviewRepository
 import com.example.nala.repository.YouTubeRepository
+import com.example.nala.service.tokenization.TokenizerService
 import com.example.nala.ui.DataState
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,6 +26,8 @@ class YoutubeViewModel @Inject constructor(
     private val youtubeRepository: YouTubeRepository,
     private val reviewRepository: ReviewRepository,
 ) : ViewModel() {
+
+    val ytPlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
 
     private val _currentVideoId = MutableStateFlow<String>("")
 
@@ -52,6 +55,16 @@ class YoutubeViewModel @Inject constructor(
 
     val listState: MutableState<LazyListState> =
         mutableStateOf(LazyListState( firstVisibleItemIndex = 0, firstVisibleItemScrollOffset = 0))
+
+    val selectedTab: MutableState<Int> = mutableStateOf(0)
+
+    fun initPlayer(player: YouTubePlayer) {
+        ytPlayer.value = player
+    }
+
+    fun setSelectedTab(index: Int) {
+        selectedTab.value = index
+    }
 
     fun setVideoId(videoId: String) {
         _currentVideoId.value = videoId

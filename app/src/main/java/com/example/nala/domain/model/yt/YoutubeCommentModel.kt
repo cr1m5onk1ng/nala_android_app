@@ -8,4 +8,5 @@ data class YoutubeCommentModel(
     val authorName: String,
     val authorProfileImageUrl: String? = null,
     val likeCount: Int,
+    val dislikesCount: Int,
 )
