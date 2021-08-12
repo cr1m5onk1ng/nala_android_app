@@ -2,23 +2,23 @@ package com.example.nala.ui.yt
 
 import android.util.Log
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.nala.domain.model.review.SentenceReviewModel
+import com.example.nala.domain.model.metadata.MetadataModel
 import com.example.nala.domain.model.yt.YoutubeCaptionModel
 import com.example.nala.domain.model.yt.YoutubeCommentModel
 import com.example.nala.domain.model.yt.YoutubeCommentsList
+import com.example.nala.domain.model.yt.YoutubeVideoModel
 import com.example.nala.network.model.yt.captions.CaptionsMapEntry
 import com.example.nala.repository.DictionaryRepository
-import com.example.nala.repository.ReviewRepository
 import com.example.nala.repository.YouTubeRepository
-import com.example.nala.service.tokenization.TokenizerService
+import com.example.nala.service.metadata.ExtractorService
 import com.example.nala.ui.DataState
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -27,20 +27,23 @@ import javax.inject.Inject
 class YoutubeViewModel @Inject constructor(
     private val youtubeRepository: YouTubeRepository,
     private val dictRepository: DictionaryRepository,
+    private val metadataService: ExtractorService,
 ) : ViewModel() {
 
     val ytPlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
 
-    private val _currentVideoId = MutableStateFlow<String>("")
+    private val _currentVideoModel = MutableStateFlow<YoutubeVideoModel>(YoutubeVideoModel.Empty())
 
-    val currentVideoId: StateFlow<String> = _currentVideoId
+    val videoDataLoading = mutableStateOf(false)
 
-    private val videoCaptionsStateFlow = _currentVideoId.mapLatest {
-        youtubeRepository.getVideoCaptions(it)
+    val currentVideoData: StateFlow<YoutubeVideoModel> = _currentVideoModel
+
+    private val videoCaptionsStateFlow = _currentVideoModel.mapLatest {
+        youtubeRepository.getVideoCaptions(it.id)
     }
 
-    private val videoCommentsStateFlow = _currentVideoId.mapLatest {
-        youtubeRepository.getVideoComments(it)
+    private val videoCommentsStateFlow = _currentVideoModel.mapLatest {
+        youtubeRepository.getVideoComments(it.id)
     }
 
     val captionsState: MutableState<DataState<List<YoutubeCaptionModel>>> =
@@ -128,8 +131,20 @@ class YoutubeViewModel @Inject constructor(
         selectedTab.value = index
     }
 
-    fun setVideoId(videoId: String) {
-        _currentVideoId.value = videoId
+    fun setVideoModel(videoId: String, url: String) {
+        viewModelScope.launch{
+            videoDataLoading.value = true
+            val metadata = metadataService.extractFromUrl(url)
+            val videoData = YoutubeVideoModel(
+                id = videoId,
+                title = metadata.title,
+                description = metadata.description,
+                thumbnailUrl = metadata.thumbnailUrl,
+            )
+            _currentVideoModel.value = videoData
+            videoDataLoading.value = false
+        }
+
     }
 
     fun setPlayerPosition(position: Float) {

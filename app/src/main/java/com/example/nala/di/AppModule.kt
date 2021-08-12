@@ -2,6 +2,8 @@ package com.example.nala.di
 
 import android.content.Context
 import com.example.nala.repository.DictionaryRepository
+import com.example.nala.service.metadata.ExtractorService
+import com.example.nala.service.metadata.MetadataExtractorService
 import com.example.nala.service.tokenization.JapaneseTokenizerService
 import com.example.nala.service.tokenization.TokenizerService
 import com.example.nala.ui.BaseApplication
@@ -28,6 +30,12 @@ object AppModule {
     @Provides
     fun provideTokenizerService() : TokenizerService {
         return JapaneseTokenizerService()
+    }
+
+    @Singleton
+    @Provides
+    fun provideMetadataExtractorService() : ExtractorService {
+        return MetadataExtractorService()
     }
 
 }

@@ -21,10 +21,11 @@ import androidx.compose.ui.unit.dp
 fun SmallButton(
     text: String,
     backgroundColor: Color,
-    icon: ImageVector,
+    icon: ImageVector? = null,
     onCLick: () -> Unit,
     height: Dp,
 ) {
+    val displayedIcon = icon ?: Icons.Rounded.Add
     Row(
         modifier = Modifier
             .padding(horizontal = 16.dp)
@@ -51,7 +52,7 @@ fun SmallButton(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    Icons.Rounded.Add,
+                    displayedIcon,
                     contentDescription = "some icon"
                 )
                 Spacer(modifier= Modifier.padding(horizontal = 5.dp))

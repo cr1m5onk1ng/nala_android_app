@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ThumbDown
 import androidx.compose.material.icons.rounded.ThumbUp
@@ -28,8 +29,10 @@ import androidx.navigation.NavController
 import com.example.nala.domain.model.yt.YoutubeCaptionModel
 import com.example.nala.domain.model.yt.YoutubeCommentModel
 import com.example.nala.domain.model.yt.YoutubeCommentsList
+import com.example.nala.domain.model.yt.YoutubeVideoModel
 import com.example.nala.ui.DataState
 import com.example.nala.ui.composables.*
+import com.example.nala.ui.theme.Blue700
 import com.example.nala.ui.theme.LightBlue
 import com.example.nala.ui.yt.YoutubePlaybackListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
@@ -54,7 +57,8 @@ fun LazyListState.isItemVisible(index: Int): Boolean {
 @Composable
 fun VideoScreen(
     lifecycle: Lifecycle,
-    videoId: String,
+    videoData: YoutubeVideoModel,
+    videoLoading: Boolean,
     player: YouTubePlayer?,
     selectedTab: Int,
     captionsState: DataState<List<YoutubeCaptionModel>>,
@@ -66,13 +70,16 @@ fun VideoScreen(
     selectedWord: String,
     onSetSelectedWord: (String) -> Unit,
     playerPosition: Float,
+    onLoadCaptions: () -> Unit,
+    onLoadComments: () -> Unit,
     onInitPlayer: (YouTubePlayer) -> Unit,
     onPlayerTimeElapsed: (Float) -> Unit,
     onClickCaption: (YouTubePlayer, YoutubeCaptionModel) -> Unit,
+    onSaveVideo: (YoutubeVideoModel) -> Unit,
     onSetPlayerPosition: (Float) -> Unit,
     onChangeSelectedTab: (Int) -> Unit,
-    onAddCaptionToFavorites: (String) -> Unit,
-    onAddCommentToFavorites: (String) -> Unit,
+    onShowCaptionsDetails: (String) -> Unit,
+    onShowCommentsDetails: (String) -> Unit,
     onSearchWord: () -> Unit,
     onSetInspectedCaption: (YoutubeCaptionModel) -> Unit,
     onSetInspectedComment: (YoutubeCommentModel) -> Unit,
@@ -80,53 +87,65 @@ fun VideoScreen(
     navController: NavController
 ){
 
-    var player: YouTubePlayer? = null
+    Scaffold(
+        floatingActionButtonPosition = FabPosition.End,
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                text = { Text("Save") },
+                onClick = {
 
-    Scaffold { paddingValues ->
-        Column(modifier = Modifier.padding(paddingValues)) {
-            AndroidView(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp),
-                factory = { context ->
-                    // Creates custom view
-                    YouTubePlayerView(context).apply {
-                        // Sets up listeners for View -> Compose communication
-                        getYouTubePlayerWhenReady(object: YouTubePlayerCallback{
-                            override fun onYouTubePlayer(youTubePlayer: YouTubePlayer) {
-                                youTubePlayer.addListener(YoutubePlaybackListener(onPlayerTimeElapsed))
-                                youTubePlayer.loadVideo(videoId, playerPosition)
-                                onInitPlayer(youTubePlayer)
-                            }
-                        })
-                        lifecycle.addObserver(this)
-                        setOnClickListener {
-
-                        }
-                    }
                 },
+                icon = {Icons.Outlined.Favorite},
             )
-            SelectionTabSection(
-                tabIndex = selectedTab,
-                captionsState = captionsState,
-                inspectedCaption = inspectedCaption,
-                inspectedComment = inspectedComment,
-                commentsState = commentsState,
-                tokens = tokens,
-                tokensMap = tokensMap,
-                selectedWord = selectedWord,
-                onSetSelectedWord = onSetSelectedWord,
-                onChangeTabIndex = onChangeSelectedTab,
-                onAddCommentToFavorites = onAddCommentToFavorites,
-                onAddCaptionToFavorites = onAddCaptionToFavorites,
-                onSearchWord = onSearchWord,
-                onSetInspectedCaption = onSetInspectedCaption,
-                onSetInspectedComment = onSetInspectedComment,
-                player = player,
-                onSetPlayerPosition = onSetPlayerPosition,
-                activeCaption = activeCaption,
-                navController = navController,
-            )
+        },
+    ) { paddingValues ->
+        Column(modifier = Modifier.padding(paddingValues)) {
+            if(videoLoading) {
+                LoadingIndicator()
+            } else {
+                AndroidView(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    factory = { context ->
+                        // Creates custom view
+                        YouTubePlayerView(context).apply {
+                            // Sets up listeners for View -> Compose communication
+                            getYouTubePlayerWhenReady(object: YouTubePlayerCallback{
+                                override fun onYouTubePlayer(youTubePlayer: YouTubePlayer) {
+                                    youTubePlayer.addListener(YoutubePlaybackListener(onPlayerTimeElapsed))
+                                    youTubePlayer.loadVideo(videoData.id, playerPosition)
+                                    onInitPlayer(youTubePlayer)
+                                }
+                            })
+                            lifecycle.addObserver(this)
+                        }
+                    },
+                )
+                SelectionTabSection(
+                    tabIndex = selectedTab,
+                    captionsState = captionsState,
+                    inspectedCaption = inspectedCaption,
+                    inspectedComment = inspectedComment,
+                    commentsState = commentsState,
+                    tokens = tokens,
+                    tokensMap = tokensMap,
+                    selectedWord = selectedWord,
+                    onLoadCaptions = onLoadCaptions,
+                    onLoadComments = onLoadComments,
+                    onSetSelectedWord = onSetSelectedWord,
+                    onChangeTabIndex = onChangeSelectedTab,
+                    onAddCommentToFavorites = onShowCommentsDetails,
+                    onAddCaptionToFavorites = onShowCaptionsDetails,
+                    onSearchWord = onSearchWord,
+                    onSetInspectedCaption = onSetInspectedCaption,
+                    onSetInspectedComment = onSetInspectedComment,
+                    player = player,
+                    onSetPlayerPosition = onSetPlayerPosition,
+                    activeCaption = activeCaption,
+                    navController = navController,
+                )
+            }
         }
     }
 }
@@ -141,6 +160,7 @@ fun CaptionsSection(
     selectedWord: String,
     onSetSelectedWord: (String) -> Unit,
     player: YouTubePlayer?,
+    onLoadCaptions: () -> Unit,
     onAddToFavorites: (String) -> Unit,
     onSetPlayerPosition: (Float) -> Unit,
     onSetInspectedCaption: (YoutubeCaptionModel) -> Unit,
@@ -148,7 +168,21 @@ fun CaptionsSection(
     navController: NavController,
 ) {
     when(captionsState) {
-        is DataState.Initial<*>, DataState.Loading -> {
+        is DataState.Initial<*> ->{
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                MainButton(
+                    text = "Load Subtitles",
+                    backgroundColor = Blue700,
+                    onCLick = {
+                        onLoadCaptions()
+                    }
+                )
+            }
+        }
+        is DataState.Loading -> {
             LoadingIndicator()
         }
         is DataState.Error -> {
@@ -272,6 +306,7 @@ fun CaptionsCard(
 fun CommentsSection(
     commentsState: DataState<YoutubeCommentsList>,
     inspectedComment: YoutubeCommentModel?,
+    onLoadComments: () -> Unit,
     onAddCommentToFavorites: (String) -> Unit,
     tokens: List<String>,
     tokensMap: Map<Pair<Int, Int>, String>,
@@ -283,7 +318,21 @@ fun CommentsSection(
     navController: NavController,
 ) {
     when(commentsState) {
-        is DataState.Initial<*>, DataState.Loading -> {
+        is DataState.Initial<*> -> {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                MainButton(
+                    text = "Load Comments",
+                    backgroundColor = Blue700,
+                    onCLick = {
+                        onLoadComments()
+                    }
+                )
+            }
+        }
+        is DataState.Loading -> {
             LoadingIndicator()
         }
         is DataState.Error -> {
@@ -340,15 +389,16 @@ fun CommentCard(
         Row (
             modifier = Modifier
                 .padding(5.dp)
-                .fillMaxWidth(),
+                .fillMaxSize(),
             horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically,
+            //verticalAlignment = Alignment.CenterVertically,
         ){
             // Profile picture column
             Column(
                 modifier = Modifier
                     .padding(3.dp)
-                    .fillMaxWidth(0.2f),
+                    .fillMaxWidth(0.15f)
+                    .fillMaxHeight(),
                 verticalArrangement = Arrangement.Top,
             ) {
                 CustomAvatar(
@@ -362,8 +412,9 @@ fun CommentCard(
             Column(
                 modifier = Modifier
                     .padding(3.dp)
-                    .fillMaxWidth(0.8f)
-                    .clickable{
+                    .fillMaxWidth(0.65f)
+                    .fillMaxHeight()
+                    .clickable {
                         onSetInspectedComment(comment)
                     },
                 horizontalAlignment = Alignment.Start,
@@ -439,8 +490,11 @@ fun CommentCard(
 
             // Add to Favorites Button
             Column(
-                modifier = Modifier.padding(2.dp).fillMaxWidth(0.2f),
-                verticalArrangement = Arrangement.Center
+                modifier = Modifier
+                    .padding(2.dp)
+                    .fillMaxWidth(0.2f)
+                    .fillMaxHeight(),
+                verticalArrangement = Arrangement.Bottom,
             ){
                 IconButton(
                     onClick = {
@@ -470,6 +524,8 @@ fun SelectionTabSection(
     tokens: List<String>,
     tokensMap: Map<Pair<Int, Int>, String>,
     selectedWord: String,
+    onLoadCaptions: () -> Unit,
+    onLoadComments: () -> Unit,
     onSetSelectedWord: (String) -> Unit,
     commentsState: DataState<YoutubeCommentsList>,
     onChangeTabIndex: (Int) -> Unit,
@@ -499,6 +555,7 @@ fun SelectionTabSection(
                 tokens = tokens,
                 tokensMap = tokensMap,
                 selectedWord = selectedWord,
+                onLoadCaptions = onLoadCaptions,
                 onSetSelectedWord = onSetSelectedWord,
                 player = player,
                 onAddToFavorites = onAddCaptionToFavorites,
@@ -512,6 +569,7 @@ fun SelectionTabSection(
             CommentsSection(
                 commentsState = commentsState,
                 inspectedComment = inspectedComment,
+                onLoadComments = onLoadComments,
                 onAddCommentToFavorites = onAddCommentToFavorites,
                 navController = navController,
                 tokens = tokens,

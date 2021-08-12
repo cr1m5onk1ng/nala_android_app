@@ -2,9 +2,19 @@ package com.example.nala.domain.model.yt
 
 data class YoutubeVideoModel(
     val id: String,
-    val publishedAt: String,
     val title: String,
-    val thumbnailUrl: String,
-    val channelTitle: String,
-    val tags: List<String>,
-)
+    val description: String? = null,
+    val publishedAt: String? = null,
+    val thumbnailUrl: String? = null,
+    val channelTitle: String? = null,
+    val tags: List<String>? = null,
+){
+    companion object {
+        fun Empty() : YoutubeVideoModel {
+            return YoutubeVideoModel(
+                "",
+                ""
+            )
+        }
+    }
+}

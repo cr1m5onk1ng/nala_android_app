@@ -6,8 +6,10 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.nala.db.KanjiDictionaryDb
 import com.example.nala.db.ReviewDatabase
+import com.example.nala.db.VideoDatabase
 import com.example.nala.db.dao.KanjiDictDao
 import com.example.nala.db.dao.ReviewDao
+import com.example.nala.db.dao.VideoDao
 import com.example.nala.db.models.review.mappers.KanjiReviewDbDtoMapper
 import com.example.nala.db.models.review.mappers.SentenceReviewDbDtoMapper
 import com.example.nala.db.models.review.mappers.WordReviewDbDtoMapper
@@ -72,31 +74,29 @@ object DatabaseModule {
             .build()
     }
 
-    /*
-    @Singleton
-    @Provides
-    fun provideKanjiDatabase(@ApplicationContext context: Context) : KanjiDatabase {
-        return Room.databaseBuilder(
-            context,
-            KanjiDatabase::class.java,
-            KanjiDatabase.DATABASE_NAME
-        )
-            .createFromAsset("databases/kanji_database.db")
-            //.fallbackToDestructiveMigration()
-            .build()
-    } */
-
     @Singleton
     @Provides
     fun provideKanjiDao(kanjiDatabase: KanjiDictionaryDb) : KanjiDictDao {
         return kanjiDatabase.kanjiDao()
     }
 
-    /*
     @Singleton
     @Provides
-    fun provideWordSenseMapper(reviewDao: ReviewDao) : WordSenseDbDtoMapper {
-        return WordSenseDbDtoMapper(reviewDao)
-    }*/
+    fun provideVideoDb(@ApplicationContext context: Context) : VideoDatabase {
+        return Room.databaseBuilder(
+            context,
+            VideoDatabase::class.java,
+            VideoDatabase.DATABASE_NAME,
+        )
+            .fallbackToDestructiveMigration()
+            .build()
+    }
+
+    @Singleton
+    @Provides
+    fun provideVideoDao(videoDatabase: VideoDatabase) : VideoDao {
+        return videoDatabase.videoDao()
+    }
+
 
 }

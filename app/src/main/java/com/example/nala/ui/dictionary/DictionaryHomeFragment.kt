@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
@@ -34,6 +35,7 @@ class DictionaryHomeFragment : Fragment() {
         //viewModel.onTriggerEvent(DictionaryEvent.LoadReviewsEvent)
         return ComposeView(requireContext()).apply {
             setContent {
+                val scaffoldState = rememberScaffoldState()
                 AppTheme(darkTheme = false) {
                     HomeScreen(
                         query = viewModel.query.value,
@@ -48,6 +50,7 @@ class DictionaryHomeFragment : Fragment() {
                         toggleReviews = viewModel::toggleReviews,
                         onMinimize = {},
                         onCheckPermissions = {},
+                        scaffoldState = scaffoldState,
                         navController = findNavController(),
                     )
                 }

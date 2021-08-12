@@ -1,29 +1,25 @@
 package com.example.nala.ui.composables
 
-import android.app.Activity
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Minimize
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -33,11 +29,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.nala.R
 import com.example.nala.db.models.review.WordReviewModel
-import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.ui.DataState
+import com.example.nala.ui.composables.menus.CustomDrawer
 import com.example.nala.ui.theme.*
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 
@@ -56,10 +52,12 @@ fun HomeScreen(
     toggleReviews: (Boolean) -> Unit,
     onMinimize: () -> Unit,
     onCheckPermissions: () -> Unit,
+    scaffoldState: ScaffoldState,
     navController: NavController
 ) {
-    val activity = (LocalContext.current as? Activity)
     val keyboardController = LocalSoftwareKeyboardController.current
+    val scope = rememberCoroutineScope()
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
 
     if(textReceived){
         onClick()
@@ -71,6 +69,10 @@ fun HomeScreen(
     }
 
     Scaffold(
+        /*
+        topBar = {
+            CustomTopBar(scope = scope, scaffoldState = scaffoldState)
+        }, */
         bottomBar = {
             BottomBar(
                 navController,
@@ -79,8 +81,18 @@ fun HomeScreen(
                 toggleHome,
                 toggleReviews
             )
+        },
+
+        drawerContent = {
+            CustomDrawer(
+                modifier = Modifier.background(color = Color.White),
+                scope = scope,
+                scaffoldState = scaffoldState,
+                navController = navController,
+            )
         }
     ){ paddingValue ->
+
         Column(
             modifier = Modifier
                 .background(
@@ -91,22 +103,53 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(paddingValue),
             verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
+            //horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // TOP BAR
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top=8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start,
+            ){
+                // OPEN DRAWER BUTTON
+                Row(
+                    modifier = Modifier.fillMaxWidth(0.4f),
+                    horizontalArrangement = Arrangement.Start,
+                ){
+                    IconButton(
+                        onClick = {
+                            scope.launch {
+                                scaffoldState.drawerState.open()
+                            }
+                        }) {
+                        Icon(
+                            imageVector = Icons.Filled.Menu,
+                            contentDescription="drawer",
+                            tint = Color.White,
+                        )
+                    }
+                }
+                // LOGO SECTION
+                Row(
+                    modifier = Modifier.fillMaxWidth(0.6f),
+                    horizontalArrangement = Arrangement.Start,
+                ){
+                    Text(
+                        text = "NaLa",
+                        textAlign = TextAlign.Start,
+                        style = TextStyle(
+                            fontFamily = Quicksand,
+                            fontSize = 36.sp,
+                            color = LightYellow,
+                            fontWeight = FontWeight.Bold
+                        ),
+                    )
+                }
+            }
+            //BODY
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    "NaLa",
-                    modifier = Modifier.padding(top = 45.dp),
-                    textAlign = TextAlign.Center,
-                    style = TextStyle(
-                        fontFamily = Quicksand,
-                        fontSize = 42.sp,
-                        color = LightYellow,
-                        fontWeight = FontWeight.Bold
-                    ),
-                )
                 Spacer(modifier = Modifier.height(40.dp))
                 when(mightForgetItemsState) {
                     is DataState.Initial, DataState.Loading -> {
@@ -204,6 +247,5 @@ fun HomeScreen(
                 )
             }
         }
-
     }
 }

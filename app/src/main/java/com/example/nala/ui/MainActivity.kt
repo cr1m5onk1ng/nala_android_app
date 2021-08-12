@@ -1,6 +1,5 @@
 package com.example.nala.ui
 
-import android.app.Activity
 import android.app.PendingIntent
 import android.content.Intent
 import android.graphics.drawable.VectorDrawable
@@ -14,9 +13,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.browser.customtabs.CustomTabsIntent
-import androidx.compose.material.ScaffoldState
-import androidx.compose.material.SnackbarDuration
-import androidx.compose.material.rememberScaffoldState
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
@@ -39,7 +35,8 @@ import com.example.nala.R
 import com.example.nala.ui.dictionary.DictionaryForegroundService
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.material.*
+import com.example.nala.domain.model.yt.YoutubeVideoModel
 import com.example.nala.ui.composables.yt.VideoScreen
 import com.example.nala.ui.yt.YoutubeViewModel
 import com.example.nala.utils.InputStringType
@@ -65,6 +62,8 @@ class MainActivity : AppCompatActivity() {
     // flag that checks if the dictionary was called from an article
     var fromLookup = false
 
+    var isArticle = false
+
     @ExperimentalComposeUiApi
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -83,12 +82,14 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        if(isArticle) return
+
         // VIEW SETTING
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         setContent{
             AppTheme {
                 val navController = rememberNavController()
-                val scaffoldState = rememberScaffoldState()
+                val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
 
                 NavHost(navController=navController, startDestination) {
                     composable("home_screen"){
@@ -105,6 +106,7 @@ class MainActivity : AppCompatActivity() {
                             toggleReviews = viewModel::toggleReviews,
                             onMinimize = { startDictionaryWindowService("") },
                             onCheckPermissions = { checkOverlayPermissions() },
+                            scaffoldState = scaffoldState,
                             navController = navController
                         )
                     }
@@ -225,6 +227,8 @@ class MainActivity : AppCompatActivity() {
                             captionsState = ytViewModel.captionsState.value,
                             inspectedCaption = ytViewModel.inspectedCaption.value,
                             inspectedComment = ytViewModel.inspectedComment.value,
+                            onLoadCaptions = ytViewModel::loadCaptions,
+                            onLoadComments = ytViewModel::loadComments,
                             onSetInspectedCaption = ytViewModel::onInspectCaption,
                             onSetInspectedComment = ytViewModel::onInspectComment,
                             onSetSelectedWord = ytViewModel::setSelectedWord,
@@ -232,16 +236,18 @@ class MainActivity : AppCompatActivity() {
                             tokens = ytViewModel.inspectedElementTokens.value,
                             tokensMap = ytViewModel.inspectedElementTokensMap.value,
                             commentsState = ytViewModel.commentsState.value,
-                            videoId = ytViewModel.currentVideoId.value,
+                            videoData = ytViewModel.currentVideoData.value,
+                            videoLoading = ytViewModel.videoDataLoading.value,
                             player = ytViewModel.ytPlayer.value,
                             selectedTab = ytViewModel.selectedTab.value,
                             playerPosition = ytViewModel.currentPlayerPosition.value,
+                            onSaveVideo = {},
                             onInitPlayer = ytViewModel::initPlayer,
                             onPlayerTimeElapsed = ytViewModel::onPlayerTimeElapsed,
                             onClickCaption = ytViewModel::onSeekTo,
                             onChangeSelectedTab = ytViewModel::setSelectedTab,
-                            onAddCaptionToFavorites = viewModel::setSharedSentence,
-                            onAddCommentToFavorites = viewModel::setSharedSentence,
+                            onShowCaptionsDetails = viewModel::setSharedSentence,
+                            onShowCommentsDetails = viewModel::setSharedSentence,
                             onSearchWord = {
                                 startDictionaryWindowService(ytViewModel.inspectedElementSelectedWord.value)
                                            },
@@ -346,6 +352,7 @@ class MainActivity : AppCompatActivity() {
                         fromLookup = true
                     }
                     InputStringType.ArticleUrl -> {
+                        isArticle = true
                         setContentView(R.layout.article_view)
                         openWebView(inputString)
                     }
@@ -353,7 +360,7 @@ class MainActivity : AppCompatActivity() {
                         Log.d("YOUTUBEDEBUG", "URL: $inputString")
                         val videoId = Utils.parseVideoIdFromUrl(inputString)
                         Log.d("YOUTUBEDEBUG", "VIDEO ID: $inputString")
-                        ytViewModel.setVideoId(videoId)
+                        ytViewModel.setVideoModel(videoId, inputString)
                         ytViewModel.loadCaptions()
                         ytViewModel.loadComments()
                         startDestination = "video_screen"

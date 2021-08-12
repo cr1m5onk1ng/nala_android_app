@@ -3,6 +3,7 @@ package com.example.nala.repository
 import com.example.nala.domain.model.yt.*
 import com.example.nala.network.services.YouTubeApiService
 import com.example.nala.network.services.YoutubeCaptionsService
+import com.example.nala.service.metadata.ExtractorService
 import javax.inject.Inject
 
 class YoutubeRepositoryImpl @Inject constructor(
