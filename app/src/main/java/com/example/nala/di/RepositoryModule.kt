@@ -2,6 +2,7 @@ package com.example.nala.di
 
 import com.example.nala.db.dao.KanjiDictDao
 import com.example.nala.db.dao.ReviewDao
+import com.example.nala.db.dao.VideoDao
 import com.example.nala.db.models.review.mappers.KanjiReviewDbDtoMapper
 import com.example.nala.db.models.review.mappers.SentenceReviewDbDtoMapper
 import com.example.nala.network.model.dictionary.DictionaryModelDtoMapper
@@ -11,6 +12,7 @@ import com.example.nala.network.services.DictionaryService
 import com.example.nala.network.services.YouTubeApiService
 import com.example.nala.network.services.YoutubeCaptionsService
 import com.example.nala.repository.*
+import com.example.nala.service.metadata.ExtractorService
 import com.example.nala.service.tokenization.JapaneseTokenizerService
 import dagger.Module
 import dagger.Provides
@@ -54,6 +56,7 @@ object RepositoryModule {
     @Provides
     fun provideReviewRepository(
         reviewDao: ReviewDao,
+        metadataExtractor: ExtractorService,
         //wordReviewMapper: WordReviewDbDtoMapper,
         //wordSensesMapper: WordSenseDbDtoMapper,
         //sentenceReviewMapper: SentenceReviewDbDtoMapper,
@@ -61,6 +64,7 @@ object RepositoryModule {
     ) : ReviewRepository {
         return ReviewRepositoryImpl(
             reviewDao,
+            metadataExtractor,
             //wordReviewMapper,
             //wordSensesMapper,
             //sentenceReviewMapper,
@@ -73,10 +77,12 @@ object RepositoryModule {
     fun provideYoutubeRepository(
         youtubeCaptionsService: YoutubeCaptionsService,
         youTubeApiService: YouTubeApiService,
+        videoDao: VideoDao,
     ) : YouTubeRepository {
         return YoutubeRepositoryImpl(
             youtubeCaptionsService,
-            youTubeApiService
+            youTubeApiService,
+            videoDao,
         )
     }
 

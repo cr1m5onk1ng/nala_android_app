@@ -24,19 +24,26 @@ fun SmallButton(
     icon: ImageVector? = null,
     onCLick: () -> Unit,
     height: Dp,
+    width: Dp? = null,
 ) {
     val displayedIcon = icon ?: Icons.Rounded.Add
     Row(
-        modifier = Modifier
-            .padding(horizontal = 16.dp)
-            .fillMaxWidth()
-            .height(height),
+        modifier =
+            if(width == null)
+                    Modifier
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth()
+                        .height(height) else
+                    Modifier
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth()
+                        .height(height)
+                        .width(width),
         horizontalArrangement = Arrangement.Center
     ) {
         Button(
             onClick = onCLick,
             modifier = Modifier
-                .fillMaxWidth()
                 .shadow(
                     elevation = 5.dp,
                     shape = RoundedCornerShape(18.dp)

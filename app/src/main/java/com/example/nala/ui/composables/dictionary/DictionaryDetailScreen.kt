@@ -1,4 +1,4 @@
-package com.example.nala.ui.composables
+package com.example.nala.ui.composables.dictionary
 
 import android.app.Activity
 import androidx.compose.foundation.clickable
@@ -24,8 +24,11 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
 import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.domain.model.dictionary.Sense
-import com.example.nala.domain.model.kanji.KanjiModel
 import com.example.nala.ui.DataState
+import com.example.nala.ui.composables.BackButton
+import com.example.nala.ui.composables.DefaultSnackbar
+import com.example.nala.ui.composables.ErrorScreen
+import com.example.nala.ui.composables.LoadingIndicator
 import com.example.nala.ui.theme.*
 import kotlin.random.Random
 

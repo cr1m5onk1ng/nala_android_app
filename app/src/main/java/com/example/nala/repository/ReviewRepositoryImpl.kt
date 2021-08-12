@@ -1,8 +1,6 @@
 package com.example.nala.repository
 
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import com.example.nala.db.dao.ReviewDao
 import com.example.nala.db.models.review.*
 import com.example.nala.domain.model.dictionary.DictionaryModel
@@ -10,14 +8,16 @@ import com.example.nala.domain.model.dictionary.Sense
 import com.example.nala.domain.model.kanji.KanjiModel
 import com.example.nala.domain.model.review.SentenceReviewModel
 import com.example.nala.domain.util.SuperMemo2
+import com.example.nala.service.metadata.ExtractorService
+import com.example.nala.service.metadata.MetadataExtractorService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import java.time.Instant
 import java.util.*
 import javax.inject.Inject
 
 class ReviewRepositoryImpl @Inject constructor(
     private val reviewDao: ReviewDao,
+    private val metadataExtractorService: ExtractorService,
 ) : ReviewRepository {
 
 
@@ -361,13 +361,23 @@ class ReviewRepositoryImpl @Inject constructor(
         return reviewDao.getReview(word.word).isNotEmpty()
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun addArticleToFavorites(url: String) {
-        val article = Articles(
+        val metadata = metadataExtractorService.extractFromUrl(url)
+        val articleModel = ArticlesCache(
             url = url,
-            timeAdded = Date.from(Instant.now())
+            title = metadata.title,
+            description = metadata.description,
+            thumbnailUrl = metadata.thumbnailUrl,
         )
-        reviewDao.addArticle(article)
+        reviewDao.addArticleToFavorites(articleModel)
+    }
+
+    override suspend fun removeArticleFromFavorites(url: String) {
+        reviewDao.removeArticleFromFavorites(url)
+    }
+
+    override fun getSavedArticles(): Flow<List<ArticlesCache>> {
+        return reviewDao.getSavedArticles()
     }
 
     private suspend fun getWordTags(word: String): List<String> {

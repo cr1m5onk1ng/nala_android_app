@@ -7,8 +7,8 @@ data class YoutubeCommentModel(
     val publishedAt: String,
     val authorName: String,
     val authorProfileImageUrl: String? = null,
-    val likeCount: Int,
-    val dislikesCount: Int,
+    val likeCount: Int? = null,
+    val dislikesCount: Int? = null,
 ) {
     override fun equals(other: Any?) =
         other is YoutubeCommentModel &&

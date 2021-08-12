@@ -6,11 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.ui.platform.ComposeView
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.findNavController
 import com.example.nala.ui.CustomFragment
-import com.example.nala.ui.composables.ReviewListScreen
+import com.example.nala.ui.composables.review.ReviewListScreen
 import com.example.nala.ui.dictionary.DictionaryViewModel
 import com.example.nala.ui.study.StudyViewModel
 import com.example.nala.ui.theme.AppTheme

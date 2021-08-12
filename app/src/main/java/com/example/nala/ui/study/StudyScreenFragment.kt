@@ -9,7 +9,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.findNavController
 import com.example.nala.ui.CustomFragment
-import com.example.nala.ui.composables.StudyScreen
+import com.example.nala.ui.composables.study.StudyScreen
 import com.example.nala.ui.dictionary.DictionaryViewModel
 import com.example.nala.ui.review.ReviewViewModel
 

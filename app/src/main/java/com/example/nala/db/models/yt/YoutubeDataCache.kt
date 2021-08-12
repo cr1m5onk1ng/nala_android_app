@@ -13,15 +13,14 @@ data class YoutubeDataCache (
     @PrimaryKey
     val videoId: String,
     @ColumnInfo(name="published_at")
-    val publishedAt: String?,
+    val publishedAt: String? = null,
     @ColumnInfo(name="title")
-    val title: String?,
+    val title: String? = null,
     @ColumnInfo(name="thumbnail_url")
-    val thumbnailUrl: String?,
+    val thumbnailUrl: String? = null,
     @ColumnInfo(name="channel_title")
-    val channelTitle: String?,
+    val channelTitle: String? = null,
     @ColumnInfo(name = "time_added")
     @TypeConverters(TimeConverter::class)
-    val timeAdded: Date
-
-        )
+    val timeAdded: Date = Date()
+)

@@ -1,7 +1,6 @@
-package com.example.nala.ui.composables
+package com.example.nala.ui.composables.dictionary
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
@@ -9,10 +8,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.navigation.NavController
-import com.example.nala.db.models.review.WordReviewModel
 import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.ui.DataState
+import com.example.nala.ui.composables.ErrorScreen
+import com.example.nala.ui.composables.LoadingIndicator
 
 @Composable
 fun DictionaryWindowScreen(

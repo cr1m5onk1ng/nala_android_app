@@ -11,8 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.findNavController
 import com.example.nala.ui.BaseApplication
-import com.example.nala.ui.composables.HomeScreen
-import com.example.nala.ui.review.ReviewViewModel
+import com.example.nala.ui.composables.dictionary.HomeScreen
 import com.example.nala.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject

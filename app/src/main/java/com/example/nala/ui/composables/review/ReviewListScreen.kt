@@ -1,4 +1,4 @@
-package com.example.nala.ui.composables
+package com.example.nala.ui.composables.review
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -28,6 +28,7 @@ import com.example.nala.db.models.review.WordReviewModel
 import com.example.nala.domain.model.review.ReviewCategory
 import com.example.nala.domain.model.review.SentenceReviewModel
 import com.example.nala.ui.DataState
+import com.example.nala.ui.composables.*
 import com.example.nala.ui.theme.*
 
 val specialReviewStyle = SpanStyle(
@@ -131,7 +132,7 @@ fun ReviewListScreen(
                                     item {CircularProgressIndicator()}
                                 }
                                 is DataState.Error -> {
-                                    item {ErrorScreen(text = "No word added to review", subtitle = "")}
+                                    item { ErrorScreen(text = "No word added to review", subtitle = "") }
                                 }
                                 is DataState.Success<List<WordReviewModel>>  -> {
                                     items(count = wordReviewItems.data.size) { index ->
@@ -153,7 +154,7 @@ fun ReviewListScreen(
                                     item {CircularProgressIndicator()}
                                 }
                                 is DataState.Error -> {
-                                    item {ErrorScreen(text = "No word added to review", subtitle = "")}
+                                    item { ErrorScreen(text = "No word added to review", subtitle = "") }
                                 }
                                 is DataState.Success<List<SentenceReviewModel>>  -> {
                                     items(count = sentenceReviewItems.data.size) { index ->
@@ -176,7 +177,7 @@ fun ReviewListScreen(
                                     item {CircularProgressIndicator()}
                                 }
                                 is DataState.Error -> {
-                                    item {ErrorScreen(text = "No word added to review", subtitle = "")}
+                                    item { ErrorScreen(text = "No word added to review", subtitle = "") }
                                 }
                                 is DataState.Success<List<KanjiReviewModel>>  -> {
                                     items(count = kanjiReviewItems.data.size) { index ->

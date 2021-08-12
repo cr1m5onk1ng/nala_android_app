@@ -11,6 +11,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Downloading
 import androidx.compose.material.icons.rounded.ThumbDown
 import androidx.compose.material.icons.rounded.ThumbUp
 import androidx.compose.runtime.Composable
@@ -32,6 +33,7 @@ import com.example.nala.domain.model.yt.YoutubeCommentsList
 import com.example.nala.domain.model.yt.YoutubeVideoModel
 import com.example.nala.ui.DataState
 import com.example.nala.ui.composables.*
+import com.example.nala.ui.theme.Blue500
 import com.example.nala.ui.theme.Blue700
 import com.example.nala.ui.theme.LightBlue
 import com.example.nala.ui.yt.YoutubePlaybackListener
@@ -72,6 +74,7 @@ fun VideoScreen(
     playerPosition: Float,
     onLoadCaptions: () -> Unit,
     onLoadComments: () -> Unit,
+    onAddVideoToFavorites: (YoutubeVideoModel) -> Unit,
     onInitPlayer: (YouTubePlayer) -> Unit,
     onPlayerTimeElapsed: (Float) -> Unit,
     onClickCaption: (YouTubePlayer, YoutubeCaptionModel) -> Unit,
@@ -91,11 +94,23 @@ fun VideoScreen(
         floatingActionButtonPosition = FabPosition.End,
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                text = { Text("Save") },
+                text = {
+                    Text(
+                        text="Save",
+                        color = Color.White,
+                    )
+                       },
                 onClick = {
-
+                    onAddVideoToFavorites(videoData)
                 },
-                icon = {Icons.Outlined.Favorite},
+                icon = {
+                    Icon(
+                        imageVector = Icons.Outlined.Favorite,
+                        contentDescription ="fab save",
+                        tint = Color.White,
+                    )
+                },
+                backgroundColor = Blue500,
             )
         },
     ) { paddingValues ->
@@ -151,7 +166,7 @@ fun VideoScreen(
 }
 
 @Composable
-fun CaptionsSection(
+private fun CaptionsSection(
     captionsState: DataState<List<YoutubeCaptionModel>>,
     inspectedCaption: YoutubeCaptionModel?,
     activeCaption: Int,
@@ -170,15 +185,19 @@ fun CaptionsSection(
     when(captionsState) {
         is DataState.Initial<*> ->{
             Column(
+                modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
-                MainButton(
+                SmallButton(
                     text = "Load Subtitles",
-                    backgroundColor = Blue700,
+                    backgroundColor = Blue500,
                     onCLick = {
                         onLoadCaptions()
-                    }
+                    },
+                    icon = Icons.Rounded.Downloading,
+                    height = 60.dp,
+                    width = 100.dp,
                 )
             }
         }
@@ -224,7 +243,7 @@ fun CaptionsSection(
 }
 
 @Composable
-fun CaptionsCard(
+private fun CaptionsCard(
     caption: YoutubeCaptionModel,
     inspectedCaption: YoutubeCaptionModel?,
     tokensMap: Map<Pair<Int, Int>, String>,
@@ -303,7 +322,7 @@ fun CaptionsCard(
 }
 
 @Composable
-fun CommentsSection(
+private fun CommentsSection(
     commentsState: DataState<YoutubeCommentsList>,
     inspectedComment: YoutubeCommentModel?,
     onLoadComments: () -> Unit,
@@ -320,15 +339,19 @@ fun CommentsSection(
     when(commentsState) {
         is DataState.Initial<*> -> {
             Column(
+                modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
-                MainButton(
+                SmallButton(
                     text = "Load Comments",
-                    backgroundColor = Blue700,
+                    backgroundColor = Blue500,
                     onCLick = {
                         onLoadComments()
-                    }
+                    },
+                    icon = Icons.Rounded.Downloading,
+                    height = 60.dp,
+                    width = 100.dp,
                 )
             }
         }
@@ -364,7 +387,7 @@ fun CommentsSection(
 }
 
 @Composable
-fun CommentCard(
+private fun CommentCard(
     comment: YoutubeCommentModel,
     isFocused: Boolean,
     onAddCommentToFavorites: (String) -> Unit,
@@ -478,7 +501,8 @@ fun CommentCard(
                             contentDescription = "dislikes",
                             tint = Color.LightGray,
                         )
-                        if(comment.dislikesCount > 0) {
+                        val dCounts = comment.dislikesCount ?: 0
+                        if(dCounts > 0) {
                             Text(
                                 modifier = Modifier.padding(2.dp),
                                 text = comment.dislikesCount.toString()
@@ -516,7 +540,7 @@ fun CommentCard(
 }
 
 @Composable
-fun SelectionTabSection(
+private fun SelectionTabSection(
     tabIndex: Int,
     captionsState: DataState<List<YoutubeCaptionModel>>,
     inspectedCaption: YoutubeCaptionModel?,

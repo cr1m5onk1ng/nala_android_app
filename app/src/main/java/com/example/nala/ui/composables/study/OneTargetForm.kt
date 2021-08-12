@@ -1,4 +1,4 @@
-package com.example.nala.ui.composables
+package com.example.nala.ui.composables.study
 
 import android.app.Activity
 import android.util.Log
@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
 import com.example.nala.ui.DataState
+import com.example.nala.ui.composables.*
 import com.example.nala.ui.theme.*
 
 @Composable

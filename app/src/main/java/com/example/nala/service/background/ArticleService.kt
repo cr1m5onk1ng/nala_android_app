@@ -5,14 +5,11 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import androidx.annotation.RequiresApi
-import com.example.nala.db.models.review.Articles
 import com.example.nala.repository.ReviewRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import java.time.Instant
-import java.util.*
 import javax.inject.Inject
 
 class ArticleService @Inject constructor(

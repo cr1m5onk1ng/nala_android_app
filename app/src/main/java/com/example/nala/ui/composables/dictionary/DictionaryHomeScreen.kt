@@ -1,4 +1,4 @@
-package com.example.nala.ui.composables
+package com.example.nala.ui.composables.dictionary
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -31,6 +31,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.nala.db.models.review.WordReviewModel
 import com.example.nala.ui.DataState
+import com.example.nala.ui.composables.BottomBar
+import com.example.nala.ui.composables.LoadingIndicator
 import com.example.nala.ui.composables.menus.CustomDrawer
 import com.example.nala.ui.theme.*
 import kotlinx.coroutines.launch

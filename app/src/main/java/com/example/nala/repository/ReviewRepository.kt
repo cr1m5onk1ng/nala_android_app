@@ -1,6 +1,6 @@
 package com.example.nala.repository
 
-import com.example.nala.db.models.review.Articles
+import com.example.nala.db.models.review.ArticlesCache
 import com.example.nala.db.models.review.KanjiReviewModel
 import com.example.nala.db.models.review.WordReviewModel
 import com.example.nala.domain.model.dictionary.DictionaryModel
@@ -81,5 +81,9 @@ interface ReviewRepository {
     // ARTICLES
 
     suspend fun addArticleToFavorites(url: String)
+
+    suspend fun removeArticleFromFavorites(url: String)
+
+    fun getSavedArticles() : Flow<List<ArticlesCache>>
 
 }

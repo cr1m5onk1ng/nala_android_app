@@ -7,11 +7,10 @@ import android.view.ViewGroup
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.ComposeView
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.findNavController
 import com.example.nala.ui.CustomFragment
-import com.example.nala.ui.composables.KanjiDetailScreen
+import com.example.nala.ui.composables.dictionary.KanjiDetailScreen
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

@@ -208,7 +208,13 @@ interface ReviewDao : DatabaseDao{
 
     // ARTICLES
 
-    @Insert
-    suspend fun addArticle(article: Articles)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun addArticleToFavorites(article: ArticlesCache)
+
+    @Query("SELECT * FROM articles ORDER BY timeAdded DESC")
+    fun getSavedArticles() : Flow<List<ArticlesCache>>
+
+    @Query("DELETE FROM articles WHERE url=:url")
+    suspend fun removeArticleFromFavorites(url: String)
 
 }

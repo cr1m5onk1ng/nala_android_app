@@ -18,7 +18,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.nala.ui.composables.*
 import com.example.nala.ui.dictionary.DictionaryEvent
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -36,8 +35,16 @@ import com.example.nala.ui.dictionary.DictionaryForegroundService
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.material.*
-import com.example.nala.domain.model.yt.YoutubeVideoModel
+import com.example.nala.ui.composables.dictionary.DictionaryDetailScreen
+import com.example.nala.ui.composables.dictionary.HomeScreen
+import com.example.nala.ui.composables.dictionary.KanjiDetailScreen
+import com.example.nala.ui.composables.review.ReviewListScreen
+import com.example.nala.ui.composables.saved.SavedArticlesScreen
+import com.example.nala.ui.composables.saved.SavedVideosScreen
+import com.example.nala.ui.composables.study.OneTargetForm
+import com.example.nala.ui.composables.study.StudyScreen
 import com.example.nala.ui.composables.yt.VideoScreen
+import com.example.nala.ui.favorites.FavoritesViewModel
 import com.example.nala.ui.yt.YoutubeViewModel
 import com.example.nala.utils.InputStringType
 import com.example.nala.utils.Utils
@@ -56,6 +63,7 @@ class MainActivity : AppCompatActivity() {
     private val reviewViewModel: ReviewViewModel by viewModels()
     private val studyViewModel: StudyViewModel by viewModels()
     private val ytViewModel: YoutubeViewModel by viewModels()
+    private val favoritesViewModel: FavoritesViewModel by viewModels()
 
     // ROUTING VARIABLES
     var startDestination = "home_screen"
@@ -177,7 +185,6 @@ class MainActivity : AppCompatActivity() {
                                 )},
                             scaffoldState = scaffoldState,
                         )
-
                     }
 
                     composable("sentence_form_screen"){
@@ -229,6 +236,7 @@ class MainActivity : AppCompatActivity() {
                             inspectedComment = ytViewModel.inspectedComment.value,
                             onLoadCaptions = ytViewModel::loadCaptions,
                             onLoadComments = ytViewModel::loadComments,
+                            onAddVideoToFavorites = favoritesViewModel::addVideoToFavorites,
                             onSetInspectedCaption = ytViewModel::onInspectCaption,
                             onSetInspectedComment = ytViewModel::onInspectComment,
                             onSetSelectedWord = ytViewModel::setSelectedWord,
@@ -254,6 +262,21 @@ class MainActivity : AppCompatActivity() {
                             onSetPlayerPosition = ytViewModel::setPlayerPosition,
                             activeCaption = ytViewModel.activeCaption.value,
                             navController = navController,
+                        )
+                    }
+                    
+                    composable("videos") {
+                        favoritesViewModel.loadSavedVideos()
+                        SavedVideosScreen(
+                            videos = favoritesViewModel.savedVideoState.value,
+                            onRemoveVideo = favoritesViewModel::removeVideoFromFavorites,
+                        )
+                    }
+
+                    composable("articles") {
+                        SavedArticlesScreen(
+                            articles = favoritesViewModel.savedArticlesState.value,
+                            onRemoveArticle = favoritesViewModel::removeArticleFromFavorites,
                         )
                     }
                 }
@@ -361,8 +384,8 @@ class MainActivity : AppCompatActivity() {
                         val videoId = Utils.parseVideoIdFromUrl(inputString)
                         Log.d("YOUTUBEDEBUG", "VIDEO ID: $inputString")
                         ytViewModel.setVideoModel(videoId, inputString)
-                        ytViewModel.loadCaptions()
-                        ytViewModel.loadComments()
+                        //ytViewModel.loadCaptions()
+                        //ytViewModel.loadComments()
                         startDestination = "video_screen"
                     }
                 }

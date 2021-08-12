@@ -1,4 +1,4 @@
-package com.example.nala.ui.composables
+package com.example.nala.ui.composables.study
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
@@ -23,9 +23,8 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
 import com.example.nala.domain.model.dictionary.DictionaryModel
-import com.example.nala.domain.model.kanji.KanjiCollection
-import com.example.nala.domain.model.kanji.KanjiModel
 import com.example.nala.ui.DataState
+import com.example.nala.ui.composables.*
 import com.example.nala.ui.theme.*
 
 val specialStyle = SpanStyle(
