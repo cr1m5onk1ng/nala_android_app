@@ -48,7 +48,6 @@ fun DictionaryDetailScreen(
     scaffoldState: ScaffoldState,
     showSnackbar: (ScaffoldState) -> Unit
 ) {
-    val activity = (LocalContext.current as? Activity)
 
     Scaffold(
         scaffoldState = scaffoldState,

@@ -56,6 +56,34 @@ class YoutubeRepositoryImpl @Inject constructor(
         videoDao.addVideoToFavorites(mappedVideo)
     }
 
+    override fun getSavedVideo(videoId: String): Flow<YoutubeVideoModel> {
+        return videoDao.getCachedVideoDistinctUntilChanged(videoId).mapLatest {
+            if(it.isEmpty()){
+                YoutubeVideoModel.Empty()
+            } else {
+                YoutubeVideoModel(
+                    id = it.first().videoId,
+                    publishedAt = it.first().publishedAt,
+                    title = it.first().title,
+                    thumbnailUrl = it.first().thumbnailUrl,
+                )
+            }
+        }
+    }
+
+    override suspend fun getVideoCaptionsTracks(videoId: String): List<YoutubeCaptionTracksModel> {
+        return youtubeCaptionsService.getVideoCaptionsTracks(videoId=videoId).tracks.map{
+            YoutubeCaptionTracksModel(
+                id = it.id,
+                name = it.name,
+                langCode = it.langCode,
+                langOriginal = it.langOriginal,
+                langTranslated = it.langTranslated,
+                langDefault = it.langDefault.toBoolean(),
+            )
+        }
+    }
+
     override fun getSavedVideos(): Flow<List<YoutubeVideoModel>> {
         return videoDao.getCachedVideos().mapLatest { videos ->
             videos.map{

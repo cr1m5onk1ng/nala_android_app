@@ -1,5 +1,6 @@
 package com.example.nala.ui.composables.yt
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -25,6 +26,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import com.example.nala.domain.model.yt.YoutubeCaptionModel
@@ -33,6 +35,7 @@ import com.example.nala.domain.model.yt.YoutubeCommentsList
 import com.example.nala.domain.model.yt.YoutubeVideoModel
 import com.example.nala.ui.DataState
 import com.example.nala.ui.composables.*
+import com.example.nala.ui.composables.menus.CustomTopBar
 import com.example.nala.ui.theme.Blue500
 import com.example.nala.ui.theme.Blue700
 import com.example.nala.ui.theme.LightBlue
@@ -55,11 +58,11 @@ fun LazyListState.isItemVisible(index: Int): Boolean {
 }
 
 
-
 @Composable
 fun VideoScreen(
     lifecycle: Lifecycle,
     videoData: YoutubeVideoModel,
+    isVideoSaved: Boolean,
     videoLoading: Boolean,
     player: YouTubePlayer?,
     selectedTab: Int,
@@ -86,81 +89,109 @@ fun VideoScreen(
     onSearchWord: () -> Unit,
     onSetInspectedCaption: (YoutubeCaptionModel) -> Unit,
     onSetInspectedComment: (YoutubeCommentModel) -> Unit,
+    onShowSnackBar: () -> Unit,
     activeCaption: Int,
+    scaffoldState: ScaffoldState,
     navController: NavController
 ){
-
+    val scope = rememberCoroutineScope()
     Scaffold(
+        topBar = {
+            CustomTopBar(
+                title = "Videos",
+                scope = scope,
+                scaffoldState = scaffoldState,
+                navController = navController
+            )
+        },
         floatingActionButtonPosition = FabPosition.End,
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 text = {
                     Text(
-                        text="Save",
+                        text = if(isVideoSaved) "Saved" else "Save",
                         color = Color.White,
                     )
                        },
                 onClick = {
+                    Log.d("YOUTUBEDEBUG", "Video before adding: $videoData")
                     onAddVideoToFavorites(videoData)
+                    onShowSnackBar()
                 },
                 icon = {
                     Icon(
                         imageVector = Icons.Outlined.Favorite,
                         contentDescription ="fab save",
-                        tint = Color.White,
+                        tint = if(isVideoSaved) Color.Red else Color.White,
                     )
                 },
                 backgroundColor = Blue500,
             )
         },
     ) { paddingValues ->
-        Column(modifier = Modifier.padding(paddingValues)) {
-            if(videoLoading) {
-                LoadingIndicator()
-            } else {
-                AndroidView(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                    factory = { context ->
-                        // Creates custom view
-                        YouTubePlayerView(context).apply {
-                            // Sets up listeners for View -> Compose communication
-                            getYouTubePlayerWhenReady(object: YouTubePlayerCallback{
-                                override fun onYouTubePlayer(youTubePlayer: YouTubePlayer) {
-                                    youTubePlayer.addListener(YoutubePlaybackListener(onPlayerTimeElapsed))
-                                    youTubePlayer.loadVideo(videoData.id, playerPosition)
-                                    onInitPlayer(youTubePlayer)
-                                }
-                            })
-                            lifecycle.addObserver(this)
-                        }
-                    },
-                )
-                SelectionTabSection(
-                    tabIndex = selectedTab,
-                    captionsState = captionsState,
-                    inspectedCaption = inspectedCaption,
-                    inspectedComment = inspectedComment,
-                    commentsState = commentsState,
-                    tokens = tokens,
-                    tokensMap = tokensMap,
-                    selectedWord = selectedWord,
-                    onLoadCaptions = onLoadCaptions,
-                    onLoadComments = onLoadComments,
-                    onSetSelectedWord = onSetSelectedWord,
-                    onChangeTabIndex = onChangeSelectedTab,
-                    onAddCommentToFavorites = onShowCommentsDetails,
-                    onAddCaptionToFavorites = onShowCaptionsDetails,
-                    onSearchWord = onSearchWord,
-                    onSetInspectedCaption = onSetInspectedCaption,
-                    onSetInspectedComment = onSetInspectedComment,
-                    player = player,
-                    onSetPlayerPosition = onSetPlayerPosition,
-                    activeCaption = activeCaption,
-                    navController = navController,
-                )
+        ConstraintLayout(modifier = Modifier.padding(paddingValues)) {
+            Column() {
+                if(videoLoading) {
+                    LoadingIndicator()
+                } else {
+                    AndroidView(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        factory = { context ->
+                            // Creates custom view
+                            YouTubePlayerView(context).apply {
+                                // Sets up listeners for View -> Compose communication
+                                getYouTubePlayerWhenReady(object: YouTubePlayerCallback{
+                                    override fun onYouTubePlayer(youTubePlayer: YouTubePlayer) {
+                                        youTubePlayer.addListener(YoutubePlaybackListener(onPlayerTimeElapsed))
+                                        youTubePlayer.loadVideo(videoData.id, playerPosition)
+                                        onInitPlayer(youTubePlayer)
+                                    }
+                                })
+                                lifecycle.addObserver(this)
+                            }
+                        },
+                    )
+                    SelectionTabSection(
+                        tabIndex = selectedTab,
+                        captionsState = captionsState,
+                        inspectedCaption = inspectedCaption,
+                        inspectedComment = inspectedComment,
+                        commentsState = commentsState,
+                        tokens = tokens,
+                        tokensMap = tokensMap,
+                        selectedWord = selectedWord,
+                        onLoadCaptions = onLoadCaptions,
+                        onLoadComments = onLoadComments,
+                        onSetSelectedWord = onSetSelectedWord,
+                        onChangeTabIndex = onChangeSelectedTab,
+                        onAddCommentToFavorites = onShowCommentsDetails,
+                        onAddCaptionToFavorites = onShowCaptionsDetails,
+                        onSearchWord = onSearchWord,
+                        onSetInspectedCaption = onSetInspectedCaption,
+                        onSetInspectedComment = onSetInspectedComment,
+                        player = player,
+                        onSetPlayerPosition = onSetPlayerPosition,
+                        activeCaption = activeCaption,
+                        navController = navController,
+                    )
+                }
             }
+            val snackbar = createRef()
+            DefaultSnackbar(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .constrainAs(snackbar) {
+                        bottom.linkTo(parent.bottom)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                    },
+                snackbarHostState = scaffoldState.snackbarHostState,
+                onDismiss = {
+                    scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                }
+            )
         }
     }
 }
@@ -191,6 +222,7 @@ private fun CaptionsSection(
             ) {
                 SmallButton(
                     text = "Load Subtitles",
+                    textColor = Color.White,
                     backgroundColor = Blue500,
                     onCLick = {
                         onLoadCaptions()
@@ -345,6 +377,7 @@ private fun CommentsSection(
             ) {
                 SmallButton(
                     text = "Load Comments",
+                    textColor = Color.White,
                     backgroundColor = Blue500,
                     onCLick = {
                         onLoadComments()

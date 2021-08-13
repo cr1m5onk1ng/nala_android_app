@@ -48,6 +48,7 @@ fun KanjiDetailScreen(
     scaffoldState: ScaffoldState,
     showSnackbar: () -> Unit,
 ) {
+
     Scaffold(){ paddingValue ->
 
             when(kanjiSearchState){

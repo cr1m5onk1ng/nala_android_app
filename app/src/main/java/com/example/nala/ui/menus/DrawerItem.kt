@@ -12,6 +12,6 @@ sealed class DrawerItem(val route: String, val icon: ImageVector, val title: Str
     object Chronology : DrawerItem("chronology", Icons.Default.History, "CHRONOLOGY")
     object Articles : DrawerItem("articles", Icons.Default.Article, "ARTICLES")
     object Videos : DrawerItem("videos", Icons.Default.VideoLibrary, "VIDEOS")
-    object Setting : DrawerItem("setting", Icons.Default.Settings, "SETTINGS")
+    object Settings : DrawerItem("settings", Icons.Default.Settings, "SETTINGS")
 }
 

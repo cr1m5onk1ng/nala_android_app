@@ -8,12 +8,16 @@ import com.example.nala.db.models.yt.YoutubeCaptionsCache
 import com.example.nala.db.models.yt.YoutubeCommentsCache
 import com.example.nala.db.models.yt.YoutubeDataCache
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Dao
 interface VideoDao {
 
     @Query("SELECT * FROM videos_cache WHERE video_id=:videoId")
-    suspend fun getCachedVideo(videoId: String) : YoutubeDataCache
+    fun getCachedVideo(videoId: String) : Flow<List<YoutubeDataCache>>
+
+    fun getCachedVideoDistinctUntilChanged(videoId: String) =
+        getCachedVideo(videoId).distinctUntilChanged()
 
     @Query("SELECT * FROM videos_cache ORDER BY time_added DESC")
     fun getCachedVideos() : Flow<List<YoutubeDataCache>>

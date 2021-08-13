@@ -59,7 +59,6 @@ fun HomeScreen(
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val scope = rememberCoroutineScope()
-    val drawerState = rememberDrawerState(DrawerValue.Closed)
 
     if(textReceived){
         onClick()

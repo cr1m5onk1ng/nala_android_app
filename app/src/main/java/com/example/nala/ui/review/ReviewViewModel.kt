@@ -1,24 +1,29 @@
 package com.example.nala.ui.review
 
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.nala.db.models.review.ArticlesCache
 import com.example.nala.db.models.review.KanjiReviewModel
 import com.example.nala.db.models.review.WordReviewModel
-import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.domain.model.review.ReviewCategory
 import com.example.nala.domain.model.review.SentenceReviewModel
 import com.example.nala.repository.ReviewRepository
+import com.example.nala.service.metadata.ExtractorService
 import com.example.nala.ui.DataState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.withContext
 
 @HiltViewModel
 class ReviewViewModel @Inject constructor(
     private val reviewRepository: ReviewRepository,
+    private val metadataService: ExtractorService,
 ) : ViewModel() {
 
     val reviewsLoading: MutableState<Boolean> = mutableStateOf(false)
@@ -30,6 +35,17 @@ class ReviewViewModel @Inject constructor(
     val kanjiReviewItems: MutableState<DataState<List<KanjiReviewModel>>> =
         mutableStateOf(DataState.Initial(listOf()))
 
+    val isArticleLoaded = mutableStateOf(false)
+
+    val currentArticle = mutableStateOf(ArticlesCache.Empty())
+
+    val isArticleSaved = mutableStateOf(false)
+
+    private val isArticleSavedFlow =
+        reviewRepository.getSavedArticle(currentArticle.value.url).map {
+            it.isNotEmpty()
+        }
+
     init {
         loadWordReviewItems()
         loadSentenceReviewItems()
@@ -38,24 +54,39 @@ class ReviewViewModel @Inject constructor(
 
     val selectedCategory: MutableState<ReviewCategory> = mutableStateOf(ReviewCategory.Word)
 
+    fun setArticle(url: String) {
+        viewModelScope.launch{
+            withContext(Dispatchers.IO) {
+                isArticleLoaded.value = false
+                val metadata = metadataService.extractFromUrl(url)
+                currentArticle.value = ArticlesCache(
+                    url = url,
+                    title = metadata.title,
+                    description = metadata.description,
+                    thumbnailUrl = metadata.thumbnailUrl
+                )
+                Log.d("ARTICLESDEBUG", "Article: ${currentArticle.value}")
+                checkArticleSaved()
+                isArticleLoaded.value = true
+            }
+        }
+    }
+
     fun updateWordReviewItem(quality: Int, reviewModel: WordReviewModel) {
         viewModelScope.launch {
             reviewRepository.updateWordReviewParameters(quality, reviewModel)
-            //loadWordReviewItems()
         }
     }
 
     fun updateSentenceReviewItem(quality: Int, sentenceReviewModel: SentenceReviewModel) {
         viewModelScope.launch {
             reviewRepository.updateSentenceReviewParameters(quality, sentenceReviewModel)
-            //loadSentenceReviewItems()
         }
     }
 
     fun updateKanjiReviewItem(quality: Int, kanjiReviewModel: KanjiReviewModel) {
         viewModelScope.launch {
             reviewRepository.updateKanjiReviewParameters(quality, kanjiReviewModel)
-            //loadWordReviewItems()
         }
     }
 
@@ -124,9 +155,18 @@ class ReviewViewModel @Inject constructor(
         selectedCategory.value = category
     }
 
+    /*
     fun saveArticle(url: String) {
         viewModelScope.launch{
             reviewRepository.addArticleToFavorites(url)
+        }
+    } */
+
+    private fun checkArticleSaved()  {
+        viewModelScope.launch {
+            isArticleSavedFlow.collect{
+                isArticleSaved.value = it
+            }
         }
     }
 }

@@ -35,16 +35,19 @@ import com.example.nala.ui.dictionary.DictionaryForegroundService
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.material.*
+import com.example.nala.ui.composables.articles.ArticleScreen
 import com.example.nala.ui.composables.dictionary.DictionaryDetailScreen
 import com.example.nala.ui.composables.dictionary.HomeScreen
 import com.example.nala.ui.composables.dictionary.KanjiDetailScreen
 import com.example.nala.ui.composables.review.ReviewListScreen
 import com.example.nala.ui.composables.saved.SavedArticlesScreen
 import com.example.nala.ui.composables.saved.SavedVideosScreen
+import com.example.nala.ui.composables.settings.SettingsScreen
 import com.example.nala.ui.composables.study.OneTargetForm
 import com.example.nala.ui.composables.study.StudyScreen
 import com.example.nala.ui.composables.yt.VideoScreen
 import com.example.nala.ui.favorites.FavoritesViewModel
+import com.example.nala.ui.settings.SettingsViewModel
 import com.example.nala.ui.yt.YoutubeViewModel
 import com.example.nala.utils.InputStringType
 import com.example.nala.utils.Utils
@@ -64,6 +67,7 @@ class MainActivity : AppCompatActivity() {
     private val studyViewModel: StudyViewModel by viewModels()
     private val ytViewModel: YoutubeViewModel by viewModels()
     private val favoritesViewModel: FavoritesViewModel by viewModels()
+    private val settingsViewModel: SettingsViewModel by viewModels()
 
     // ROUTING VARIABLES
     var startDestination = "home_screen"
@@ -77,6 +81,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        favoritesViewModel.loadSavedVideos()
+        favoritesViewModel.loadSavedArticles()
+
         // INTENT MATCHING
         when (intent?.action) {
             Intent.ACTION_PROCESS_TEXT -> {
@@ -89,7 +96,6 @@ class MainActivity : AppCompatActivity() {
                 // DONT BOTHER
             }
         }
-
         if(isArticle) return
 
         // VIEW SETTING
@@ -232,6 +238,7 @@ class MainActivity : AppCompatActivity() {
                         VideoScreen(
                             lifecycle = lifecycle,
                             captionsState = ytViewModel.captionsState.value,
+                            isVideoSaved = ytViewModel.isVideoSaved.value,
                             inspectedCaption = ytViewModel.inspectedCaption.value,
                             inspectedComment = ytViewModel.inspectedComment.value,
                             onLoadCaptions = ytViewModel::loadCaptions,
@@ -260,15 +267,27 @@ class MainActivity : AppCompatActivity() {
                                 startDictionaryWindowService(ytViewModel.inspectedElementSelectedWord.value)
                                            },
                             onSetPlayerPosition = ytViewModel::setPlayerPosition,
+                            onShowSnackBar = { showSnackbar(scaffoldState, message="Video saved") },
                             activeCaption = ytViewModel.activeCaption.value,
+                            scaffoldState = scaffoldState,
+                            navController = navController,
+                        )
+                    }
+
+                    composable("article_screen") {
+                        ArticleScreen(
+                            article = reviewViewModel.currentArticle.value,
+                            articleLoaded = reviewViewModel.isArticleLoaded.value,
+                            isSaved = reviewViewModel.isArticleSaved.value,
+                            onSaveArticle = favoritesViewModel::addArticleToFavorites,
+                            scaffoldState = scaffoldState,
                             navController = navController,
                         )
                     }
                     
                     composable("videos") {
-                        favoritesViewModel.loadSavedVideos()
                         SavedVideosScreen(
-                            videos = favoritesViewModel.savedVideoState.value,
+                            videos = favoritesViewModel.savedVideosState.value,
                             onRemoveVideo = favoritesViewModel::removeVideoFromFavorites,
                         )
                     }
@@ -279,11 +298,24 @@ class MainActivity : AppCompatActivity() {
                             onRemoveArticle = favoritesViewModel::removeArticleFromFavorites,
                         )
                     }
+
+                    composable("settings") {
+                        SettingsScreen(
+                            isJapaneseSelected = settingsViewModel.isJapaneseSelected.value,
+                            isEnglishSelected = settingsViewModel.isEnglishSelected.value,
+                            isFrenchSelected = settingsViewModel.isFrenchSelected.value,
+                            isSpanishSelected = settingsViewModel.isSpanishSelected.value,
+                            setLangSelected = settingsViewModel::setLangSelected,
+                            scaffoldState = scaffoldState,
+                            navController = navController,
+                        )
+                    }
                 }
             }
         }
     }
 
+        /*
     private fun openWebView(url: String) {
         val articleView = findViewById<WebView>(R.id.articleView)
         articleView.apply{
@@ -294,7 +326,7 @@ class MainActivity : AppCompatActivity() {
             reviewViewModel.saveArticle(url)
             Snackbar.make(articleView, "Article saved", Snackbar.LENGTH_SHORT).show()
         }
-    }
+    } */
 
     private fun checkOverlayPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -375,9 +407,11 @@ class MainActivity : AppCompatActivity() {
                         fromLookup = true
                     }
                     InputStringType.ArticleUrl -> {
-                        isArticle = true
-                        setContentView(R.layout.article_view)
-                        openWebView(inputString)
+                        reviewViewModel.setArticle(inputString)
+                        startDestination = "article_screen"
+                        //isArticle = true
+                        //setContentView(R.layout.article_view)
+                        //openWebView(inputString)
                     }
                     InputStringType.YoutubeUrl -> {
                         Log.d("YOUTUBEDEBUG", "URL: $inputString")

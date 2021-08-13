@@ -4,6 +4,7 @@ import androidx.room.*
 import com.example.nala.db.models.review.*
 import com.example.nala.db.models.review.relations.*
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 
 @Dao
@@ -210,6 +211,12 @@ interface ReviewDao : DatabaseDao{
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addArticleToFavorites(article: ArticlesCache)
+
+    @Query("SELECT * FROM articles WHERE url=:url")
+    fun getSavedArticle(url: String) : Flow<List<ArticlesCache>>
+
+    fun getSavedArticleDistinctUntilChanged(url: String) =
+        getSavedArticle(url).distinctUntilChanged()
 
     @Query("SELECT * FROM articles ORDER BY timeAdded DESC")
     fun getSavedArticles() : Flow<List<ArticlesCache>>

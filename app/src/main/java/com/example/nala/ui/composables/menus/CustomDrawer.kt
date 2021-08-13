@@ -12,9 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.navArgument
 import com.example.nala.ui.menus.DrawerItem
-import com.example.nala.ui.theme.LightBlue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -33,7 +31,7 @@ fun CustomDrawer(
            DrawerItem.Chronology,
            DrawerItem.Articles,
            DrawerItem.Videos,
-           DrawerItem.Setting,
+           DrawerItem.Settings,
        )
 
         val backStackEntry = navController.currentBackStackEntryAsState()

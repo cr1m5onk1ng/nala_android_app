@@ -17,4 +17,8 @@ data class YoutubeVideoModel(
             )
         }
     }
+
+    fun isEmpty() : Boolean {
+        return id.isEmpty()
+    }
 }

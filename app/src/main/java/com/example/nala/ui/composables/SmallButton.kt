@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun SmallButton(
     text: String,
+    textColor: Color? = null,
     backgroundColor: Color,
     icon: ImageVector? = null,
     onCLick: () -> Unit,
@@ -49,7 +50,8 @@ fun SmallButton(
                     shape = RoundedCornerShape(18.dp)
                 ),
             colors = ButtonDefaults.buttonColors(
-                backgroundColor = backgroundColor
+                backgroundColor = backgroundColor,
+                contentColor = textColor ?: Color.Black,
             ),
             shape = RoundedCornerShape(18.dp)
         ) {

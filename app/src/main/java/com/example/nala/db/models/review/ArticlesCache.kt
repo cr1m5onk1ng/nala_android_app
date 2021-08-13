@@ -27,4 +27,13 @@ data class ArticlesCache (
     @TypeConverters(TimeConverter::class)
     val timeAdded: Date = Date(),
 
-    )
+    ) {
+    companion object {
+        fun Empty() : ArticlesCache{
+            return ArticlesCache(
+                url = "",
+                title = ""
+            )
+        }
+    }
+}

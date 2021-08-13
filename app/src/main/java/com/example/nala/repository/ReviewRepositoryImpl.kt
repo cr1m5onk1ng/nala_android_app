@@ -353,6 +353,10 @@ class ReviewRepositoryImpl @Inject constructor(
         reviewDao.updateWordReviewItem(updatedWordReview)
     }
 
+    override fun getSavedArticle(url: String): Flow<List<ArticlesCache>> {
+        return reviewDao.getSavedArticle(url)
+    }
+
     override suspend fun removeWordReview(wordReview: WordReviewModel) {
         reviewDao.deleteWordReview(wordReview)
     }
@@ -361,15 +365,8 @@ class ReviewRepositoryImpl @Inject constructor(
         return reviewDao.getReview(word.word).isNotEmpty()
     }
 
-    override suspend fun addArticleToFavorites(url: String) {
-        val metadata = metadataExtractorService.extractFromUrl(url)
-        val articleModel = ArticlesCache(
-            url = url,
-            title = metadata.title,
-            description = metadata.description,
-            thumbnailUrl = metadata.thumbnailUrl,
-        )
-        reviewDao.addArticleToFavorites(articleModel)
+    override suspend fun addArticleToFavorites(article: ArticlesCache) {
+        reviewDao.addArticleToFavorites(article)
     }
 
     override suspend fun removeArticleFromFavorites(url: String) {

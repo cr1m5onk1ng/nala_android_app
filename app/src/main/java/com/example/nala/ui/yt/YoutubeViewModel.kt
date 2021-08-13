@@ -7,10 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nala.domain.model.metadata.MetadataModel
-import com.example.nala.domain.model.yt.YoutubeCaptionModel
-import com.example.nala.domain.model.yt.YoutubeCommentModel
-import com.example.nala.domain.model.yt.YoutubeCommentsList
-import com.example.nala.domain.model.yt.YoutubeVideoModel
+import com.example.nala.domain.model.yt.*
 import com.example.nala.network.model.yt.captions.CaptionsMapEntry
 import com.example.nala.repository.DictionaryRepository
 import com.example.nala.repository.YouTubeRepository
@@ -21,6 +18,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -71,10 +69,6 @@ class YoutubeViewModel @Inject constructor(
 
     val inspectedCaption: StateFlow<YoutubeCaptionModel?> = _inspectedCaption
 
-    val inspectedCaptionIndex: MutableState<Int?> = mutableStateOf(null)
-
-    val inspectedCommentIndex: MutableState<Int?> = mutableStateOf(null)
-
     val inspectedElementTokens: MutableState<List<String>> = mutableStateOf(listOf())
 
     val inspectedElementTokensMap : MutableState<Map<Pair<Int, Int>, String>> = mutableStateOf(mapOf())
@@ -92,6 +86,19 @@ class YoutubeViewModel @Inject constructor(
             dictRepository.tokenize(it)
         }
     }
+
+    private val _isVideoSaved = MutableStateFlow<Boolean>(false)
+
+    val isVideoSaved: StateFlow<Boolean> = _isVideoSaved
+
+    private val isVideoSavedFlow = _isVideoSaved.flatMapLatest {
+        youtubeRepository.getSavedVideo(currentVideoData.value.id).map {
+            !it.isEmpty()
+        }
+    }
+
+    val availableCaptions: MutableState<List<YoutubeCaptionTracksModel>> =
+        mutableStateOf(listOf())
 
     fun setSelectedWord(word: String) {
         inspectedElementSelectedWord.value = word
@@ -133,18 +140,24 @@ class YoutubeViewModel @Inject constructor(
 
     fun setVideoModel(videoId: String, url: String) {
         viewModelScope.launch{
-            videoDataLoading.value = true
-            val metadata = metadataService.extractFromUrl(url)
-            val videoData = YoutubeVideoModel(
-                id = videoId,
-                title = metadata.title,
-                description = metadata.description,
-                thumbnailUrl = metadata.thumbnailUrl,
-            )
-            _currentVideoModel.value = videoData
-            videoDataLoading.value = false
+            withContext(Dispatchers.IO) {
+                videoDataLoading.value = true
+                availableCaptions.value = youtubeRepository.getVideoCaptionsTracks(videoId)
+                Log.d("YOUTUBEDEBUG", "Available Captions: ${availableCaptions.value}")
+                val metadata = metadataService.extractFromUrl(url)
+                Log.d("YOUTUBEDEBUG", "metadata from view model: $metadata")
+                val videoData = YoutubeVideoModel(
+                    id = videoId,
+                    title = metadata.title,
+                    description = metadata.description,
+                    thumbnailUrl = metadata.thumbnailUrl,
+                )
+                Log.d("YOUTUBEDEBUG", "Current video model: $videoData")
+                _currentVideoModel.value = videoData
+                checkVideoSaved()
+                videoDataLoading.value = false
+            }
         }
-
     }
 
     fun setPlayerPosition(position: Float) {
@@ -227,6 +240,14 @@ class YoutubeViewModel @Inject constructor(
             }
         }
         return null
+    }
+
+    private fun checkVideoSaved()  {
+        viewModelScope.launch {
+            isVideoSavedFlow.collect{
+                _isVideoSaved.value = it
+            }
+        }
     }
 
 }

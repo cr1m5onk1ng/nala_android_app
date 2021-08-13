@@ -80,9 +80,11 @@ interface ReviewRepository {
 
     // ARTICLES
 
-    suspend fun addArticleToFavorites(url: String)
+    suspend fun addArticleToFavorites(article: ArticlesCache)
 
     suspend fun removeArticleFromFavorites(url: String)
+
+    fun getSavedArticle(url: String) : Flow<List<ArticlesCache>>
 
     fun getSavedArticles() : Flow<List<ArticlesCache>>
 

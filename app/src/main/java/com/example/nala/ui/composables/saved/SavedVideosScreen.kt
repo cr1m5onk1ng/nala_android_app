@@ -1,17 +1,24 @@
 package com.example.nala.ui.composables.saved
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Remove
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil.compose.rememberImagePainter
 import com.example.nala.domain.model.yt.YoutubeVideoModel
 import com.example.nala.ui.DataState
 import com.example.nala.ui.composables.CustomAvatar
@@ -43,7 +50,7 @@ fun SavedVideosScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         items(videos.data.size) { index ->
-                            SavedVideoItemCard(
+                            ItemCard(
                                 videos.data[index],
                                 onRemoveVideo,
                             )
@@ -56,7 +63,90 @@ fun SavedVideosScreen(
 }
 
 @Composable
-fun SavedVideoItemCard(
+private fun ItemCard(
+    item: YoutubeVideoModel,
+    onRemoveVideo: (String) -> Unit,
+) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            elevation = 5.dp,
+            shape = RoundedCornerShape(12.dp),
+            border = BorderStroke(0.5.dp, Color.LightGray),
+            backgroundColor = Color.White,
+        ) {
+            Column() {
+                // Data Row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    // Image Section
+                    Column(
+                        /*
+                        modifier = Modifier
+                            .background(Color.Red), */
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Image(
+                            modifier = Modifier
+                                .height(128.dp)
+                                .width(128.dp),
+                                //.background(Color.Green),
+                            contentScale = ContentScale.FillBounds,
+                            painter = rememberImagePainter(item.thumbnailUrl),
+                            contentDescription = "thumbnail",
+                        )
+                    }
+                    // Content section
+                    Column(
+                        modifier = Modifier
+                            .padding(8.dp),
+                            //.background(Color.Blue),
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        // Title
+                        Text(
+                            text = item.title ?: "No title provided",
+                            style = MaterialTheme.typography.body1,
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Spacer(Modifier.height(5.dp))
+                        // Description
+                        CustomExpandableText(
+                            modifier = Modifier.padding(3.dp),
+                            text = item.description ?: "No description provided",
+                            style = MaterialTheme.typography.subtitle1,
+                            maxLines = 3,
+                        )
+                    }
+                }
+                // Buttons Row
+                Row(
+                    modifier = Modifier.padding(5.dp).fillMaxWidth().height(30.dp),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    IconButton(
+                        onClick = { onRemoveVideo(item.id) }
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(24.dp),
+                            imageVector = Icons.Rounded.Delete,
+                            contentDescription = "remove",
+                            tint = Color.LightGray,
+                        )
+                    }
+                }
+            }
+        }
+}
+
+@Composable
+private fun SavedVideoItemCard(
     item: YoutubeVideoModel,
     onRemoveVideo: (String) -> Unit,
 ) {
