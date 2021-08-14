@@ -1,12 +1,12 @@
 package com.example.nala.ui.yt
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.nala.domain.model.metadata.MetadataModel
 import com.example.nala.domain.model.yt.*
 import com.example.nala.network.model.yt.captions.CaptionsMapEntry
 import com.example.nala.repository.DictionaryRepository
@@ -15,6 +15,7 @@ import com.example.nala.service.metadata.ExtractorService
 import com.example.nala.ui.DataState
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -23,6 +24,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class YoutubeViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val youtubeRepository: YouTubeRepository,
     private val dictRepository: DictionaryRepository,
     private val metadataService: ExtractorService,
@@ -37,7 +39,7 @@ class YoutubeViewModel @Inject constructor(
     val currentVideoData: StateFlow<YoutubeVideoModel> = _currentVideoModel
 
     private val videoCaptionsStateFlow = _currentVideoModel.mapLatest {
-        youtubeRepository.getVideoCaptions(it.id)
+        youtubeRepository.getVideoCaptions(videoId = it.id, lang = selectedCaptionTrack.value)
     }
 
     private val videoCommentsStateFlow = _currentVideoModel.mapLatest {
@@ -97,8 +99,17 @@ class YoutubeViewModel @Inject constructor(
         }
     }
 
-    val availableCaptions: MutableState<List<YoutubeCaptionTracksModel>> =
+    val availableCaptionTracks: MutableState<List<YoutubeCaptionTracksModel>> =
         mutableStateOf(listOf())
+
+    val selectedCaptionTrack = mutableStateOf("")
+
+    fun onLoadTrack(langCode: String) {
+        viewModelScope.launch{
+            selectedCaptionTrack.value = langCode
+            loadCaptions()
+        }
+    }
 
     fun setSelectedWord(word: String) {
         inspectedElementSelectedWord.value = word
@@ -142,8 +153,17 @@ class YoutubeViewModel @Inject constructor(
         viewModelScope.launch{
             withContext(Dispatchers.IO) {
                 videoDataLoading.value = true
-                availableCaptions.value = youtubeRepository.getVideoCaptionsTracks(videoId)
-                Log.d("YOUTUBEDEBUG", "Available Captions: ${availableCaptions.value}")
+                val tracks = youtubeRepository.getVideoCaptionsTracks(videoId)
+                val targetLangs =
+                    context.getSharedPreferences("langs", Context.MODE_PRIVATE)
+                        .getStringSet("target_langs", setOf())?.toSet() ?: setOf()
+                Log.d("YOUTUBEDEBUG", "Target langs from settings: ${targetLangs}")
+                val filteredTracks = tracks.filter{
+                    targetLangs?.contains(it.langCode) ?: false
+                }
+                Log.d("YOUTUBEDEBUG", "Available Captions: ${tracks}")
+                Log.d("YOUTUBEDEBUG", "Filtered tracks: $filteredTracks")
+                availableCaptionTracks.value = filteredTracks
                 val metadata = metadataService.extractFromUrl(url)
                 Log.d("YOUTUBEDEBUG", "metadata from view model: $metadata")
                 val videoData = YoutubeVideoModel(
@@ -154,9 +174,29 @@ class YoutubeViewModel @Inject constructor(
                 )
                 Log.d("YOUTUBEDEBUG", "Current video model: $videoData")
                 _currentVideoModel.value = videoData
-                checkVideoSaved()
+                setIsVideoSaved()
                 videoDataLoading.value = false
             }
+        }
+    }
+
+    fun setVideoModelFromCache(video: YoutubeVideoModel) {
+        viewModelScope.launch{
+            videoDataLoading.value = true
+            val tracks = youtubeRepository.getVideoCaptionsTracks(video.id)
+            val targetLangs =
+                context.getSharedPreferences("langs", Context.MODE_PRIVATE)
+                    .getStringSet("target_langs", setOf())?.toSet() ?: setOf()
+            Log.d("YOUTUBEDEBUG", "Target langs from settings: ${targetLangs}")
+            val filteredTracks = tracks.filter{
+                targetLangs.contains(it.langCode)
+            }
+            Log.d("YOUTUBEDEBUG", "Available Captions: ${tracks}")
+            Log.d("YOUTUBEDEBUG", "Filtered tracks: $filteredTracks")
+            availableCaptionTracks.value = filteredTracks
+            _currentVideoModel.value = video
+            setIsVideoSaved()
+            videoDataLoading.value = false
         }
     }
 
@@ -204,6 +244,14 @@ class YoutubeViewModel @Inject constructor(
         }
     }
 
+    fun setIsVideoSaved()  {
+        viewModelScope.launch {
+            isVideoSavedFlow.collect{
+                _isVideoSaved.value = it
+            }
+        }
+    }
+
     private fun buildCaptionsMap(captions: List<YoutubeCaptionModel>)
         : MutableMap<Int, MutableList<CaptionsMapEntry>>
     {
@@ -240,14 +288,6 @@ class YoutubeViewModel @Inject constructor(
             }
         }
         return null
-    }
-
-    private fun checkVideoSaved()  {
-        viewModelScope.launch {
-            isVideoSavedFlow.collect{
-                _isVideoSaved.value = it
-            }
-        }
     }
 
 }

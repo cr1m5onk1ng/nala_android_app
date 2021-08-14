@@ -2,6 +2,7 @@ package com.example.nala.ui.composables.saved
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,12 +11,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Remove
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.example.nala.db.models.review.ArticlesCache
 import com.example.nala.domain.model.yt.YoutubeVideoModel
@@ -24,13 +27,29 @@ import com.example.nala.ui.composables.CustomAvatar
 import com.example.nala.ui.composables.CustomExpandableText
 import com.example.nala.ui.composables.ErrorScreen
 import com.example.nala.ui.composables.LoadingIndicator
+import com.example.nala.ui.composables.menus.CustomTopBar
 
 @Composable
 fun SavedArticlesScreen(
     articles: DataState<List<ArticlesCache>>,
     onRemoveArticle: (String) -> Unit,
+    onSetArticle: (ArticlesCache) -> Unit,
+    scaffoldState: ScaffoldState,
+    navController: NavController,
 ) {
-    Scaffold { paddingValues ->
+    val scope = rememberCoroutineScope()
+    Scaffold(
+        topBar = {
+            CustomTopBar(
+                title = "Articles",
+                backgroundColor = Color.LightGray,
+                contentColor = Color.White,
+                scope = scope,
+                scaffoldState = scaffoldState,
+                navController = navController
+            )
+        },
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)
@@ -44,15 +63,22 @@ fun SavedArticlesScreen(
                     ErrorScreen(text = "Couldn't fetch articles from cache", subtitle = "Sorry dude")
                 }
                 is DataState.Success<List<ArticlesCache>> -> {
-                    LazyColumn(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        items(articles.data.size) { index ->
-                            ItemCard(
-                                articles.data[index],
-                                onRemoveArticle,
-                            )
+                    val articlesData = articles.data
+                    if(articlesData.isEmpty()) {
+                        ErrorScreen(text = "No articles saved", subtitle = "Add an article by sharing it with the app")
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            items(articlesData.size) { index ->
+                                ItemCard(
+                                    articlesData[index],
+                                    onRemoveArticle,
+                                    onSetArticle = onSetArticle,
+                                    navController = navController,
+                                )
+                            }
                         }
                     }
                 }
@@ -65,11 +91,17 @@ fun SavedArticlesScreen(
 private fun ItemCard(
     item: ArticlesCache,
     onRemoveArticle: (String) -> Unit,
+    onSetArticle: (ArticlesCache) -> Unit,
+    navController: NavController,
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(16.dp)
+            .clickable {
+                onSetArticle(item)
+                navController.navigate("article_screen")
+            },
         elevation = 5.dp,
         shape = RoundedCornerShape(12.dp),
         border = BorderStroke(0.5.dp, Color.LightGray),
@@ -125,7 +157,10 @@ private fun ItemCard(
             }
             // Buttons Row
             Row(
-                modifier = Modifier.padding(5.dp).fillMaxWidth().height(30.dp),
+                modifier = Modifier
+                    .padding(5.dp)
+                    .fillMaxWidth()
+                    .height(30.dp),
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically,
             ) {

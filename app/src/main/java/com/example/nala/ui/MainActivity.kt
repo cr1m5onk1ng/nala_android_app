@@ -32,8 +32,6 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.example.nala.R
 import com.example.nala.ui.dictionary.DictionaryForegroundService
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import androidx.compose.material.*
 import com.example.nala.ui.composables.articles.ArticleScreen
 import com.example.nala.ui.composables.dictionary.DictionaryDetailScreen
@@ -51,8 +49,6 @@ import com.example.nala.ui.settings.SettingsViewModel
 import com.example.nala.ui.yt.YoutubeViewModel
 import com.example.nala.utils.InputStringType
 import com.example.nala.utils.Utils
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.snackbar.Snackbar
 
 
 @AndroidEntryPoint
@@ -74,13 +70,13 @@ class MainActivity : AppCompatActivity() {
     // flag that checks if the dictionary was called from an article
     var fromLookup = false
 
-    var isArticle = false
-
     @ExperimentalComposeUiApi
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // SETTING UP NEEDED OBESRVABLES
+        settingsViewModel.loadSharedPreferences()
         favoritesViewModel.loadSavedVideos()
         favoritesViewModel.loadSavedArticles()
 
@@ -93,10 +89,10 @@ class MainActivity : AppCompatActivity() {
                 handleSharedText()
             }
             else -> {
+                Log.d("INTENTDEBUG", "Action triggered: ${intent?.action}")
                 // DONT BOTHER
             }
         }
-        if(isArticle) return
 
         // VIEW SETTING
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
@@ -238,12 +234,16 @@ class MainActivity : AppCompatActivity() {
                         VideoScreen(
                             lifecycle = lifecycle,
                             captionsState = ytViewModel.captionsState.value,
+                            availableTracks = ytViewModel.availableCaptionTracks.value,
                             isVideoSaved = ytViewModel.isVideoSaved.value,
+                            checkVideoSaved = ytViewModel::setIsVideoSaved,
                             inspectedCaption = ytViewModel.inspectedCaption.value,
                             inspectedComment = ytViewModel.inspectedComment.value,
                             onLoadCaptions = ytViewModel::loadCaptions,
                             onLoadComments = ytViewModel::loadComments,
+                            onLoadTrack = ytViewModel::onLoadTrack,
                             onAddVideoToFavorites = favoritesViewModel::addVideoToFavorites,
+                            onRemoveVideoFromFavorites = favoritesViewModel::removeVideoFromFavorites,
                             onSetInspectedCaption = ytViewModel::onInspectCaption,
                             onSetInspectedComment = ytViewModel::onInspectComment,
                             onSetSelectedWord = ytViewModel::setSelectedWord,
@@ -289,6 +289,9 @@ class MainActivity : AppCompatActivity() {
                         SavedVideosScreen(
                             videos = favoritesViewModel.savedVideosState.value,
                             onRemoveVideo = favoritesViewModel::removeVideoFromFavorites,
+                            onSetVideo = ytViewModel::setVideoModelFromCache,
+                            scaffoldState = scaffoldState,
+                            navController = navController,
                         )
                     }
 
@@ -296,6 +299,9 @@ class MainActivity : AppCompatActivity() {
                         SavedArticlesScreen(
                             articles = favoritesViewModel.savedArticlesState.value,
                             onRemoveArticle = favoritesViewModel::removeArticleFromFavorites,
+                            onSetArticle = reviewViewModel::setArticleFromCache,
+                            scaffoldState = scaffoldState,
+                            navController = navController,
                         )
                     }
 
@@ -409,17 +415,12 @@ class MainActivity : AppCompatActivity() {
                     InputStringType.ArticleUrl -> {
                         reviewViewModel.setArticle(inputString)
                         startDestination = "article_screen"
-                        //isArticle = true
-                        //setContentView(R.layout.article_view)
-                        //openWebView(inputString)
                     }
                     InputStringType.YoutubeUrl -> {
                         Log.d("YOUTUBEDEBUG", "URL: $inputString")
                         val videoId = Utils.parseVideoIdFromUrl(inputString)
                         Log.d("YOUTUBEDEBUG", "VIDEO ID: $inputString")
                         ytViewModel.setVideoModel(videoId, inputString)
-                        //ytViewModel.loadCaptions()
-                        //ytViewModel.loadComments()
                         startDestination = "video_screen"
                     }
                 }

@@ -72,6 +72,12 @@ class ReviewViewModel @Inject constructor(
         }
     }
 
+    fun setArticleFromCache(article: ArticlesCache) {
+        isArticleLoaded.value = false
+        currentArticle.value = article
+        isArticleLoaded.value = true
+    }
+
     fun updateWordReviewItem(quality: Int, reviewModel: WordReviewModel) {
         viewModelScope.launch {
             reviewRepository.updateWordReviewParameters(quality, reviewModel)

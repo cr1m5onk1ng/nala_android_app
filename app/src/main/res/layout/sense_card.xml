@@ -19,6 +19,7 @@
             android:paddingTop="3dp"
             android:text="Here go the sense definitions"
             android:textAlignment="textStart"
+            android:gravity="start"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"

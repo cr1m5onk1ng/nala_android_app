@@ -109,7 +109,7 @@ fun SettingCard(
                     style = MaterialTheme.typography.subtitle1,
                 )
                 Text(
-                    text = "Set ${lang.lowercase()} as your target language",
+                    text = "Add ${lang.lowercase()} to your target languages",
                     style = MaterialTheme.typography.body1,
                 )
             }

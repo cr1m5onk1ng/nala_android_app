@@ -1,6 +1,5 @@
 package com.example.nala.ui.composables.yt
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -10,11 +9,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Favorite
-import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.Downloading
-import androidx.compose.material.icons.rounded.ThumbDown
-import androidx.compose.material.icons.rounded.ThumbUp
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -22,22 +17,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
-import com.example.nala.domain.model.yt.YoutubeCaptionModel
-import com.example.nala.domain.model.yt.YoutubeCommentModel
-import com.example.nala.domain.model.yt.YoutubeCommentsList
-import com.example.nala.domain.model.yt.YoutubeVideoModel
+import com.example.nala.domain.model.yt.*
+import com.example.nala.network.model.menus.ActionModel
 import com.example.nala.ui.DataState
 import com.example.nala.ui.composables.*
 import com.example.nala.ui.composables.menus.CustomTopBar
 import com.example.nala.ui.theme.Blue500
-import com.example.nala.ui.theme.Blue700
 import com.example.nala.ui.theme.LightBlue
 import com.example.nala.ui.yt.YoutubePlaybackListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
@@ -62,7 +56,9 @@ fun LazyListState.isItemVisible(index: Int): Boolean {
 fun VideoScreen(
     lifecycle: Lifecycle,
     videoData: YoutubeVideoModel,
+    availableTracks: List<YoutubeCaptionTracksModel>,
     isVideoSaved: Boolean,
+    checkVideoSaved: () -> Unit,
     videoLoading: Boolean,
     player: YouTubePlayer?,
     selectedTab: Int,
@@ -77,7 +73,9 @@ fun VideoScreen(
     playerPosition: Float,
     onLoadCaptions: () -> Unit,
     onLoadComments: () -> Unit,
+    onLoadTrack: (String) -> Unit,
     onAddVideoToFavorites: (YoutubeVideoModel) -> Unit,
+    onRemoveVideoFromFavorites: (String) -> Unit,
     onInitPlayer: (YouTubePlayer) -> Unit,
     onPlayerTimeElapsed: (Float) -> Unit,
     onClickCaption: (YouTubePlayer, YoutubeCaptionModel) -> Unit,
@@ -101,9 +99,25 @@ fun VideoScreen(
                 title = "Videos",
                 scope = scope,
                 scaffoldState = scaffoldState,
-                navController = navController
+                navController = navController,
+                actions = listOf(
+                    ActionModel(
+                        icon = Icons.Rounded.Favorite,
+                        action = {
+                            if(!isVideoSaved) {
+                                onAddVideoToFavorites(videoData)
+                                checkVideoSaved()
+                            } else {
+                                onRemoveVideoFromFavorites(videoData.id)
+                                checkVideoSaved()
+                            }
+                        },
+                        isActive = isVideoSaved,
+                    )
+                )
             )
         },
+        /*
         floatingActionButtonPosition = FabPosition.End,
         floatingActionButton = {
             ExtendedFloatingActionButton(
@@ -115,8 +129,12 @@ fun VideoScreen(
                        },
                 onClick = {
                     Log.d("YOUTUBEDEBUG", "Video before adding: $videoData")
-                    onAddVideoToFavorites(videoData)
-                    onShowSnackBar()
+                    if(!isVideoSaved) {
+                        onAddVideoToFavorites(videoData)
+                        //onShowSnackBar()
+                    } else {
+                        onRemoveVideoFromFavorites(videoData.id)
+                    }
                 },
                 icon = {
                     Icon(
@@ -127,7 +145,7 @@ fun VideoScreen(
                 },
                 backgroundColor = Blue500,
             )
-        },
+        }, */
     ) { paddingValues ->
         ConstraintLayout(modifier = Modifier.padding(paddingValues)) {
             Column() {
@@ -156,6 +174,7 @@ fun VideoScreen(
                     SelectionTabSection(
                         tabIndex = selectedTab,
                         captionsState = captionsState,
+                        availableTracks = availableTracks,
                         inspectedCaption = inspectedCaption,
                         inspectedComment = inspectedComment,
                         commentsState = commentsState,
@@ -163,6 +182,7 @@ fun VideoScreen(
                         tokensMap = tokensMap,
                         selectedWord = selectedWord,
                         onLoadCaptions = onLoadCaptions,
+                        onLoadTrack = onLoadTrack,
                         onLoadComments = onLoadComments,
                         onSetSelectedWord = onSetSelectedWord,
                         onChangeTabIndex = onChangeSelectedTab,
@@ -199,6 +219,7 @@ fun VideoScreen(
 @Composable
 private fun CaptionsSection(
     captionsState: DataState<List<YoutubeCaptionModel>>,
+    availableTracks: List<YoutubeCaptionTracksModel>,
     inspectedCaption: YoutubeCaptionModel?,
     activeCaption: Int,
     tokens: List<String>,
@@ -207,6 +228,7 @@ private fun CaptionsSection(
     onSetSelectedWord: (String) -> Unit,
     player: YouTubePlayer?,
     onLoadCaptions: () -> Unit,
+    onLoadTrack: (String) -> Unit,
     onAddToFavorites: (String) -> Unit,
     onSetPlayerPosition: (Float) -> Unit,
     onSetInspectedCaption: (YoutubeCaptionModel) -> Unit,
@@ -215,22 +237,13 @@ private fun CaptionsSection(
 ) {
     when(captionsState) {
         is DataState.Initial<*> ->{
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
-                SmallButton(
-                    text = "Load Subtitles",
-                    textColor = Color.White,
-                    backgroundColor = Blue500,
-                    onCLick = {
-                        onLoadCaptions()
-                    },
-                    icon = Icons.Rounded.Downloading,
-                    height = 60.dp,
-                    width = 100.dp,
+            if(availableTracks.isEmpty()) {
+                ErrorScreen(
+                    text = "No captions available for your target language(s)",
+                    subtitle = "¯\\_(ツ)_/¯"
                 )
+            } else {
+                TracksListSection(tracks = availableTracks, onLoadTrack = onLoadTrack)
             }
         }
         is DataState.Loading -> {
@@ -576,12 +589,14 @@ private fun CommentCard(
 private fun SelectionTabSection(
     tabIndex: Int,
     captionsState: DataState<List<YoutubeCaptionModel>>,
+    availableTracks: List<YoutubeCaptionTracksModel>,
     inspectedCaption: YoutubeCaptionModel?,
     inspectedComment: YoutubeCommentModel?,
     tokens: List<String>,
     tokensMap: Map<Pair<Int, Int>, String>,
     selectedWord: String,
     onLoadCaptions: () -> Unit,
+    onLoadTrack: (String) -> Unit,
     onLoadComments: () -> Unit,
     onSetSelectedWord: (String) -> Unit,
     commentsState: DataState<YoutubeCommentsList>,
@@ -607,12 +622,14 @@ private fun SelectionTabSection(
         0 -> {
             CaptionsSection(
                 captionsState = captionsState,
+                availableTracks = availableTracks,
                 inspectedCaption = inspectedCaption,
                 activeCaption = activeCaption,
                 tokens = tokens,
                 tokensMap = tokensMap,
                 selectedWord = selectedWord,
                 onLoadCaptions = onLoadCaptions,
+                onLoadTrack = onLoadTrack,
                 onSetSelectedWord = onSetSelectedWord,
                 player = player,
                 onAddToFavorites = onAddCaptionToFavorites,
@@ -637,6 +654,88 @@ private fun SelectionTabSection(
                 onSetInspectedComment = onSetInspectedComment,
                 onSearchWord = onSearchWord,
             )
+        }
+    }
+}
+
+@Composable
+private fun TracksListSection(
+    tracks: List<YoutubeCaptionTracksModel>,
+    onLoadTrack: (String) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            modifier = Modifier.padding(vertical=5.dp),
+            text = "Available Tracks",
+            style = MaterialTheme.typography.h6,
+            textAlign = TextAlign.Start,
+        )
+        LazyColumn() {
+            items(tracks.size) { index ->
+                TrackCard(
+                    track = tracks[index],
+                    onLoadTrack = onLoadTrack,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TrackCard(
+    track: YoutubeCaptionTracksModel,
+    onLoadTrack: (String) -> Unit,
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        border = BorderStroke(Dp.Hairline, Color.LightGray),
+        backgroundColor = Color.White,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(5.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            // Title and Subtitle
+            Column(
+                modifier = Modifier
+                    .padding(start=24.dp),
+                horizontalAlignment = Alignment.Start,
+
+                ) {
+                Text(
+                    modifier = Modifier.padding(3.dp),
+                    text = track.langOriginal,
+                    style = MaterialTheme.typography.subtitle1,
+                )
+                Text(
+                    text = track.langTranslated,
+                    style = MaterialTheme.typography.body1,
+                )
+            }
+            //CheckBox
+            Column(
+                modifier = Modifier.padding(end = 8.dp),
+                verticalArrangement = Arrangement.Center,
+            ) {
+                IconButton(
+                    onClick = { onLoadTrack(track.langCode) },
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Download,
+                        contentDescription = "download track",
+                    )
+                }
+            }
         }
     }
 }

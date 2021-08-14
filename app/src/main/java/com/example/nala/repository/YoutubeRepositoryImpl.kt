@@ -37,13 +37,13 @@ class YoutubeRepositoryImpl @Inject constructor(
         videoId: String,
         lang: String,
     ): List<YoutubeCaptionModel> {
-        return youtubeCaptionsService.getVideoCaptions(videoId = videoId, lang = lang).captions.map{
+        return youtubeCaptionsService.getVideoCaptions(videoId = videoId, lang = lang).captions?.map{
             YoutubeCaptionModel(
                 caption = it.content,
                 start = it.start,
                 duration = it.dur,
             )
-        }
+        } ?: listOf()
     }
 
     override suspend fun addVideoToFavorites(video: YoutubeVideoModel) {
@@ -72,7 +72,7 @@ class YoutubeRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getVideoCaptionsTracks(videoId: String): List<YoutubeCaptionTracksModel> {
-        return youtubeCaptionsService.getVideoCaptionsTracks(videoId=videoId).tracks.map{
+        return youtubeCaptionsService.getVideoCaptionsTracks(videoId=videoId).tracks?.map{
             YoutubeCaptionTracksModel(
                 id = it.id,
                 name = it.name,
@@ -81,7 +81,7 @@ class YoutubeRepositoryImpl @Inject constructor(
                 langTranslated = it.langTranslated,
                 langDefault = it.langDefault.toBoolean(),
             )
-        }
+        } ?: listOf()
     }
 
     override fun getSavedVideos(): Flow<List<YoutubeVideoModel>> {

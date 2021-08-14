@@ -8,5 +8,5 @@ import org.simpleframework.xml.Root
 data class CaptionsList @JvmOverloads constructor (
     @param:ElementList(entry = "text", inline = true)
     @get:ElementList(entry = "text", inline = true)
-    val captions: List<CaptionData>,
+    val captions: List<CaptionData>? = null,
 )
