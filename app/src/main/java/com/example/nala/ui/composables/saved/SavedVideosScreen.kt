@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Remove
 import androidx.compose.runtime.Composable
@@ -29,6 +30,7 @@ import com.example.nala.ui.composables.CustomExpandableText
 import com.example.nala.ui.composables.ErrorScreen
 import com.example.nala.ui.composables.LoadingIndicator
 import com.example.nala.ui.composables.menus.CustomTopBar
+import com.example.nala.ui.theme.Blue500
 
 @Composable
 fun SavedVideosScreen(
@@ -43,8 +45,12 @@ fun SavedVideosScreen(
         topBar = {
             CustomTopBar(
                 title = "Videos",
-                backgroundColor = Color.LightGray,
+                backgroundColor = Blue500,
                 contentColor = Color.White,
+                navIcon = Icons.Rounded.ArrowBack,
+                navIconAction = {
+                    navController.popBackStack()
+                },
                 scope = scope,
                 scaffoldState = scaffoldState,
                 navController = navController

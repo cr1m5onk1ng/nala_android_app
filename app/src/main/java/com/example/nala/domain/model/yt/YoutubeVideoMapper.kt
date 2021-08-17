@@ -8,6 +8,7 @@ class YoutubeVideoMapper : NetworkMapper<YoutubeVideoDto, YoutubeVideoModel> {
     override fun mapToDomainModel(networkModel: YoutubeVideoDto): YoutubeVideoModel {
         return YoutubeVideoModel(
             id = networkModel.items?.first()?.id ?: "",
+            url = "",
             publishedAt = networkModel.items?.first()?.snippet?.publishedAt ?: "",
             title = networkModel.items?.first()?.snippet?.title ?: "",
             thumbnailUrl = networkModel.items?.first()?.snippet?.thumbnails?.default?.url ?: "",

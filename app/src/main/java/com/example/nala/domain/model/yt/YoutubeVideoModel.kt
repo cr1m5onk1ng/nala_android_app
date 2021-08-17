@@ -2,6 +2,7 @@ package com.example.nala.domain.model.yt
 
 data class YoutubeVideoModel(
     val id: String,
+    val url: String,
     val title: String? = null,
     val description: String? = null,
     val publishedAt: String? = null,

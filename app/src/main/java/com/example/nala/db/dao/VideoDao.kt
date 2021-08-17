@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.example.nala.db.models.yt.YoutubeCaptionTracksCache
 import com.example.nala.db.models.yt.YoutubeCaptionsCache
 import com.example.nala.db.models.yt.YoutubeCommentsCache
 import com.example.nala.db.models.yt.YoutubeDataCache
@@ -19,14 +20,20 @@ interface VideoDao {
     fun getCachedVideoDistinctUntilChanged(videoId: String) =
         getCachedVideo(videoId).distinctUntilChanged()
 
+    @Query("SELECT * FROM videos_cache WHERE video_id=:videoId")
+    suspend fun getCachedVideoData(videoId: String) : List<YoutubeDataCache>
+
     @Query("SELECT * FROM videos_cache ORDER BY time_added DESC")
     fun getCachedVideos() : Flow<List<YoutubeDataCache>>
 
     @Query("SELECT * FROM video_comments_cache WHERE video_id=:videoId ORDER BY published_at DESC")
-    fun getVideoComments(videoId: String) : Flow<List<YoutubeCommentsCache>>
+    fun getCachedVideoComments(videoId: String) : Flow<List<YoutubeCommentsCache>>
 
     @Query("SELECT * FROM video_captions_cache WHERE video_id=:videoId AND lang=:lang ORDER BY start")
-    suspend fun getVideoCaptions(videoId: String, lang: String) : List<YoutubeCaptionsCache>
+    suspend fun getCachedVideoCaptions(videoId: String, lang: String) : List<YoutubeCaptionsCache>
+
+    @Query("SELECT * FROM video_caption_tracks WHERE video_id=:videoId")
+    suspend fun getCachedCaptionTracks(videoId: String) : List<YoutubeCaptionTracksCache>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addVideoToFavorites(video: YoutubeDataCache)
@@ -39,5 +46,8 @@ interface VideoDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun cacheVideoComments(vararg comments: YoutubeCommentsCache)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun cacheVideoCaptionTracks(vararg tracks: YoutubeCaptionTracksCache)
 
 }

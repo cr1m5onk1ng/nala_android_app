@@ -23,6 +23,8 @@ fun CustomTopBar(
     title: String,
     backgroundColor: Color? = null,
     contentColor: Color? = null,
+    navIcon: ImageVector? = null,
+    navIconAction: (() -> Unit)? = null,
     iconColor: Color? = null,
     textStyle: TextStyle? = null,
     actions: List<ActionModel>? = null,
@@ -40,13 +42,17 @@ fun CustomTopBar(
         },
         navigationIcon = {
             IconButton(onClick = {
-                scope.launch {
-                    scaffoldState.drawerState.open()
+                if(navIconAction != null) {
+                    navIconAction()
+                } else {
+                    scope.launch{
+                        scaffoldState.drawerState.open()
+                    }
                 }
-            }) {
+             }) {
                 Icon(
-                    imageVector = Icons.Filled.Menu,
-                    contentDescription = "drawer",
+                    imageVector = navIcon ?: Icons.Filled.Menu,
+                    contentDescription = "nav button",
                     tint = iconColor ?: Color.White,
                 )
             }

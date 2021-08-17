@@ -5,6 +5,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.nala.db.converters.TimeConverter
 import com.example.nala.db.dao.VideoDao
+import com.example.nala.db.models.yt.YoutubeCaptionTracksCache
 import com.example.nala.db.models.yt.YoutubeCaptionsCache
 import com.example.nala.db.models.yt.YoutubeCommentsCache
 import com.example.nala.db.models.yt.YoutubeDataCache
@@ -14,8 +15,9 @@ import com.example.nala.db.models.yt.YoutubeDataCache
         YoutubeDataCache::class,
         YoutubeCaptionsCache::class,
         YoutubeCommentsCache::class,
+        YoutubeCaptionTracksCache::class,
     ],
-    version = 2,
+    version = 4,
 )
 @TypeConverters(TimeConverter::class)
 abstract class VideoDatabase : RoomDatabase() {

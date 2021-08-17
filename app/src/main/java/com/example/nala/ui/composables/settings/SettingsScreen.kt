@@ -5,6 +5,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -31,6 +33,10 @@ fun SettingsScreen(
             CustomTopBar(
                 title = "Settings",
                 scope = scope,
+                navIcon = Icons.Rounded.ArrowBack,
+                navIconAction = {
+                    navController.popBackStack()
+                },
                 scaffoldState = scaffoldState,
                 navController = navController
             )

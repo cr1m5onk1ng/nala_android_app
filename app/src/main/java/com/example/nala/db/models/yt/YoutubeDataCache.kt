@@ -12,10 +12,14 @@ data class YoutubeDataCache (
     @ColumnInfo(name="video_id")
     @PrimaryKey
     val videoId: String,
+    @ColumnInfo(name="video_url")
+    val videoUrl: String,
     @ColumnInfo(name="published_at")
     val publishedAt: String? = null,
     @ColumnInfo(name="title")
     val title: String? = null,
+    @ColumnInfo(name="description")
+    val description: String? = null,
     @ColumnInfo(name="thumbnail_url")
     val thumbnailUrl: String? = null,
     @ColumnInfo(name="channel_title")

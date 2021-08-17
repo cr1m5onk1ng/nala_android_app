@@ -8,7 +8,8 @@ import org.jsoup.Jsoup
 
 class MetadataExtractorService : ExtractorService {
 
-    override suspend fun extractFromUrl(url: String) : MetadataModel {
+    override fun extractFromUrl(url: String) : MetadataModel {
+
         val doc = Jsoup.connect(url).get()
         try{
             var imageUrl = ""

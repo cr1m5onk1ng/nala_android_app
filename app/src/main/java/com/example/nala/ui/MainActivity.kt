@@ -11,7 +11,6 @@ import android.util.Log
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.annotation.RequiresApi
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.lifecycle.lifecycleScope
@@ -70,12 +69,12 @@ class MainActivity : AppCompatActivity() {
     // flag that checks if the dictionary was called from an article
     var fromLookup = false
 
+
     @ExperimentalComposeUiApi
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // SETTING UP NEEDED OBESRVABLES
+        // SETTING UP NEEDED OBSERVABLES
         settingsViewModel.loadSharedPreferences()
         favoritesViewModel.loadSavedVideos()
         favoritesViewModel.loadSavedArticles()
@@ -242,8 +241,8 @@ class MainActivity : AppCompatActivity() {
                             onLoadCaptions = ytViewModel::loadCaptions,
                             onLoadComments = ytViewModel::loadComments,
                             onLoadTrack = ytViewModel::onLoadTrack,
-                            onAddVideoToFavorites = favoritesViewModel::addVideoToFavorites,
-                            onRemoveVideoFromFavorites = favoritesViewModel::removeVideoFromFavorites,
+                            onAddVideoToFavorites = ytViewModel::addVideoToFavorites,
+                            onRemoveVideoFromFavorites = ytViewModel::removeVideoFromFavorites,
                             onSetInspectedCaption = ytViewModel::onInspectCaption,
                             onSetInspectedComment = ytViewModel::onInspectComment,
                             onSetSelectedWord = ytViewModel::setSelectedWord,
@@ -251,7 +250,7 @@ class MainActivity : AppCompatActivity() {
                             tokens = ytViewModel.inspectedElementTokens.value,
                             tokensMap = ytViewModel.inspectedElementTokensMap.value,
                             commentsState = ytViewModel.commentsState.value,
-                            videoData = ytViewModel.currentVideoData.value,
+                            videoId = ytViewModel.currentVideoId.value,
                             videoLoading = ytViewModel.videoDataLoading.value,
                             player = ytViewModel.ytPlayer.value,
                             selectedTab = ytViewModel.selectedTab.value,
@@ -418,9 +417,7 @@ class MainActivity : AppCompatActivity() {
                     }
                     InputStringType.YoutubeUrl -> {
                         Log.d("YOUTUBEDEBUG", "URL: $inputString")
-                        val videoId = Utils.parseVideoIdFromUrl(inputString)
-                        Log.d("YOUTUBEDEBUG", "VIDEO ID: $inputString")
-                        ytViewModel.setVideoModel(videoId, inputString)
+                        ytViewModel.setVideoModel(inputString)
                         startDestination = "video_screen"
                     }
                 }

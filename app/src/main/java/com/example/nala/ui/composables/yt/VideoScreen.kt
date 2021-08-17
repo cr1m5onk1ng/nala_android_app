@@ -55,7 +55,7 @@ fun LazyListState.isItemVisible(index: Int): Boolean {
 @Composable
 fun VideoScreen(
     lifecycle: Lifecycle,
-    videoData: YoutubeVideoModel,
+    videoId: String,
     availableTracks: List<YoutubeCaptionTracksModel>,
     isVideoSaved: Boolean,
     checkVideoSaved: () -> Unit,
@@ -74,8 +74,8 @@ fun VideoScreen(
     onLoadCaptions: () -> Unit,
     onLoadComments: () -> Unit,
     onLoadTrack: (String) -> Unit,
-    onAddVideoToFavorites: (YoutubeVideoModel) -> Unit,
-    onRemoveVideoFromFavorites: (String) -> Unit,
+    onAddVideoToFavorites: () -> Unit,
+    onRemoveVideoFromFavorites: () -> Unit,
     onInitPlayer: (YouTubePlayer) -> Unit,
     onPlayerTimeElapsed: (Float) -> Unit,
     onClickCaption: (YouTubePlayer, YoutubeCaptionModel) -> Unit,
@@ -105,10 +105,10 @@ fun VideoScreen(
                         icon = Icons.Rounded.Favorite,
                         action = {
                             if(!isVideoSaved) {
-                                onAddVideoToFavorites(videoData)
+                                onAddVideoToFavorites()
                                 checkVideoSaved()
                             } else {
-                                onRemoveVideoFromFavorites(videoData.id)
+                                onRemoveVideoFromFavorites()
                                 checkVideoSaved()
                             }
                         },
@@ -163,7 +163,7 @@ fun VideoScreen(
                                 getYouTubePlayerWhenReady(object: YouTubePlayerCallback{
                                     override fun onYouTubePlayer(youTubePlayer: YouTubePlayer) {
                                         youTubePlayer.addListener(YoutubePlaybackListener(onPlayerTimeElapsed))
-                                        youTubePlayer.loadVideo(videoData.id, playerPosition)
+                                        youTubePlayer.loadVideo(videoId, playerPosition)
                                         onInitPlayer(youTubePlayer)
                                     }
                                 })

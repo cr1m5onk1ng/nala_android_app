@@ -10,6 +10,7 @@ import com.example.nala.repository.ReviewRepository
 import com.example.nala.repository.YouTubeRepository
 import com.example.nala.ui.DataState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.lang.Exception
@@ -41,12 +42,12 @@ class FavoritesViewModel @Inject constructor(
         reviewRepository.getSavedArticles()
 
 
-    fun addVideoToFavorites(video: YoutubeVideoModel) =
+    fun addVideoToFavorites(videoId: String, videoUrl: String) =
         viewModelScope.launch{
-            youtubeRepository.addVideoToFavorites(video)
-    }
+            youtubeRepository.addVideoToFavorites(videoId, videoUrl)
+        }
 
-    fun loadSavedArticles() = viewModelScope.launch {
+    fun loadSavedArticles() = viewModelScope.launch(Dispatchers.IO) {
         savedArticlesState.value = DataState.Loading
         try{
             savedArticlesFlow.collect{
@@ -57,7 +58,7 @@ class FavoritesViewModel @Inject constructor(
         }
     }
 
-    fun loadSavedVideos() = viewModelScope.launch {
+    fun loadSavedVideos() = viewModelScope.launch(Dispatchers.IO) {
         savedVideosState.value = DataState.Loading
         try{
             savedVideosFlow.collect{

@@ -78,11 +78,13 @@ object RepositoryModule {
         youtubeCaptionsService: YoutubeCaptionsService,
         youTubeApiService: YouTubeApiService,
         videoDao: VideoDao,
+        metadataExtractor: ExtractorService,
     ) : YouTubeRepository {
         return YoutubeRepositoryImpl(
             youtubeCaptionsService,
             youTubeApiService,
             videoDao,
+            metadataExtractor,
         )
     }
 

@@ -30,6 +30,10 @@ class DictionaryViewModel @Inject constructor(
     @ApplicationContext appContext: Context,
 ) : ViewModel() {
 
+    init{
+        loadMightForgetItems()
+    }
+
     // SHARED TEXT AND SENTENCES STATE
     val sentenceReceived: MutableState<Boolean> = mutableStateOf(false)
     val textReceived: MutableState<Boolean> = mutableStateOf(false)
@@ -70,11 +74,6 @@ class DictionaryViewModel @Inject constructor(
     // DICTIONARY STATE
 
     val currentWordKanjis: MutableState<List<String>> = mutableStateOf(listOf())
-
-
-    init{
-        loadMightForgetItems()
-    }
 
 
     private suspend fun searchWord() {
@@ -286,8 +285,8 @@ class DictionaryViewModel @Inject constructor(
         }
     }
 
-    fun loadMightForgetItems() {
-        viewModelScope.launch {
+    private fun loadMightForgetItems() {
+        viewModelScope.launch(Dispatchers.IO) {
             mightForgetItemsState.value = DataState.Loading
             reviewRepository.getWordReviews().collect{
                 if(it.isEmpty()) {
