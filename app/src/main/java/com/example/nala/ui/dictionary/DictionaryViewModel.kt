@@ -6,6 +6,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.nala.db.models.review.*
 import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.domain.model.kanji.KanjiModel
@@ -13,8 +14,10 @@ import com.example.nala.domain.model.review.SentenceReviewModel
 import com.example.nala.repository.DictionaryRepository
 import com.example.nala.repository.KanjiRepository
 import com.example.nala.repository.ReviewRepository
-import com.example.nala.ui.DataState
-import com.example.nala.utils.TAG
+import com.example.nala.domain.model.utils.DataState
+import com.example.nala.domain.model.utils.ErrorType
+import com.example.nala.utils.ConnectionChecker
+import com.example.nala.utils.Constants.TAG
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
@@ -27,12 +30,8 @@ class DictionaryViewModel @Inject constructor(
     private val dictRepository: DictionaryRepository,
     private val kanjiRepository: KanjiRepository,
     private val reviewRepository: ReviewRepository,
-    @ApplicationContext appContext: Context,
+    private val networkChecker: ConnectionChecker,
 ) : ViewModel() {
-
-    init{
-        loadMightForgetItems()
-    }
 
     // SHARED TEXT AND SENTENCES STATE
     val sentenceReceived: MutableState<Boolean> = mutableStateOf(false)
@@ -49,10 +48,11 @@ class DictionaryViewModel @Inject constructor(
 
     val query: MutableState<String> = mutableStateOf("")
 
-    val wordSearchState: MutableState<DataState<DictionaryModel>> = mutableStateOf(DataState.Initial(
-        DictionaryModel.Empty()))
+    val wordSearchState: MutableState<DataState<DictionaryModel>> = mutableStateOf(
+        DataState.Initial(DictionaryModel.Empty()))
 
-    val kanjiSearchState: MutableState<DataState<KanjiModel>> = mutableStateOf(DataState.Initial(
+    val kanjiSearchState: MutableState<DataState<KanjiModel>> = mutableStateOf(
+        DataState.Initial(
         KanjiModel.Empty()))
 
     val kanjiStoryState: MutableState<DataState<String>> = mutableStateOf(DataState.Initial(""))
@@ -77,16 +77,28 @@ class DictionaryViewModel @Inject constructor(
 
 
     private suspend fun searchWord() {
-        wordSearchState.value = DataState.Loading
-        val dictModel = dictRepository.search(query.value.toLowerCase())
-        if (dictModel.isEmpty()) {
-            wordSearchState.value = DataState.Error("Couldn't fetch word from API")
+        if(!networkChecker.isNetworkAvailable()) {
+            Log.d("DICTDEBUG","No Connection")
+            wordSearchState.value = DataState.Error(ErrorType.NETWORK_NOT_AVAILABLE)
         } else {
-            setCurrentWordKanjis(dictModel.word)
-            wordSearchState.value = DataState.Success(dictModel)
+            Log.d("DICTDEBUG","Current Query: ${query.value}")
+            wordSearchState.value = DataState.Loading
+            val dictModel = dictRepository.search(query.value.lowercase())
+            if (dictModel.isEmpty()) {
+                wordSearchState.value = DataState.Error(ErrorType.DATA_NOT_AVAILABLE)
+            } else {
+                setCurrentWordKanjis(dictModel.word)
+                wordSearchState.value = DataState.Success(dictModel)
+            }
         }
     }
 
+    fun retrySearch() {
+        viewModelScope.launch {
+            Log.d("DICTDEBUG","Retrying search")
+            searchWord()
+        }
+    }
 
     fun toggleHome(value: Boolean) {
         isHomeSelected.value = value
@@ -113,7 +125,7 @@ class DictionaryViewModel @Inject constructor(
             sentenceReceived.value = true
             val actualText = text ?: ""
             if (actualText.isEmpty()) {
-                sentenceState.value = DataState.Error("Invalid text")
+                sentenceState.value = DataState.Error(ErrorType.DATA_NOT_AVAILABLE)
             } else {
                 sentenceState.value = DataState.Loading
                 sharedSentenceTokens.value = dictRepository.tokenize(text?: "")
@@ -148,11 +160,11 @@ class DictionaryViewModel @Inject constructor(
     fun setCurrentKanji(kanji: String)  {
         viewModelScope.launch {
             kanjiSearchState.value = DataState.Loading
-            val kanji = kanjiRepository.getKanjiModel(kanji)
-            if (kanji.isEmpty()){
-                kanjiSearchState.value = DataState.Error("Couldn't find kanji: $kanji in dictionary")
+            val kanjiData = kanjiRepository.getKanjiModel(kanji)
+            if (kanjiData.isEmpty()){
+                kanjiSearchState.value = DataState.Error(ErrorType.DATA_NOT_AVAILABLE)
             } else {
-                kanjiSearchState.value = DataState.Success(kanji)
+                kanjiSearchState.value = DataState.Success(kanjiData)
             }
         }
     }
@@ -161,14 +173,11 @@ class DictionaryViewModel @Inject constructor(
         viewModelScope.launch {
             val kanjiList = mutableListOf<String>()
             for(k in word) {
-                //Log.d("KANJIDEBUG", "Searched character: $k")
                 val kanji = kanjiRepository.getKanjiModel(k.toString())
-                //Log.d("KANJIDEBUG", "Retrieved Kanji: $kanji")
                 if (!kanji.isEmpty()){
                     kanjiList.add(kanji.kanji)
                 }
             }
-            //Log.d("KANJIDEBUG", "KANJI LIST: $kanjiList")
             currentWordKanjis.value = kanjiList
         }
     }
@@ -178,7 +187,7 @@ class DictionaryViewModel @Inject constructor(
             kanjiStoryState.value = DataState.Loading
             val currentStory = kanjiRepository.getKanjiStory(kanji)
             if (currentStory.isEmpty()) {
-                kanjiStoryState.value = DataState.Error("couldn't find story for this kanji")
+                kanjiStoryState.value = DataState.Error(ErrorType.DATA_NOT_AVAILABLE)
             }
             kanjiStoryState.value = DataState.Success(currentStory)
         }
@@ -221,9 +230,9 @@ class DictionaryViewModel @Inject constructor(
             )
             val cachedWord = reviewRepository.getWordReview(word)
             if(cachedWord == null) {
-                val word = dictRepository.search(query.value.toLowerCase())
-                if(!word.isEmpty()) {
-                    reviewRepository.addWordToReview(word)
+                val searchResult = dictRepository.search(query.value.lowercase())
+                if(!searchResult.isEmpty()) {
+                    reviewRepository.addWordToReview(searchResult)
                 }
             }
             reviewRepository.addSentenceToReview(reviewModel)
@@ -235,9 +244,9 @@ class DictionaryViewModel @Inject constructor(
     fun addKanjiToReview(kanjiModel: KanjiModel) {
         viewModelScope.launch{
             addedToReview.value = false
-            val meanings = kanjiModel?.meaning ?: listOf()
-            val kunReadings = kanjiModel?.kunReadings ?: listOf()
-            val onReadings = kanjiModel?.onReadings ?: listOf()
+            val meanings = kanjiModel.meaning ?: listOf()
+            val kunReadings = kanjiModel.kunReadings ?: listOf()
+            val onReadings = kanjiModel.onReadings ?: listOf()
             reviewRepository.addKanjiToReview(kanjiModel ?: KanjiModel.Empty())
             reviewRepository.addKanjiMeaningsToReview(meanings, kanjiModel.kanji)
             reviewRepository.addKanjiKunReadingsToReview(kunReadings, kanjiModel.kanji)
@@ -252,7 +261,7 @@ class DictionaryViewModel @Inject constructor(
             wordReviewModel?.let{
                 val model = reviewRepository.getWordData(wordReviewModel)
                 if (model.isEmpty()) {
-                    wordSearchState.value = DataState.Error("could not fetch word data model from review")
+                    wordSearchState.value = DataState.Error(ErrorType.DATA_NOT_AVAILABLE)
                 } else {
                     wordSearchState.value = DataState.Success(model)
                     setCurrentWordKanjis(model.word)
@@ -265,16 +274,18 @@ class DictionaryViewModel @Inject constructor(
         viewModelScope.launch {
             wordSearchState.value = DataState.Loading
             val dbModel = reviewRepository.getWordReview(word)
-            val model = if(dbModel != null) {
-                reviewRepository.getWordData(dbModel)
+            if(dbModel != null) {
+                wordSearchState.value = DataState.Success(reviewRepository.getWordData(dbModel))
+            } else if(!networkChecker.isNetworkAvailable()) {
+                    wordSearchState.value = DataState.Error(ErrorType.NETWORK_NOT_AVAILABLE)
             } else {
-                dictRepository.search(word)
-            }
-            if(model.isEmpty()) {
-                wordSearchState.value = DataState.Error("could not fetch word data")
-            } else {
-                wordSearchState.value = DataState.Success(model)
-                setCurrentWordKanjis(model.word)
+                val model = dictRepository.search(word)
+                if(model.isEmpty()) {
+                    wordSearchState.value = DataState.Error(ErrorType.DATA_NOT_AVAILABLE)
+                } else {
+                    wordSearchState.value = DataState.Success(model)
+                    setCurrentWordKanjis(model.word)
+                }
             }
         }
     }
@@ -285,12 +296,12 @@ class DictionaryViewModel @Inject constructor(
         }
     }
 
-    private fun loadMightForgetItems() {
+    fun loadMightForgetItems() {
         viewModelScope.launch(Dispatchers.IO) {
             mightForgetItemsState.value = DataState.Loading
             reviewRepository.getWordReviews().collect{
                 if(it.isEmpty()) {
-                    mightForgetItemsState.value = DataState.Error("No item in list")
+                    mightForgetItemsState.value = DataState.Error(ErrorType.DATA_NOT_AVAILABLE)
                 } else {
                     mightForgetItemsState.value = DataState.Success(it)
                 }

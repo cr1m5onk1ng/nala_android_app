@@ -1,4 +1,4 @@
-package com.example.nala.ui
+package com.example.nala.domain.model.utils
 
 sealed class DataState<out R> {
 
@@ -6,9 +6,8 @@ sealed class DataState<out R> {
 
     data class Success<out T>(val data: T) : DataState<T>()
 
-    data class Error(val message: String) : DataState<Nothing>()
+    data class Error(val type: ErrorType) : DataState<Nothing>()
 
     object Loading: DataState<Nothing>()
-
 
 }

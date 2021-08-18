@@ -1,4 +1,4 @@
-package com.example.nala.service.metadata
+package com.example.nala.services.metadata
 
 import com.example.nala.domain.model.metadata.MetadataModel
 

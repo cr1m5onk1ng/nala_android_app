@@ -105,7 +105,8 @@ fun SettingCard(
             // Title and Subtitle
             Column(
                 modifier = Modifier
-                    .padding(start=24.dp),
+                    .padding(start=24.dp)
+                    .fillMaxWidth(0.8f),
                 horizontalAlignment = Alignment.Start,
 
             ) {
@@ -115,13 +116,15 @@ fun SettingCard(
                     style = MaterialTheme.typography.subtitle1,
                 )
                 Text(
-                    text = "Add ${lang.lowercase()} to your target languages",
+                    text = "Add ${lang.lowercase()} to your targets",
                     style = MaterialTheme.typography.body1,
                 )
             }
             //CheckBox
             Column(
-                modifier = Modifier.padding(end = 8.dp),
+                modifier = Modifier
+                    .padding(end = 8.dp)
+                    .fillMaxWidth(0.2f),
                 verticalArrangement = Arrangement.Center,
             ) {
                 Checkbox(

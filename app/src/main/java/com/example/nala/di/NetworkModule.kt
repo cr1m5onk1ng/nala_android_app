@@ -7,7 +7,7 @@ import com.example.nala.network.services.DictionaryService
 import com.example.nala.network.services.SearchApiService
 import com.example.nala.network.services.YouTubeApiService
 import com.example.nala.network.services.YoutubeCaptionsService
-import com.example.nala.service.tokenization.JapaneseTokenizerService
+import com.example.nala.services.tokenization.JapaneseTokenizerService
 import com.example.nala.utils.NetworkConstants
 import com.google.gson.GsonBuilder
 import dagger.Module

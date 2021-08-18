@@ -1,16 +1,15 @@
 package com.example.nala.ui.study
 
-import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nala.domain.model.dictionary.DictionaryModel
-import com.example.nala.domain.model.kanji.KanjiModel
 import com.example.nala.repository.DictionaryRepository
 import com.example.nala.repository.KanjiRepository
 import com.example.nala.repository.ReviewRepository
-import com.example.nala.ui.DataState
+import com.example.nala.domain.model.utils.DataState
+import com.example.nala.domain.model.utils.ErrorType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -28,7 +27,7 @@ class StudyViewModel @Inject constructor(
     val similarSentencesState: MutableState<DataState<List<String>>> =
         mutableStateOf(DataState.Initial(listOf()))
 
-    val targetWordState: MutableState<DataState< DictionaryModel>> =
+    val targetWordState: MutableState<DataState<DictionaryModel>> =
         mutableStateOf(DataState.Initial( DictionaryModel.Empty()))
 
     val targetWordKanjisState: MutableState<DataState<List<String>>> =
@@ -53,7 +52,7 @@ class StudyViewModel @Inject constructor(
                 "自身初のベストアルバム『メッセージボトル』リリース。同年1月7日より放送のテレビ東京系深夜ドラマ「銀と金」の主題歌に選ばれた新曲「ヒーロー」のほか、限定盤にはあまざらし名義のミニアルバム『光、再考』などを収録",
             )
             if(similarSentences.isEmpty()) {
-                similarSentencesState.value = DataState.Error("No sentences found")
+                similarSentencesState.value = DataState.Error(ErrorType.DATA_NOT_AVAILABLE)
             } else {
                similarSentencesState.value = DataState.Success(similarSentences)
             }
@@ -77,7 +76,7 @@ class StudyViewModel @Inject constructor(
         studyContextState.value = DataState.Loading
         val currentStudyContext = sentence ?: ""
         if(currentStudyContext.isEmpty()) {
-            studyContextState.value = DataState.Error("Couldn't fetch target sentence")
+            studyContextState.value = DataState.Error(ErrorType.DATA_NOT_AVAILABLE)
         } else {
             studyContextState.value = DataState.Success(currentStudyContext)
         }
@@ -93,7 +92,7 @@ class StudyViewModel @Inject constructor(
                 reviewRepository.getWordData(cachedWord)
             }
             if(wordModel.isEmpty()) {
-                targetWordState.value = DataState.Error("Couldn't fetch target word")
+                targetWordState.value = DataState.Error(ErrorType.DATA_NOT_AVAILABLE)
             } else {
                 targetWordState.value = DataState.Success(wordModel)
             }

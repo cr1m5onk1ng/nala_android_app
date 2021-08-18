@@ -1,4 +1,4 @@
-package com.example.nala.service.background
+package com.example.nala.services.background
 
 import android.app.Service
 import android.content.Intent
@@ -9,7 +9,6 @@ import com.example.nala.repository.ReviewRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class ArticleService @Inject constructor(

@@ -1,4 +1,4 @@
-package com.example.nala.service.tokenization
+package com.example.nala.services.tokenization
 import com.atilika.kuromoji.TokenizerBase
 import com.atilika.kuromoji.ipadic.Tokenizer
 

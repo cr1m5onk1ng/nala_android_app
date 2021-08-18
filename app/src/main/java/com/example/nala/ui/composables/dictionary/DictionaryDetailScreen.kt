@@ -1,6 +1,5 @@
 package com.example.nala.ui.composables.dictionary
 
-import android.app.Activity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,7 +13,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -24,7 +22,8 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
 import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.domain.model.dictionary.Sense
-import com.example.nala.ui.DataState
+import com.example.nala.domain.model.utils.DataState
+import com.example.nala.domain.model.utils.ErrorType
 import com.example.nala.ui.composables.BackButton
 import com.example.nala.ui.composables.DefaultSnackbar
 import com.example.nala.ui.composables.ErrorScreen
@@ -35,16 +34,13 @@ import kotlin.random.Random
 @Composable
 fun DictionaryDetailScreen(
     searchState: DataState<DictionaryModel>,
-    fromLookup: Boolean = false,
+    onRetry: () -> Unit,
     navController: NavController,
     wordKanjis: List<String>,
     setCurrentKanji: (String) -> Unit,
     setCurrentStory: (String) -> Unit,
-    unsetSharedWord: () -> Unit,
     addToReview: (DictionaryModel) -> Unit,
     loadWordReviews: () -> Unit,
-    isWordFromIntent: Boolean,
-    isWordFromForm: Boolean,
     scaffoldState: ScaffoldState,
     showSnackbar: (ScaffoldState) -> Unit
 ) {
@@ -64,20 +60,6 @@ fun DictionaryDetailScreen(
             ) {
                 BackButton(
                     navController = navController,
-                    cleanupFunction = {
-                        /*
-                        if(navController.previousBackStackEntry != null) {
-                            navController.popBackStack()
-                        } else {
-                            activity!!.finish()
-                        }
-
-                        if (!fromLookup || isWordFromForm)
-                            unsetSharedWord()
-                        else if(!isWordFromForm)
-                            activity!!.finish()
-                            */
-                    }
                 )
             }
             when(searchState) {
@@ -89,13 +71,24 @@ fun DictionaryDetailScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
                     ) {
-
-                        ErrorScreen(
-                            text = "No word found in Jisho dictionary",
-                            subtitle = "¯\\_(ツ)_/¯"
-                        )
-
+                        when(searchState.type){
+                            ErrorType.NETWORK_NOT_AVAILABLE -> {
+                                ErrorScreen(
+                                    text = "Connection not available",
+                                    subtitle = "¯\\_(ツ)_/¯",
+                                    action = onRetry,
+                                )
+                            }
+                            else -> {
+                                ErrorScreen(
+                                    text = "No result from Jisho dictionary",
+                                    subtitle = "¯\\_(ツ)_/¯"
+                                )
+                            }
+                        }
                     }
                 }
                 is DataState.Success<DictionaryModel> -> {

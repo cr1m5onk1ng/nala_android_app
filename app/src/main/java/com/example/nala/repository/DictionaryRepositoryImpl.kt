@@ -4,10 +4,7 @@ import android.util.Log
 import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.network.model.dictionary.DictionaryModelDtoMapper
 import com.example.nala.network.services.DictionaryService
-import com.example.nala.service.tokenization.JapaneseTokenizerService
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import com.example.nala.services.tokenization.JapaneseTokenizerService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject

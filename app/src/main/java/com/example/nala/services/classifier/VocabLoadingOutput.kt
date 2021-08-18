@@ -1,4 +1,4 @@
-package com.example.nala.service.classifier
+package com.example.nala.services.classifier
 
 import java.util.*
 

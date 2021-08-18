@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
 import com.example.nala.domain.model.dictionary.DictionaryModel
-import com.example.nala.ui.DataState
+import com.example.nala.domain.model.utils.DataState
 import com.example.nala.ui.composables.*
 import com.example.nala.ui.theme.*
 

@@ -3,8 +3,6 @@ package com.example.nala.di
 import com.example.nala.db.dao.KanjiDictDao
 import com.example.nala.db.dao.ReviewDao
 import com.example.nala.db.dao.VideoDao
-import com.example.nala.db.models.review.mappers.KanjiReviewDbDtoMapper
-import com.example.nala.db.models.review.mappers.SentenceReviewDbDtoMapper
 import com.example.nala.network.model.dictionary.DictionaryModelDtoMapper
 import com.example.nala.network.model.kanji.KanjiCollectionDtoMapper
 import com.example.nala.network.model.kanji.StoriesCollectionDtoMapper
@@ -12,8 +10,8 @@ import com.example.nala.network.services.DictionaryService
 import com.example.nala.network.services.YouTubeApiService
 import com.example.nala.network.services.YoutubeCaptionsService
 import com.example.nala.repository.*
-import com.example.nala.service.metadata.ExtractorService
-import com.example.nala.service.tokenization.JapaneseTokenizerService
+import com.example.nala.services.metadata.ExtractorService
+import com.example.nala.services.tokenization.JapaneseTokenizerService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

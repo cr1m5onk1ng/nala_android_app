@@ -1,9 +1,7 @@
-package com.example.nala.service.metadata
+package com.example.nala.services.metadata
 
 import android.util.Log
 import com.example.nala.domain.model.metadata.MetadataModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 
 class MetadataExtractorService : ExtractorService {

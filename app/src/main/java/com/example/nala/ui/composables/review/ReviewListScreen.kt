@@ -27,7 +27,7 @@ import com.example.nala.db.models.review.KanjiReviewModel
 import com.example.nala.db.models.review.WordReviewModel
 import com.example.nala.domain.model.review.ReviewCategory
 import com.example.nala.domain.model.review.SentenceReviewModel
-import com.example.nala.ui.DataState
+import com.example.nala.domain.model.utils.DataState
 import com.example.nala.ui.composables.*
 import com.example.nala.ui.theme.*
 

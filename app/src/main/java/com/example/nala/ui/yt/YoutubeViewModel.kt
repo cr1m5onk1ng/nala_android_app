@@ -11,7 +11,9 @@ import com.example.nala.domain.model.yt.*
 import com.example.nala.network.model.yt.captions.CaptionsMapEntry
 import com.example.nala.repository.DictionaryRepository
 import com.example.nala.repository.YouTubeRepository
-import com.example.nala.ui.DataState
+import com.example.nala.domain.model.utils.DataState
+import com.example.nala.domain.model.utils.ErrorType
+import com.example.nala.utils.ConnectionChecker
 import com.example.nala.utils.Utils
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,6 +27,7 @@ class YoutubeViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val youtubeRepository: YouTubeRepository,
     private val dictRepository: DictionaryRepository,
+    private val networkChecker: ConnectionChecker,
 ) : ViewModel() {
 
     val ytPlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
@@ -163,17 +166,20 @@ class YoutubeViewModel @Inject constructor(
     }
 
     fun loadCaptions() = viewModelScope.launch{
-        Log.d("YOUTUBEDEBUG", "INSIDE LOAD CAPTIONS")
-        captionsState.value = DataState.Loading
-        try{
-            videoCaptionsStateFlow.collect {
-                captionsState.value = DataState.Success(it)
-                captionsMap.value = buildCaptionsMap(it)
-                Log.d("YOUTUBEDEBUG", "Current captions: $it")
+        if(!networkChecker.isNetworkAvailable()) {
+            captionsState.value = DataState.Error(ErrorType.NETWORK_NOT_AVAILABLE)
+        } else {
+            captionsState.value = DataState.Loading
+            try{
+                videoCaptionsStateFlow.collect {
+                    captionsState.value = DataState.Success(it)
+                    captionsMap.value = buildCaptionsMap(it)
+                    Log.d("YOUTUBEDEBUG", "Current captions: $it")
+                }
+            } catch(e: Exception){
+                Log.d("YOUTUBEDEBUG", "SOMETHING WENT WRONG: $e")
+                captionsState.value = DataState.Error(ErrorType.ERROR_FETCHING_DATA)
             }
-        } catch(e: Exception){
-            Log.d("YOUTUBEDEBUG", "SOMETHING WENT WRONG: $e")
-            captionsState.value = DataState.Error("Couldn't fetch captions: $e")
         }
     }
 
@@ -185,7 +191,7 @@ class YoutubeViewModel @Inject constructor(
                 Log.d("YOUTUBEDEBUG", "Current comments: $it")
             }
         } catch(e: Exception){
-            commentsState.value = DataState.Error("Couldn't fetch comments: $e")
+            commentsState.value = DataState.Error(ErrorType.ERROR_FETCHING_DATA)
         }
     }
 
@@ -244,6 +250,14 @@ class YoutubeViewModel @Inject constructor(
         viewModelScope.launch{
             youtubeRepository.removeVideoFromFavorites(currentVideoId.value)
         }
+
+    fun checkNetworkAvailable() = networkChecker.isNetworkAvailable()
+
+    fun onRetry() {
+        ytPlayer.value?.let{
+            it.loadVideo(currentVideoId.value, 0f)
+        }
+    }
 
     private fun getVideoData(videoId: String) {
         viewModelScope.launch{

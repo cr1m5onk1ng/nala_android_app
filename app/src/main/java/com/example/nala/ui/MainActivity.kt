@@ -25,8 +25,9 @@ import com.example.nala.ui.review.ReviewViewModel
 import com.example.nala.ui.study.StudyViewModel
 import com.example.nala.ui.theme.AppTheme
 import kotlinx.coroutines.launch
-import com.example.nala.service.background.ArticleService
+import com.example.nala.services.background.ArticleService
 import android.provider.Settings
+import androidx.annotation.RequiresApi
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.example.nala.R
@@ -46,6 +47,7 @@ import com.example.nala.ui.composables.yt.VideoScreen
 import com.example.nala.ui.favorites.FavoritesViewModel
 import com.example.nala.ui.settings.SettingsViewModel
 import com.example.nala.ui.yt.YoutubeViewModel
+import com.example.nala.utils.Constants
 import com.example.nala.utils.InputStringType
 import com.example.nala.utils.Utils
 
@@ -69,12 +71,14 @@ class MainActivity : AppCompatActivity() {
     // flag that checks if the dictionary was called from an article
     var fromLookup = false
 
-
+    @RequiresApi(Build.VERSION_CODES.M)
     @ExperimentalComposeUiApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        // NEEDED TO USE POP UP DICTIONARY MODE
+        checkOverlayPermissions()
         // SETTING UP NEEDED OBSERVABLES
+        viewModel.loadMightForgetItems()
         settingsViewModel.loadSharedPreferences()
         favoritesViewModel.loadSavedVideos()
         favoritesViewModel.loadSavedArticles()
@@ -94,7 +98,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // VIEW SETTING
-        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
         setContent{
             AppTheme {
                 val navController = rememberNavController()
@@ -123,16 +127,13 @@ class MainActivity : AppCompatActivity() {
                     composable("detail_screen") {
                         DictionaryDetailScreen(
                             searchState = viewModel.wordSearchState.value,
-                            fromLookup = fromLookup,
+                            onRetry = viewModel::retrySearch,
                             navController = navController,
                             wordKanjis = viewModel.currentWordKanjis.value,
                             setCurrentKanji = viewModel::setCurrentKanji,
                             setCurrentStory = viewModel::setCurrentStory,
-                            unsetSharedWord = viewModel::unsetSharedText,
                             addToReview =  viewModel::addWordToReview,
                             loadWordReviews = reviewViewModel::loadWordReviewItems,
-                            isWordFromIntent = viewModel.isWordFromIntent.value,
-                            isWordFromForm = viewModel.isWordFromForm.value,
                             scaffoldState = scaffoldState,
                             showSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
                         )
@@ -246,6 +247,7 @@ class MainActivity : AppCompatActivity() {
                             onSetInspectedCaption = ytViewModel::onInspectCaption,
                             onSetInspectedComment = ytViewModel::onInspectComment,
                             onSetSelectedWord = ytViewModel::setSelectedWord,
+                            checkNetworkAvailable = ytViewModel::checkNetworkAvailable,
                             selectedWord = ytViewModel.inspectedElementSelectedWord.value,
                             tokens = ytViewModel.inspectedElementTokens.value,
                             tokensMap = ytViewModel.inspectedElementTokensMap.value,
@@ -267,6 +269,7 @@ class MainActivity : AppCompatActivity() {
                                            },
                             onSetPlayerPosition = ytViewModel::setPlayerPosition,
                             onShowSnackBar = { showSnackbar(scaffoldState, message="Video saved") },
+                            onRetry = ytViewModel::onRetry,
                             activeCaption = ytViewModel.activeCaption.value,
                             scaffoldState = scaffoldState,
                             navController = navController,
@@ -320,19 +323,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-        /*
-    private fun openWebView(url: String) {
-        val articleView = findViewById<WebView>(R.id.articleView)
-        articleView.apply{
-            webViewClient = WebViewClient()
-            loadUrl(url)
-        }
-        findViewById<FloatingActionButton>(R.id.fab).setOnClickListener {
-            reviewViewModel.saveArticle(url)
-            Snackbar.make(articleView, "Article saved", Snackbar.LENGTH_SHORT).show()
-        }
-    } */
-
     private fun checkOverlayPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (!Settings.canDrawOverlays(this)) {
@@ -370,7 +360,7 @@ class MainActivity : AppCompatActivity() {
         val pendingAddToFavorites = PendingIntent.getActivity(
             this,0 ,addToFavoritesIntent, PendingIntent.FLAG_UPDATE_CURRENT)
         // Set the action button
-        val builder = CustomTabsIntent.Builder();
+        val builder = CustomTabsIntent.Builder()
         val bitmap = (ResourcesCompat.getDrawable(
              this.resources,
              R.drawable.save_to_favorites_icon,
@@ -380,8 +370,8 @@ class MainActivity : AppCompatActivity() {
              "add to favorites",
              pendingAddToFavorites,
              true)
-        val customTabsIntent = builder.build();
-        customTabsIntent.launchUrl(this, Uri.parse(url));
+        val customTabsIntent = builder.build()
+        customTabsIntent.launchUrl(this, Uri.parse(url))
     }
 
     private fun showSnackbar(
@@ -404,8 +394,7 @@ class MainActivity : AppCompatActivity() {
         if ("text/plain" == intent.type) {
             intent.getStringExtra(Intent.EXTRA_TEXT)?.let { inputString ->
                 Log.d("SHARED", "SHARED TEXT: $inputString")
-                val sharedStringType = Utils.parseInputString(inputString)
-                when(sharedStringType) {
+                when(Utils.parseInputString(inputString)) {
                     InputStringType.Sentence -> {
                         viewModel.setSharedSentence(inputString)
                         startDestination = "sentence_form_screen"
@@ -427,6 +416,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
     private fun handleSharedWord() {
         if (intent.hasExtra(Intent.EXTRA_PROCESS_TEXT)){
             /*

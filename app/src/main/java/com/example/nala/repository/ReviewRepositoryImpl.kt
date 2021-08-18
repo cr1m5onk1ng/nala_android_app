@@ -8,8 +8,7 @@ import com.example.nala.domain.model.dictionary.Sense
 import com.example.nala.domain.model.kanji.KanjiModel
 import com.example.nala.domain.model.review.SentenceReviewModel
 import com.example.nala.domain.util.SuperMemo2
-import com.example.nala.service.metadata.ExtractorService
-import com.example.nala.service.metadata.MetadataExtractorService
+import com.example.nala.services.metadata.ExtractorService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.util.*
@@ -317,7 +316,6 @@ class ReviewRepositoryImpl @Inject constructor(
         }
     }
 
-    // TODO NEED TO MAP SENSES CORRECTLY
     override suspend fun getWordData(wordReview: WordReviewModel): DictionaryModel {
         val senses = getWordSenses(wordReview.word)
         val tags = getWordTags(wordReview.word)

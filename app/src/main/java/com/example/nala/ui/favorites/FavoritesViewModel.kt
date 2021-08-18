@@ -8,7 +8,8 @@ import com.example.nala.db.models.review.ArticlesCache
 import com.example.nala.domain.model.yt.YoutubeVideoModel
 import com.example.nala.repository.ReviewRepository
 import com.example.nala.repository.YouTubeRepository
-import com.example.nala.ui.DataState
+import com.example.nala.domain.model.utils.DataState
+import com.example.nala.domain.model.utils.ErrorType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -22,14 +23,8 @@ class FavoritesViewModel @Inject constructor(
     private val youtubeRepository: YouTubeRepository,
 ) : ViewModel() {
 
-    //private val _savedVideosState =
-     //   MutableStateFlow<DataState<List<YoutubeVideoModel>>>(DataState.Initial(listOf()))
-
     val savedVideosState: MutableState<DataState<List<YoutubeVideoModel>>> =
         mutableStateOf(DataState.Initial(listOf()))
-
-    //private val _savedArticlesState =
-     //   MutableStateFlow<DataState<List<ArticlesCache>>>(DataState.Initial(listOf()))
 
     val savedArticlesState: MutableState<DataState<List<ArticlesCache>>> =
         mutableStateOf(DataState.Initial(listOf()))
@@ -37,10 +32,8 @@ class FavoritesViewModel @Inject constructor(
     private val savedVideosFlow =
         youtubeRepository.getSavedVideos()
 
-
     private val savedArticlesFlow =
         reviewRepository.getSavedArticles()
-
 
     fun addVideoToFavorites(videoId: String, videoUrl: String) =
         viewModelScope.launch{
@@ -54,7 +47,7 @@ class FavoritesViewModel @Inject constructor(
                 savedArticlesState.value = DataState.Success(it)
             }
         } catch (e: Exception) {
-            savedArticlesState.value = DataState.Error("Couldnt fetch articles: $e")
+            savedArticlesState.value = DataState.Error(ErrorType.DATA_NOT_AVAILABLE)
         }
     }
 
@@ -65,7 +58,7 @@ class FavoritesViewModel @Inject constructor(
                 savedVideosState.value = DataState.Success(it)
             }
         } catch (e: Exception) {
-            savedVideosState.value = DataState.Error("Couldnt fetch videos: $e")
+            savedVideosState.value = DataState.Error(ErrorType.DATA_NOT_AVAILABLE)
         }
     }
 

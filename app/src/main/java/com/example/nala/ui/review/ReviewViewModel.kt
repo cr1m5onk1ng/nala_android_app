@@ -11,8 +11,9 @@ import com.example.nala.db.models.review.WordReviewModel
 import com.example.nala.domain.model.review.ReviewCategory
 import com.example.nala.domain.model.review.SentenceReviewModel
 import com.example.nala.repository.ReviewRepository
-import com.example.nala.service.metadata.ExtractorService
-import com.example.nala.ui.DataState
+import com.example.nala.services.metadata.ExtractorService
+import com.example.nala.domain.model.utils.DataState
+import com.example.nala.domain.model.utils.ErrorType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -119,7 +120,7 @@ class ReviewViewModel @Inject constructor(
             wordReviewItems.value = DataState.Loading
             reviewRepository.getNWordReviews(30).collect{
                 if(it.isEmpty()) {
-                    wordReviewItems.value = DataState.Error("No review items present")
+                    wordReviewItems.value = DataState.Error(ErrorType.DATA_NOT_AVAILABLE)
                 } else {
                     wordReviewItems.value = DataState.Success(it)
                 }
@@ -133,7 +134,7 @@ class ReviewViewModel @Inject constructor(
             sentenceReviewItems.value = DataState.Loading
             reviewRepository.getNSentenceReviewItems(30).collect{
                 if(it.isEmpty()) {
-                    sentenceReviewItems.value = DataState.Error("No review items present")
+                    sentenceReviewItems.value = DataState.Error(ErrorType.DATA_NOT_AVAILABLE)
                 } else {
                     sentenceReviewItems.value = DataState.Success(it)
                 }
@@ -148,7 +149,7 @@ class ReviewViewModel @Inject constructor(
             reviewsLoading.value = true
             reviewRepository.getNKanjiReviewItems(30).collect {
                 if(it.isEmpty()) {
-                    kanjiReviewItems.value = DataState.Error("No review items present")
+                    kanjiReviewItems.value = DataState.Error(ErrorType.DATA_NOT_AVAILABLE)
                 } else {
                     kanjiReviewItems.value = DataState.Success(it)
                 }
@@ -160,13 +161,6 @@ class ReviewViewModel @Inject constructor(
     fun setCategory (category: ReviewCategory) {
         selectedCategory.value = category
     }
-
-    /*
-    fun saveArticle(url: String) {
-        viewModelScope.launch{
-            reviewRepository.addArticleToFavorites(url)
-        }
-    } */
 
     private fun checkArticleSaved()  {
         viewModelScope.launch {

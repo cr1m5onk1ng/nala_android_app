@@ -31,16 +31,13 @@ class DictionaryDetailFragment : CustomFragment() {
                 AppTheme(darkTheme = false) {
                     DictionaryDetailScreen(
                         searchState = viewModel.wordSearchState.value,
-                        fromLookup = false, //TODO move fromLookup to viewModel
+                        onRetry = viewModel::retrySearch,
                         navController = findNavController(),
                         wordKanjis = viewModel.currentWordKanjis.value,
                         setCurrentKanji = viewModel::setCurrentKanji,
                         setCurrentStory = viewModel::setCurrentStory,
-                        unsetSharedWord = viewModel::unsetSharedText,
                         addToReview =  viewModel::addWordToReview,
                         loadWordReviews = reviewViewModel::loadWordReviewItems,
-                        isWordFromIntent = viewModel.isWordFromIntent.value,
-                        isWordFromForm = viewModel.isWordFromForm.value,
                         scaffoldState = scaffoldState,
                         showSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
                     )

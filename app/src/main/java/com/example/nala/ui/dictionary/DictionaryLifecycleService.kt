@@ -12,9 +12,8 @@ import com.example.nala.R
 import android.util.Log
 import androidx.lifecycle.LifecycleService
 import com.example.nala.domain.model.dictionary.DictionaryModel
-import com.example.nala.ui.DataState
+import com.example.nala.domain.model.utils.DataState
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint

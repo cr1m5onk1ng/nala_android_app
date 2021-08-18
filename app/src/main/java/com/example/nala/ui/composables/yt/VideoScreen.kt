@@ -28,7 +28,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import com.example.nala.domain.model.yt.*
 import com.example.nala.network.model.menus.ActionModel
-import com.example.nala.ui.DataState
+import com.example.nala.domain.model.utils.DataState
+import com.example.nala.domain.model.utils.ErrorType
 import com.example.nala.ui.composables.*
 import com.example.nala.ui.composables.menus.CustomTopBar
 import com.example.nala.ui.theme.Blue500
@@ -59,6 +60,7 @@ fun VideoScreen(
     availableTracks: List<YoutubeCaptionTracksModel>,
     isVideoSaved: Boolean,
     checkVideoSaved: () -> Unit,
+    checkNetworkAvailable: () -> Boolean,
     videoLoading: Boolean,
     player: YouTubePlayer?,
     selectedTab: Int,
@@ -88,6 +90,7 @@ fun VideoScreen(
     onSetInspectedCaption: (YoutubeCaptionModel) -> Unit,
     onSetInspectedComment: (YoutubeCommentModel) -> Unit,
     onShowSnackBar: () -> Unit,
+    onRetry: () -> Unit,
     activeCaption: Int,
     scaffoldState: ScaffoldState,
     navController: NavController
@@ -149,52 +152,62 @@ fun VideoScreen(
     ) { paddingValues ->
         ConstraintLayout(modifier = Modifier.padding(paddingValues)) {
             Column() {
-                if(videoLoading) {
-                    LoadingIndicator()
+                if(checkNetworkAvailable()) {
+                    if(videoLoading) {
+                        LoadingIndicator()
+                    } else {
+                        AndroidView(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp),
+                            factory = { context ->
+                                // Creates custom view
+                                YouTubePlayerView(context).apply {
+                                    // Sets up listeners for View -> Compose communication
+                                    getYouTubePlayerWhenReady(object: YouTubePlayerCallback{
+                                        override fun onYouTubePlayer(youTubePlayer: YouTubePlayer) {
+                                            youTubePlayer.addListener(YoutubePlaybackListener(onPlayerTimeElapsed))
+                                            youTubePlayer.loadVideo(videoId, playerPosition)
+                                            onInitPlayer(youTubePlayer)
+                                        }
+                                    })
+                                    lifecycle.addObserver(this)
+                                }
+                            },
+                        )
+                        SelectionTabSection(
+                            tabIndex = selectedTab,
+                            captionsState = captionsState,
+                            availableTracks = availableTracks,
+                            inspectedCaption = inspectedCaption,
+                            inspectedComment = inspectedComment,
+                            commentsState = commentsState,
+                            tokens = tokens,
+                            tokensMap = tokensMap,
+                            selectedWord = selectedWord,
+                            onLoadCaptions = onLoadCaptions,
+                            onLoadTrack = onLoadTrack,
+                            onLoadComments = onLoadComments,
+                            onSetSelectedWord = onSetSelectedWord,
+                            onChangeTabIndex = onChangeSelectedTab,
+                            onAddCommentToFavorites = onShowCommentsDetails,
+                            onAddCaptionToFavorites = onShowCaptionsDetails,
+                            onSearchWord = onSearchWord,
+                            onSetInspectedCaption = onSetInspectedCaption,
+                            onSetInspectedComment = onSetInspectedComment,
+                            player = player,
+                            onSetPlayerPosition = onSetPlayerPosition,
+                            activeCaption = activeCaption,
+                            navController = navController,
+                        )
+                    }
                 } else {
-                    AndroidView(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 8.dp),
-                        factory = { context ->
-                            // Creates custom view
-                            YouTubePlayerView(context).apply {
-                                // Sets up listeners for View -> Compose communication
-                                getYouTubePlayerWhenReady(object: YouTubePlayerCallback{
-                                    override fun onYouTubePlayer(youTubePlayer: YouTubePlayer) {
-                                        youTubePlayer.addListener(YoutubePlaybackListener(onPlayerTimeElapsed))
-                                        youTubePlayer.loadVideo(videoId, playerPosition)
-                                        onInitPlayer(youTubePlayer)
-                                    }
-                                })
-                                lifecycle.addObserver(this)
-                            }
-                        },
-                    )
-                    SelectionTabSection(
-                        tabIndex = selectedTab,
-                        captionsState = captionsState,
-                        availableTracks = availableTracks,
-                        inspectedCaption = inspectedCaption,
-                        inspectedComment = inspectedComment,
-                        commentsState = commentsState,
-                        tokens = tokens,
-                        tokensMap = tokensMap,
-                        selectedWord = selectedWord,
-                        onLoadCaptions = onLoadCaptions,
-                        onLoadTrack = onLoadTrack,
-                        onLoadComments = onLoadComments,
-                        onSetSelectedWord = onSetSelectedWord,
-                        onChangeTabIndex = onChangeSelectedTab,
-                        onAddCommentToFavorites = onShowCommentsDetails,
-                        onAddCaptionToFavorites = onShowCaptionsDetails,
-                        onSearchWord = onSearchWord,
-                        onSetInspectedCaption = onSetInspectedCaption,
-                        onSetInspectedComment = onSetInspectedComment,
-                        player = player,
-                        onSetPlayerPosition = onSetPlayerPosition,
-                        activeCaption = activeCaption,
-                        navController = navController,
+                    ErrorScreen(
+                        text = "Connection not available",
+                        subtitle = "¯\\_(ツ)_/¯",
+                        action = {
+                            onRetry()
+                        }
                     )
                 }
             }

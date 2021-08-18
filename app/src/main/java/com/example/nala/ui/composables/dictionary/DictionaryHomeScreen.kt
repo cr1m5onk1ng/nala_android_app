@@ -11,6 +11,7 @@ import androidx.compose.material.*
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -30,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.nala.db.models.review.WordReviewModel
-import com.example.nala.ui.DataState
+import com.example.nala.domain.model.utils.DataState
 import com.example.nala.ui.composables.BottomBar
 import com.example.nala.ui.composables.LoadingIndicator
 import com.example.nala.ui.composables.menus.CustomDrawer
@@ -104,11 +105,12 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(paddingValue),
             verticalArrangement = Arrangement.Top,
-            //horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // TOP BAR
             Row(
-                modifier = Modifier.fillMaxWidth().padding(top=8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start,
             ){
@@ -186,7 +188,6 @@ fun HomeScreen(
                                         .clickable {
                                             onQueryChange(word)
                                             onClick()
-                                            onQueryChange("")
                                             navController.navigate("detail_screen")
                                         },
                                     backgroundColor = Blue400,
@@ -203,7 +204,6 @@ fun HomeScreen(
                                             color = TEXT_COLORS[Random.nextInt(0, TEXT_COLORS.size)]
                                         ),
                                     )
-
                                 }
                             }
                         }
@@ -228,10 +228,24 @@ fun HomeScreen(
                     placeholder = { Text("Search in dictionary") },
                     leadingIcon = {
                         Icon(
-                            Icons.Rounded.Search,
+                            imageVector = Icons.Rounded.Search,
                             contentDescription = "search",
-                            tint = Color.White )
-
+                            tint = Color.White
+                        )
+                    },
+                    trailingIcon = {
+                        if(query.isNotEmpty())
+                            IconButton(
+                                onClick = {
+                                    onQueryChange("")
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Close,
+                                    contentDescription = "reset",
+                                    tint = Color.White
+                                )
+                            }
                     },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Text,
@@ -240,7 +254,6 @@ fun HomeScreen(
                     keyboardActions = KeyboardActions (
                         onSearch = {
                             onClick()
-                            onQueryChange("")
                             keyboardController?.hide()
                             navController.navigate("detail_screen")
                         }

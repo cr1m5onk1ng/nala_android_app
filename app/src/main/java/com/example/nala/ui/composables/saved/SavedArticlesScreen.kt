@@ -22,8 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.example.nala.db.models.review.ArticlesCache
-import com.example.nala.domain.model.yt.YoutubeVideoModel
-import com.example.nala.ui.DataState
+import com.example.nala.domain.model.utils.DataState
 import com.example.nala.ui.composables.CustomAvatar
 import com.example.nala.ui.composables.CustomExpandableText
 import com.example.nala.ui.composables.ErrorScreen

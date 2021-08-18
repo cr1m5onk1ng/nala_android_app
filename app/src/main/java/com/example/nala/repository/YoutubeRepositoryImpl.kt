@@ -9,7 +9,7 @@ import com.example.nala.domain.model.yt.*
 import com.example.nala.network.model.yt.captions.CaptionsList
 import com.example.nala.network.services.YouTubeApiService
 import com.example.nala.network.services.YoutubeCaptionsService
-import com.example.nala.service.metadata.ExtractorService
+import com.example.nala.services.metadata.ExtractorService
 import com.example.nala.utils.Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

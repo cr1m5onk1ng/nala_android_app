@@ -1,4 +1,4 @@
-package com.example.nala.service.classifier
+package com.example.nala.services.classifier
 
  import android.content.Context
  import dagger.hilt.android.qualifiers.ApplicationContext

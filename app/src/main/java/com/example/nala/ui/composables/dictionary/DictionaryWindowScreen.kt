@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.example.nala.domain.model.dictionary.DictionaryModel
-import com.example.nala.ui.DataState
+import com.example.nala.domain.model.utils.DataState
 import com.example.nala.ui.composables.ErrorScreen
 import com.example.nala.ui.composables.LoadingIndicator
 

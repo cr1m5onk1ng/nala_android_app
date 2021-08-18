@@ -1,6 +1,4 @@
-package com.example.nala.service.classifier
-
-import java.util.*
+package com.example.nala.services.classifier
 
 val MODEL_INPUT_LENGTH = 360
 val EXTRA_ID_NUM = 3
