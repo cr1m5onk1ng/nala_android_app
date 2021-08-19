@@ -1,5 +1,6 @@
 package com.example.nala.network.services
 
+import com.example.nala.BuildConfig
 import com.example.nala.network.model.yt.comments.YoutubeVideoCommentsData
 import com.example.nala.network.model.yt.videos.YoutubeVideoDto
 import com.example.nala.utils.NetworkConstants
@@ -11,7 +12,7 @@ interface YouTubeApiService {
     @GET("commentThreads")
     suspend fun getVideoComments(
         @Query("part") part: String = "snippet",
-        @Query("key") key: String = NetworkConstants.YT_API_KEY,
+        @Query("key") key: String = BuildConfig.YT_DATA_API_KEY,
         @Query("videoId") videoId: String,
         @Query("maxResults") maxResults: Int? = null,
         @Query("pageToken") pageToken: Int? = null,
@@ -21,7 +22,7 @@ interface YouTubeApiService {
     @GET("videos")
     suspend fun getVideoMetaData(
         @Query("part") part: String = "snippet",
-        @Query("key") key: String = NetworkConstants.YT_API_KEY,
+        @Query("key") key: String = BuildConfig.YT_DATA_API_KEY,
         @Query("id") videoId: String
     ) : YoutubeVideoDto
 }
