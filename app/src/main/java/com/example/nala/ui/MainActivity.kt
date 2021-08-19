@@ -47,7 +47,6 @@ import com.example.nala.ui.composables.yt.VideoScreen
 import com.example.nala.ui.favorites.FavoritesViewModel
 import com.example.nala.ui.settings.SettingsViewModel
 import com.example.nala.ui.yt.YoutubeViewModel
-import com.example.nala.utils.Constants
 import com.example.nala.utils.InputStringType
 import com.example.nala.utils.Utils
 
@@ -278,7 +277,7 @@ class MainActivity : AppCompatActivity() {
 
                     composable("article_screen") {
                         ArticleScreen(
-                            article = reviewViewModel.currentArticle.value,
+                            article = reviewViewModel.currentArticleUrl.value,
                             articleLoaded = reviewViewModel.isArticleLoaded.value,
                             isSaved = reviewViewModel.isArticleSaved.value,
                             onSaveArticle = favoritesViewModel::addArticleToFavorites,

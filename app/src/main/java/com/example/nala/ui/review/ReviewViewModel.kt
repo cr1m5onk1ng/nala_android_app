@@ -38,12 +38,12 @@ class ReviewViewModel @Inject constructor(
 
     val isArticleLoaded = mutableStateOf(false)
 
-    val currentArticle = mutableStateOf(ArticlesCache.Empty())
+    val currentArticleUrl = mutableStateOf("")
 
     val isArticleSaved = mutableStateOf(false)
 
     private val isArticleSavedFlow =
-        reviewRepository.getSavedArticle(currentArticle.value.url).map {
+        reviewRepository.getSavedArticle(currentArticleUrl.value).map {
             it.isNotEmpty()
         }
 
@@ -59,14 +59,17 @@ class ReviewViewModel @Inject constructor(
         viewModelScope.launch{
             withContext(Dispatchers.IO) {
                 isArticleLoaded.value = false
+
+                currentArticleUrl.value = url
+                /*
                 val metadata = metadataService.extractFromUrl(url)
-                currentArticle.value = ArticlesCache(
+                currentArticleUrl.value = ArticlesCache(
                     url = url,
                     title = metadata.title,
                     description = metadata.description,
                     thumbnailUrl = metadata.thumbnailUrl
-                )
-                Log.d("ARTICLESDEBUG", "Article: ${currentArticle.value}")
+                ) */
+                Log.d("ARTICLESDEBUG", "Article: ${currentArticleUrl.value}")
                 checkArticleSaved()
                 isArticleLoaded.value = true
             }
@@ -75,7 +78,7 @@ class ReviewViewModel @Inject constructor(
 
     fun setArticleFromCache(article: ArticlesCache) {
         isArticleLoaded.value = false
-        currentArticle.value = article
+        currentArticleUrl.value = article.url
         isArticleLoaded.value = true
     }
 
@@ -129,7 +132,6 @@ class ReviewViewModel @Inject constructor(
     }
 
     fun loadSentenceReviewItems() {
-
         viewModelScope.launch {
             sentenceReviewItems.value = DataState.Loading
             reviewRepository.getNSentenceReviewItems(30).collect{
@@ -140,7 +142,6 @@ class ReviewViewModel @Inject constructor(
                 }
             }
         }
-
     }
 
     fun loadKanjiReviewItems() {

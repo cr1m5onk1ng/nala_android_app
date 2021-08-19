@@ -1,12 +1,10 @@
 package com.example.nala.ui.dictionary
 
-import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.nala.db.models.review.*
 import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.domain.model.kanji.KanjiModel
@@ -19,7 +17,6 @@ import com.example.nala.domain.model.utils.ErrorType
 import com.example.nala.utils.ConnectionChecker
 import com.example.nala.utils.Constants.TAG
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject

@@ -88,6 +88,7 @@ fun DrawerElement(
         Icon(
             imageVector = element.icon,
             contentDescription = element.title,
+            tint = element.iconColor,
         )
         Spacer(modifier = Modifier.width(7.dp))
         Text(

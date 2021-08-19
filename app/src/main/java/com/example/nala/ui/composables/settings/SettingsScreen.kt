@@ -12,6 +12,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.Dp.Companion.Hairline
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -49,6 +50,11 @@ fun SettingsScreen(
                 .fillMaxSize()
         ) {
             Spacer(Modifier.height(24.dp))
+            Text(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp),
+                text = "Target Languages",
+                style = MaterialTheme.typography.h5,
+            )
             // Japanese
             SettingCard(
                 lang = "Japanese",
@@ -105,7 +111,7 @@ fun SettingCard(
             // Title and Subtitle
             Column(
                 modifier = Modifier
-                    .padding(start=24.dp)
+                    .padding(start = 24.dp)
                     .fillMaxWidth(0.8f),
                 horizontalAlignment = Alignment.Start,
 

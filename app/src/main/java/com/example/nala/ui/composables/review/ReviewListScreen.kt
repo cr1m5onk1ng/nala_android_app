@@ -98,21 +98,16 @@ fun ReviewListScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 16.dp, start = 16.dp),
+                        .padding(top = 16.dp, start = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    /*
-                    BackButton(
-                        navController,
-                        cleanupFunction = { toggleHome(true) }
-                    ) */
                     Text(
                         "Reviews",
                         style = TextStyle(
                             fontFamily = Quicksand,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.W500,
-                            color = Color.Black
+                            color = Color.DarkGray,
                         )
                     )
                 }

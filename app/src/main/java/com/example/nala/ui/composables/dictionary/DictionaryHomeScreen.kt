@@ -71,10 +71,6 @@ fun HomeScreen(
     }
 
     Scaffold(
-        /*
-        topBar = {
-            CustomTopBar(scope = scope, scaffoldState = scaffoldState)
-        }, */
         bottomBar = {
             BottomBar(
                 navController,
@@ -84,7 +80,6 @@ fun HomeScreen(
                 toggleReviews
             )
         },
-
         drawerContent = {
             CustomDrawer(
                 modifier = Modifier.background(color = Color.White),
@@ -94,7 +89,6 @@ fun HomeScreen(
             )
         }
     ){ paddingValue ->
-
         Column(
             modifier = Modifier
                 .background(
@@ -201,7 +195,7 @@ fun HomeScreen(
                                         style = TextStyle(
                                             fontSize = 24.sp,
                                             fontWeight = FontWeight.Light,
-                                            color = TEXT_COLORS[Random.nextInt(0, TEXT_COLORS.size)]
+                                            color = TEXT_COLORS[index % TEXT_COLORS.size]
                                         ),
                                     )
                                 }

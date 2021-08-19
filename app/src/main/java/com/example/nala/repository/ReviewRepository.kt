@@ -80,7 +80,7 @@ interface ReviewRepository {
 
     // ARTICLES
 
-    suspend fun addArticleToFavorites(article: ArticlesCache)
+    suspend fun addArticleToFavorites(articleUrl: String)
 
     suspend fun removeArticleFromFavorites(url: String)
 

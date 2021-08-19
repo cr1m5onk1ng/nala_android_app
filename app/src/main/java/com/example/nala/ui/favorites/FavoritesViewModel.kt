@@ -67,9 +67,9 @@ class FavoritesViewModel @Inject constructor(
             youtubeRepository.removeVideoFromFavorites(videoId)
         }
 
-    fun addArticleToFavorites(article: ArticlesCache) =
+    fun addArticleToFavorites(articleUrl: String) =
         viewModelScope.launch {
-            reviewRepository.addArticleToFavorites(article)
+            reviewRepository.addArticleToFavorites(articleUrl)
         }
 
     fun removeArticleFromFavorites(url: String) =

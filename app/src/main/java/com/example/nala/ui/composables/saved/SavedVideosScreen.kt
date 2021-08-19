@@ -146,7 +146,7 @@ private fun ItemCard(
                         // Title
                         Text(
                             text = item.title ?: "No title provided",
-                            style = MaterialTheme.typography.body1,
+                            style = MaterialTheme.typography.subtitle1,
                             maxLines = 3,
                             overflow = TextOverflow.Ellipsis,
                         )
@@ -155,7 +155,7 @@ private fun ItemCard(
                         CustomExpandableText(
                             modifier = Modifier.padding(3.dp),
                             text = item.description ?: "No description provided",
-                            style = MaterialTheme.typography.subtitle1,
+                            style = MaterialTheme.typography.body1,
                             maxLines = 3,
                         )
                     }

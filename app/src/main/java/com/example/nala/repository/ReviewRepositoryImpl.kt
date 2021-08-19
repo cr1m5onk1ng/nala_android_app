@@ -9,8 +9,11 @@ import com.example.nala.domain.model.kanji.KanjiModel
 import com.example.nala.domain.model.review.SentenceReviewModel
 import com.example.nala.domain.util.SuperMemo2
 import com.example.nala.services.metadata.ExtractorService
+import com.example.nala.utils.MetadataExtractionException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import java.util.*
 import javax.inject.Inject
 
@@ -242,12 +245,17 @@ class ReviewRepositoryImpl @Inject constructor(
         val senseList = mutableListOf<WordSenseDb>()
         senses.forEach { sense ->
             val senseId = UUID.randomUUID().toString()
+            var posData = ""
+            sense.partsOfSpeech?.let{
+                if (it.isNotEmpty()){
+                    posData = it.first()
+                }
+            }
             val sensesDto = WordSenseDb(
                 senseId = senseId,
                 word = word,
-                pos = sense.partsOfSpeech?.first() ?: ""
+                pos = posData
             )
-            Log.d("DBDEBUG", "Added Sense: $sensesDto")
             senseList.add(sensesDto)
             addSenseTagsToReview(sense, senseId)
             addSenseDefinitionsToReview(sense, senseId)
@@ -263,7 +271,6 @@ class ReviewRepositoryImpl @Inject constructor(
                 senseId = senseId,
                 tag = it
             )
-            Log.d("DBDEBUG", "Added sense tag: $tag")
             tagsList.add(tag)
             //reviewDao.insertWordSenseTag(tag)
         }
@@ -309,8 +316,8 @@ class ReviewRepositoryImpl @Inject constructor(
             val tags = reviewDao.getWordSenseTags(sense.senseId)
             val definitions = reviewDao.getWordSenseDefinitions(sense.senseId)
             Sense(
-                englishDefinitions = definitions?.map{it.definition},
-                tags = tags?.map{it.tag},
+                englishDefinitions = definitions.map{it.definition},
+                tags = tags.map{it.tag},
                 partsOfSpeech = listOf(sense.pos),
             )
         }
@@ -330,20 +337,20 @@ class ReviewRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun updateWordReviewParameters(quality: Int, word: WordReviewModel) {
+    override suspend fun updateWordReviewParameters(quality: Int, wordModel: WordReviewModel) {
         val updatedParams = SuperMemo2.updateParams(
             quality = quality,
-            previousRepetitions = word.repetitions,
-            previousEaseFactor = word.easeFactor,
-            previousInterval = word.interval,
+            previousRepetitions = wordModel.repetitions,
+            previousEaseFactor = wordModel.easeFactor,
+            previousInterval = wordModel.interval,
         )
 
         val updatedWordReview = WordReviewModel(
-            word = word.word,
-            reading = word.reading,
-            jlpt = word.jlpt,
-            pos = word.pos,
-            common = word.common,
+            word = wordModel.word,
+            reading = wordModel.reading,
+            jlpt = wordModel.jlpt,
+            pos = wordModel.pos,
+            common = wordModel.common,
             repetitions = updatedParams.repetitions,
             easeFactor = updatedParams.easeFactor,
             interval = updatedParams.interval,
@@ -363,8 +370,28 @@ class ReviewRepositoryImpl @Inject constructor(
         return reviewDao.getReview(word.word).isNotEmpty()
     }
 
-    override suspend fun addArticleToFavorites(article: ArticlesCache) {
-        reviewDao.addArticleToFavorites(article)
+    override suspend fun addArticleToFavorites(articleUrl: String) {
+        withContext(Dispatchers.IO) {
+            try{
+                val metadata = metadataExtractorService.extractFromUrl(articleUrl)
+                val cachedArticle = ArticlesCache(
+                    url = articleUrl,
+                    title = metadata.title,
+                    description = metadata.description,
+                    thumbnailUrl = metadata.thumbnailUrl,
+                )
+                reviewDao.addArticleToFavorites(cachedArticle)
+            } catch(e: Exception) {
+                Log.d("ARTICLESDEBUG", "Something went wrong: $e")
+                val cachedArticle = ArticlesCache(
+                    url = articleUrl,
+                    title = "No title provided",
+                    description = "No description provided",
+                    thumbnailUrl = null,
+                )
+                reviewDao.addArticleToFavorites(cachedArticle)
+            }
+        }
     }
 
     override suspend fun removeArticleFromFavorites(url: String) {

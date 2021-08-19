@@ -353,7 +353,7 @@ fun TagRow(tags: List<String>) {
                 verticalAlignment = Alignment.CenterVertically
             ){
                 items(count = tags.size){ index ->
-                    Tag(tags[index])
+                    Tag(tags[index], index)
                 }
             }
         }
@@ -361,7 +361,10 @@ fun TagRow(tags: List<String>) {
 }
 
 @Composable
-fun Tag(tag: String) {
+fun Tag(
+    tag: String,
+    index: Int,
+) {
     Card(
         modifier = Modifier
             .height(60.dp)
@@ -370,7 +373,7 @@ fun Tag(tag: String) {
                 elevation = 5.dp,
                 shape = RoundedCornerShape(12.dp)
             ),
-        backgroundColor = TEXT_COLORS[Random.nextInt(0, TEXT_COLORS.size)],
+        backgroundColor = TEXT_COLORS[index % TEXT_COLORS.size],
         elevation = 5.dp,
         shape = RoundedCornerShape(12.dp),
 

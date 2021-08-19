@@ -1,6 +1,7 @@
 package com.example.nala.ui.composables.yt
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -120,35 +121,6 @@ fun VideoScreen(
                 )
             )
         },
-        /*
-        floatingActionButtonPosition = FabPosition.End,
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                text = {
-                    Text(
-                        text = if(isVideoSaved) "Saved" else "Save",
-                        color = Color.White,
-                    )
-                       },
-                onClick = {
-                    Log.d("YOUTUBEDEBUG", "Video before adding: $videoData")
-                    if(!isVideoSaved) {
-                        onAddVideoToFavorites(videoData)
-                        //onShowSnackBar()
-                    } else {
-                        onRemoveVideoFromFavorites(videoData.id)
-                    }
-                },
-                icon = {
-                    Icon(
-                        imageVector = Icons.Outlined.Favorite,
-                        contentDescription ="fab save",
-                        tint = if(isVideoSaved) Color.Red else Color.White,
-                    )
-                },
-                backgroundColor = Blue500,
-            )
-        }, */
     ) { paddingValues ->
         ConstraintLayout(modifier = Modifier.padding(paddingValues)) {
             Column() {
@@ -168,6 +140,7 @@ fun VideoScreen(
                                         override fun onYouTubePlayer(youTubePlayer: YouTubePlayer) {
                                             youTubePlayer.addListener(YoutubePlaybackListener(onPlayerTimeElapsed))
                                             youTubePlayer.loadVideo(videoId, playerPosition)
+                                            youTubePlayer.pause()
                                             onInitPlayer(youTubePlayer)
                                         }
                                     })
@@ -462,10 +435,6 @@ private fun CommentCard(
     Card(
         modifier = Modifier
             .fillMaxWidth(),
-            /*.clickable {
-                onAddCommentToFavorites(comment.content)
-                navController.navigate("sentence_form_screen")
-            }, */
         border = BorderStroke(0.5.dp, Color.LightGray)
     ) {
         Row (
@@ -570,7 +539,6 @@ private fun CommentCard(
                     }
                 }
             }
-
             // Add to Favorites Button
             Column(
                 modifier = Modifier
@@ -586,8 +554,8 @@ private fun CommentCard(
                     }) {
                     Icon(
                         modifier = Modifier
-                            .height(24.dp)
-                            .width(24.dp),
+                            .height(28.dp)
+                            .width(28.dp),
                         imageVector = Icons.Rounded.Add,
                         tint = Color.DarkGray,
                         contentDescription = "add to favorites"

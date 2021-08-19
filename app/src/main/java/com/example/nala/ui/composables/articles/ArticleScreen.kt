@@ -22,10 +22,10 @@ import com.example.nala.ui.theme.Blue500
 
 @Composable
 fun ArticleScreen(
-    article: ArticlesCache,
+    article: String,
     articleLoaded: Boolean,
     isSaved: Boolean,
-    onSaveArticle: (ArticlesCache) -> Unit,
+    onSaveArticle: (String) -> Unit,
     scaffoldState: ScaffoldState,
     navController: NavController,
     ) {
@@ -76,7 +76,7 @@ fun ArticleScreen(
                             // Creates custom view
                             WebView(context).apply{
                                 webViewClient = WebViewClient()
-                                loadUrl(article.url)
+                                loadUrl(article)
                             }
                         },
                     )

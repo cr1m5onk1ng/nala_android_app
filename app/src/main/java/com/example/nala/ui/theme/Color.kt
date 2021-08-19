@@ -20,6 +20,7 @@ val Aquamarine = Color(0xffcbf5e8)
 val SkyBlue = Color(0xffcbe6f5)
 val LightYellow = Color(0xfffaf6bb)
 val LightRed = Color(0xFFED9A9A)
+val VideoRed = Color(0xFFFF0000)
 val LightBlue = Color(0xFF90CAF9)
 val LightBeige = Color(0xFFEFE7DB)
 val TextColor = Color(0xFF43404F)
@@ -29,10 +30,8 @@ val TEXT_COLORS: List<Color> = listOf(
     LightBlue,
     LightRed,
     LogoColor,
-    Color.LightGray,
     Aquamarine,
     LightYellow,
     SkyBlue,
-    LightBeige,
     LightGreen2
   )
