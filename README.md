@@ -47,7 +47,15 @@ Home
 | <img src="screens/app-screenshot-added-to-review.png" width="400">  | <img src="screens/app-screenshot-study-screen-music.png" width="400">  |
 | <img src="screens/app-screenshot-kanji-detail.png" width="400">  | <img src="screens/app-screenshot-similar-sentences.png" width="400">  |
 | <img src="screens/app-screenshot-word-reviews.png" width="400">  | <img src="screens/app-screenshot-sentence-reviews.png" width="400"> |
+| <img src="screens/app-screenshot-article-lookup.png" width="400"> | <img src="screens/app-screenshot-settings.png" width="400"> | 
 
+| Videos                             |
+| <img src="screens/app-screenshot-video-first.png" width="400">  | <img src="screens/app-screenshot-video-second.png" width="400">  |
+| <img src="screens/app-screenshot-video-third.png" width="400">  | <img src="screens/app-screenshot-video-second.png" width="400">  |
+| <img src="screens/app-screenshot-drawer.png" width="400">  | <img src="screens/app-screenshot-video-second.png" width="400">  |
+
+| Saved items                             |
+| <img src="screens/app-screenshot-saved-videos.png" width="400">  | <img src="screens/app-screenshot-saved-articles.png" width="400">  |
 ## Author
 
 **Mirco Cardinale**
