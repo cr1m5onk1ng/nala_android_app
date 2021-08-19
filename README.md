@@ -25,13 +25,13 @@ The app makes also use of the incredibly useful [Jisho](https://jisho.org/) API 
 
 - [x] Look up words in the dictionary
 - [x] Search for a Japanese word everywhere on your phone
+- [x] Import articles and other media from the web
 - [x] Add sentences with a target word to study/review them
 - [x] Starting from a sentence, search for the most similar/dissimilar sentences
 - [x] Automatically organize your sentences/documents by category/topic
 - [ ] Find the most frequent words that use a certain kanji
 - [ ] Search for semantically related words saved locally
 - [ ] Share words/sentences with AnkiDroid
-- [ ] Import articles and other media from the web
 - [ ] OCR functionality for non-textual content
 
 ## 📸 Screenshots
@@ -49,12 +49,13 @@ Home
 | <img src="screens/app-screenshot-word-reviews.png" width="400">  | <img src="screens/app-screenshot-sentence-reviews.png" width="400"> |
 | <img src="screens/app-screenshot-article-lookup.png" width="400"> | <img src="screens/app-screenshot-settings.png" width="400"> | 
 
-| Videos                             |
+##Videos  
+---------------------------------
 | <img src="screens/app-screenshot-video-first.png" width="400">  | <img src="screens/app-screenshot-video-second.png" width="400">  |
-| <img src="screens/app-screenshot-video-third.png" width="400">  | <img src="screens/app-screenshot-video-second.png" width="400">  |
-| <img src="screens/app-screenshot-drawer.png" width="400">  | <img src="screens/app-screenshot-video-second.png" width="400">  |
+| <img src="screens/app-screenshot-video-third.png" width="400">  | 
 
-| Saved items                             |
+## Saved items
+---------------------------------
 | <img src="screens/app-screenshot-saved-videos.png" width="400">  | <img src="screens/app-screenshot-saved-articles.png" width="400">  |
 ## Author
 
