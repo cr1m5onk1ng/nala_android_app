@@ -155,10 +155,12 @@ class YoutubeViewModel @Inject constructor(
         currentVideoUrl.value = url
         val videoId = Utils.parseVideoIdFromUrl(url)
         getVideoData(videoId)
+        setIsVideoSaved()
     }
 
     fun setVideoModelFromCache(video: YoutubeVideoModel) {
         getVideoData(video.id)
+        setIsVideoSaved()
     }
 
     fun setPlayerPosition(position: Float) {

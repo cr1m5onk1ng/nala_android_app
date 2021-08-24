@@ -49,6 +49,7 @@ class DictionaryHomeFragment : Fragment() {
                         toggleReviews = viewModel::toggleReviews,
                         onMinimize = {},
                         onCheckPermissions = {},
+                        onLoadVideo = {},
                         scaffoldState = scaffoldState,
                         navController = findNavController(),
                     )

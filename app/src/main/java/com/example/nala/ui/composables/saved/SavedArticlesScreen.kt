@@ -10,6 +10,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.Remove
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -103,6 +104,7 @@ private fun ItemCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
+            .height(128.dp)
             .clickable {
                 onSetArticle(item)
                 navController.navigate("article_screen")
@@ -121,16 +123,14 @@ private fun ItemCard(
             ) {
                 // Image Section
                 Column(
-                    /*
                     modifier = Modifier
-                        .background(Color.Red), */
-                    verticalArrangement = Arrangement.Center
+                        .fillMaxHeight()
+                        .width(146.dp),
                 ) {
                     Image(
                         modifier = Modifier
                             .height(128.dp)
-                            .width(128.dp),
-                        //.background(Color.Green),
+                            .width(214.dp),
                         contentScale = ContentScale.FillBounds,
                         painter = rememberImagePainter(item.thumbnailUrl),
                         contentDescription = "thumbnail",
@@ -139,9 +139,8 @@ private fun ItemCard(
                 // Content section
                 Column(
                     modifier = Modifier
-                        .padding(8.dp),
-                    //.background(Color.Blue),
-                    verticalArrangement = Arrangement.Center
+                        .padding(5.dp).fillMaxHeight(),
+                    verticalArrangement = Arrangement.SpaceBetween,
                 ) {
                     // Title
                     Text(
@@ -150,34 +149,34 @@ private fun ItemCard(
                         maxLines = 3,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    Spacer(Modifier.height(5.dp))
-                    // Description
-                    CustomExpandableText(
-                        modifier = Modifier.padding(3.dp),
-                        text = item.description ?: "No description provided",
-                        style = MaterialTheme.typography.subtitle1,
-                        maxLines = 3,
-                    )
-                }
-            }
-            // Buttons Row
-            Row(
-                modifier = Modifier
-                    .padding(5.dp)
-                    .fillMaxWidth()
-                    .height(30.dp),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                IconButton(
-                    onClick = { onRemoveArticle(item.url) }
-                ) {
-                    Icon(
-                        modifier = Modifier.size(24.dp),
-                        imageVector = Icons.Rounded.Delete,
-                        contentDescription = "remove",
-                        tint = Color.LightGray,
-                    )
+                    /*
+                   Spacer(Modifier.height(5.dp))
+                   // Description
+                   CustomExpandableText(
+                       modifier = Modifier.padding(3.dp),
+                       text = item.description ?: "No description provided",
+                       style = MaterialTheme.typography.body2,
+                       maxLines = 3,
+                   ) */
+                    // Buttons Row
+                    Row(
+                        modifier = Modifier
+                            .padding(bottom = 1.dp, end = 1.dp)
+                            .height(20.dp)
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                    ) {
+                        IconButton(
+                            onClick = { onRemoveArticle(item.url) }
+                        ) {
+                            Icon(
+                                modifier = Modifier.size(18.dp),
+                                imageVector = Icons.Rounded.DeleteOutline,
+                                contentDescription = "remove",
+                                tint = Color.LightGray,
+                            )
+                        }
+                    }
                 }
             }
         }

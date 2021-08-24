@@ -1,6 +1,9 @@
 package com.example.nala.di
 
 import android.content.Context
+import com.example.nala.domain.model.metadata.MetadataModel
+import com.example.nala.services.metadata.AsyncExtractorService
+import com.example.nala.services.metadata.AsyncMetadataExtractorService
 import com.example.nala.services.metadata.ExtractorService
 import com.example.nala.services.metadata.MetadataExtractorService
 import com.example.nala.services.tokenization.JapaneseTokenizerService
@@ -31,8 +34,15 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideMetadataExtractorService() : ExtractorService {
+    fun provideMetadataExtractorService() : ExtractorService<MetadataModel> {
         return MetadataExtractorService()
     }
+
+    @Singleton
+    @Provides
+    fun provideAsyncMetadataExtractorService() : AsyncExtractorService<MetadataModel> {
+        return AsyncMetadataExtractorService()
+    }
+
 
 }

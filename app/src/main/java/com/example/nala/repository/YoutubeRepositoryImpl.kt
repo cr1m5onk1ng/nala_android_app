@@ -5,10 +5,12 @@ import com.example.nala.db.models.yt.YoutubeCaptionTracksCache
 import com.example.nala.db.models.yt.YoutubeCaptionsCache
 import com.example.nala.db.models.yt.YoutubeCommentsCache
 import com.example.nala.db.models.yt.YoutubeDataCache
+import com.example.nala.domain.model.metadata.MetadataModel
 import com.example.nala.domain.model.yt.*
 import com.example.nala.network.model.yt.captions.CaptionsList
 import com.example.nala.network.services.YouTubeApiService
 import com.example.nala.network.services.YoutubeCaptionsService
+import com.example.nala.services.metadata.AsyncExtractorService
 import com.example.nala.services.metadata.ExtractorService
 import com.example.nala.utils.Utils
 import kotlinx.coroutines.Dispatchers
@@ -21,7 +23,7 @@ class YoutubeRepositoryImpl @Inject constructor(
     private val youtubeCaptionsService: YoutubeCaptionsService,
     private val youTubeApiService: YouTubeApiService,
     private val videoDao: VideoDao,
-    private val metadataExtractor: ExtractorService,
+    private val metadataExtractor: AsyncExtractorService<MetadataModel>,
     ) : YouTubeRepository {
 
     private val commentMapper = YoutubeCommentMapper()
@@ -32,7 +34,6 @@ class YoutubeRepositoryImpl @Inject constructor(
             youTubeApiService.getVideoComments(videoId = videoId)
         )
     }
-
 
     override suspend fun getVideoData(videoId: String): YoutubeVideoModel {
         val cachedData = videoDao.getCachedVideoData(videoId)

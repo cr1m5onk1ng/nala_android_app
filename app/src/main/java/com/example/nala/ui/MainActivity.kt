@@ -3,6 +3,8 @@ package com.example.nala.ui
 import android.app.PendingIntent
 import android.content.Intent
 import android.graphics.drawable.VectorDrawable
+import android.media.AudioAttributes
+import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
@@ -49,6 +51,7 @@ import com.example.nala.ui.settings.SettingsViewModel
 import com.example.nala.ui.yt.YoutubeViewModel
 import com.example.nala.utils.InputStringType
 import com.example.nala.utils.Utils
+import kotlinx.coroutines.Dispatchers
 
 
 @AndroidEntryPoint
@@ -118,6 +121,9 @@ class MainActivity : AppCompatActivity() {
                             toggleReviews = viewModel::toggleReviews,
                             onMinimize = { startDictionaryWindowService("") },
                             onCheckPermissions = { checkOverlayPermissions() },
+                            onLoadVideo = {
+                                startVideoStreaming("https://talks/kaitlyn_sadtler_and_elizabeth_wayne_how_the_covid_19_vaccines_were_created_so_quickly")
+                                          },
                             scaffoldState = scaffoldState,
                             navController = navController
                         )
@@ -235,7 +241,7 @@ class MainActivity : AppCompatActivity() {
                             captionsState = ytViewModel.captionsState.value,
                             availableTracks = ytViewModel.availableCaptionTracks.value,
                             isVideoSaved = ytViewModel.isVideoSaved.value,
-                            checkVideoSaved = ytViewModel::setIsVideoSaved,
+                            onSetVideoAsSaved = ytViewModel::setIsVideoSaved,
                             inspectedCaption = ytViewModel.inspectedCaption.value,
                             inspectedComment = ytViewModel.inspectedComment.value,
                             onLoadCaptions = ytViewModel::loadCaptions,
@@ -267,7 +273,8 @@ class MainActivity : AppCompatActivity() {
                                 startDictionaryWindowService(ytViewModel.inspectedElementSelectedWord.value)
                                            },
                             onSetPlayerPosition = ytViewModel::setPlayerPosition,
-                            onShowSnackBar = { showSnackbar(scaffoldState, message="Video saved") },
+                            onShowSavedSnackBar = { showSnackbar(scaffoldState, message="Added to favorites") },
+                            onShowRemovedSnackBar = { showSnackbar(scaffoldState, message="Removed from favorites") },
                             onRetry = ytViewModel::onRetry,
                             activeCaption = ytViewModel.activeCaption.value,
                             scaffoldState = scaffoldState,
@@ -320,6 +327,23 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun startVideoStreaming(url : String) {
+        lifecycleScope.launch(Dispatchers.IO){
+            val mediaPlayer = MediaPlayer().apply {
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .build()
+                )
+                setDataSource(url)
+                prepareAsync() // might take long! (for buffering, etc)
+                start()
+            }
+        }
+
     }
 
     private fun checkOverlayPermissions() {

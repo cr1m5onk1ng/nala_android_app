@@ -169,4 +169,7 @@ dependencies {
 
     //JSOUP
     implementation 'org.jsoup:jsoup:1.14.1'
+
+    //SKRAPEIT
+    implementation 'it.skrape:skrapeit:1.1.5'
 }

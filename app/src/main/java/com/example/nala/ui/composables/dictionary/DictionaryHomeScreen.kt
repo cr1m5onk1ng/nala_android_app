@@ -34,6 +34,7 @@ import com.example.nala.db.models.review.WordReviewModel
 import com.example.nala.domain.model.utils.DataState
 import com.example.nala.ui.composables.BottomBar
 import com.example.nala.ui.composables.LoadingIndicator
+import com.example.nala.ui.composables.SmallButton
 import com.example.nala.ui.composables.menus.CustomDrawer
 import com.example.nala.ui.theme.*
 import kotlinx.coroutines.launch
@@ -55,6 +56,7 @@ fun HomeScreen(
     toggleReviews: (Boolean) -> Unit,
     onMinimize: () -> Unit,
     onCheckPermissions: () -> Unit,
+    onLoadVideo: () -> Unit,
     scaffoldState: ScaffoldState,
     navController: NavController
 ) {
@@ -253,6 +255,10 @@ fun HomeScreen(
                         }
                     )
                 )
+                Spacer(Modifier.height(16.dp))
+                SmallButton(text = "load video", backgroundColor = Blue500, onCLick = {
+                    onLoadVideo()
+                }, height = 60.dp)
             }
         }
     }

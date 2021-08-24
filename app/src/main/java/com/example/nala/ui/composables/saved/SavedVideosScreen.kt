@@ -2,15 +2,14 @@ package com.example.nala.ui.composables.saved
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.Remove
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -102,6 +101,7 @@ private fun ItemCard(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
+                .height(128.dp)
                 .padding(16.dp)
                 .clickable {
                     onSetVideo(item)
@@ -121,16 +121,14 @@ private fun ItemCard(
                 ) {
                     // Image Section
                     Column(
-                        /*
                         modifier = Modifier
-                            .background(Color.Red), */
-                        verticalArrangement = Arrangement.Center
+                            .fillMaxHeight()
+                            .width(146.dp),
                     ) {
                         Image(
                             modifier = Modifier
                                 .height(128.dp)
-                                .width(128.dp),
-                                //.background(Color.Green),
+                                .width(214.dp),
                             contentScale = ContentScale.FillBounds,
                             painter = rememberImagePainter(item.thumbnailUrl),
                             contentDescription = "thumbnail",
@@ -139,17 +137,38 @@ private fun ItemCard(
                     // Content section
                     Column(
                         modifier = Modifier
-                            .padding(8.dp),
-                            //.background(Color.Blue),
-                        verticalArrangement = Arrangement.Center
+                            .padding(5.dp)
+                            .fillMaxHeight(),
+                        verticalArrangement = Arrangement.SpaceBetween,
                     ) {
+
                         // Title
                         Text(
                             text = item.title ?: "No title provided",
-                            style = MaterialTheme.typography.subtitle1,
+                            style = MaterialTheme.typography.body2,
                             maxLines = 3,
                             overflow = TextOverflow.Ellipsis,
                         )
+                        // Buttons Row
+                        Row(
+                            modifier = Modifier
+                                .padding(bottom = 1.dp, end = 1.dp)
+                                .height(20.dp)
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End,
+                        ) {
+                            IconButton(
+                                onClick = { onRemoveVideo(item.id) }
+                            ) {
+                                Icon(
+                                    modifier = Modifier.size(18.dp),
+                                    imageVector = Icons.Rounded.DeleteOutline,
+                                    contentDescription = "remove",
+                                    tint = Color.LightGray,
+                                )
+                            }
+                        }
+                        /*
                         Spacer(Modifier.height(5.dp))
                         // Description
                         CustomExpandableText(
@@ -157,29 +176,11 @@ private fun ItemCard(
                             text = item.description ?: "No description provided",
                             style = MaterialTheme.typography.body1,
                             maxLines = 3,
-                        )
+                        ) */
+
                     }
                 }
-                // Buttons Row
-                Row(
-                    modifier = Modifier
-                        .padding(5.dp)
-                        .fillMaxWidth()
-                        .height(30.dp),
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    IconButton(
-                        onClick = { onRemoveVideo(item.id) }
-                    ) {
-                        Icon(
-                            modifier = Modifier.size(24.dp),
-                            imageVector = Icons.Rounded.Delete,
-                            contentDescription = "remove",
-                            tint = Color.LightGray,
-                        )
-                    }
-                }
+
             }
         }
 }
@@ -208,8 +209,8 @@ private fun SavedVideoItemCard(
             // Video Thumbnail Column
             Column(
                 modifier = Modifier
-                    .fillMaxWidth(0.3f)
-                    .fillMaxHeight(),
+                    .width(250.dp)
+                    .fillMaxHeight().background(Color.Blue),
                 verticalArrangement = Arrangement.Top,
             ) {
                 CustomAvatar(
@@ -222,7 +223,8 @@ private fun SavedVideoItemCard(
             Column(
                 modifier = Modifier
                     .padding(3.dp)
-                    .fillMaxWidth(0.7f),
+                    .fillMaxWidth(0.7f).background(Color.Red)
+                    .fillMaxHeight(),
                 horizontalAlignment = Alignment.Start,
             ) {
                 // Title

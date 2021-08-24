@@ -60,7 +60,7 @@ fun VideoScreen(
     videoId: String,
     availableTracks: List<YoutubeCaptionTracksModel>,
     isVideoSaved: Boolean,
-    checkVideoSaved: () -> Unit,
+    onSetVideoAsSaved: () -> Unit,
     checkNetworkAvailable: () -> Boolean,
     videoLoading: Boolean,
     player: YouTubePlayer?,
@@ -90,7 +90,8 @@ fun VideoScreen(
     onSearchWord: () -> Unit,
     onSetInspectedCaption: (YoutubeCaptionModel) -> Unit,
     onSetInspectedComment: (YoutubeCommentModel) -> Unit,
-    onShowSnackBar: () -> Unit,
+    onShowSavedSnackBar: () -> Unit,
+    onShowRemovedSnackBar: () -> Unit,
     onRetry: () -> Unit,
     activeCaption: Int,
     scaffoldState: ScaffoldState,
@@ -110,10 +111,12 @@ fun VideoScreen(
                         action = {
                             if(!isVideoSaved) {
                                 onAddVideoToFavorites()
-                                checkVideoSaved()
+                                //onSetVideoAsSaved()
+                                onShowSavedSnackBar()
                             } else {
                                 onRemoveVideoFromFavorites()
-                                checkVideoSaved()
+                                onShowRemovedSnackBar()
+                                //onSetVideoAsSaved()
                             }
                         },
                         isActive = isVideoSaved,

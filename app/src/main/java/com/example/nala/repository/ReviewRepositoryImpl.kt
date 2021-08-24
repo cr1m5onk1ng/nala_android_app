@@ -6,8 +6,10 @@ import com.example.nala.db.models.review.*
 import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.domain.model.dictionary.Sense
 import com.example.nala.domain.model.kanji.KanjiModel
+import com.example.nala.domain.model.metadata.MetadataModel
 import com.example.nala.domain.model.review.SentenceReviewModel
 import com.example.nala.domain.util.SuperMemo2
+import com.example.nala.services.metadata.AsyncExtractorService
 import com.example.nala.services.metadata.ExtractorService
 import com.example.nala.utils.MetadataExtractionException
 import kotlinx.coroutines.Dispatchers
@@ -19,7 +21,7 @@ import javax.inject.Inject
 
 class ReviewRepositoryImpl @Inject constructor(
     private val reviewDao: ReviewDao,
-    private val metadataExtractorService: ExtractorService,
+    private val metadataExtractorService: AsyncExtractorService<MetadataModel>,
 ) : ReviewRepository {
 
 

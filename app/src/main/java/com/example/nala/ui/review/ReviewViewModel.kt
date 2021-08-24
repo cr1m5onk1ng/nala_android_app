@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.nala.db.models.review.ArticlesCache
 import com.example.nala.db.models.review.KanjiReviewModel
 import com.example.nala.db.models.review.WordReviewModel
+import com.example.nala.domain.model.metadata.MetadataModel
 import com.example.nala.domain.model.review.ReviewCategory
 import com.example.nala.domain.model.review.SentenceReviewModel
 import com.example.nala.repository.ReviewRepository
@@ -24,7 +25,7 @@ import kotlinx.coroutines.withContext
 @HiltViewModel
 class ReviewViewModel @Inject constructor(
     private val reviewRepository: ReviewRepository,
-    private val metadataService: ExtractorService,
+    private val metadataService: ExtractorService<MetadataModel>,
 ) : ViewModel() {
 
     val reviewsLoading: MutableState<Boolean> = mutableStateOf(false)
@@ -57,22 +58,11 @@ class ReviewViewModel @Inject constructor(
 
     fun setArticle(url: String) {
         viewModelScope.launch{
-            withContext(Dispatchers.IO) {
-                isArticleLoaded.value = false
-
-                currentArticleUrl.value = url
-                /*
-                val metadata = metadataService.extractFromUrl(url)
-                currentArticleUrl.value = ArticlesCache(
-                    url = url,
-                    title = metadata.title,
-                    description = metadata.description,
-                    thumbnailUrl = metadata.thumbnailUrl
-                ) */
-                Log.d("ARTICLESDEBUG", "Article: ${currentArticleUrl.value}")
-                checkArticleSaved()
-                isArticleLoaded.value = true
-            }
+            isArticleLoaded.value = false
+            currentArticleUrl.value = url
+            Log.d("ARTICLESDEBUG", "Article: ${currentArticleUrl.value}")
+            checkArticleSaved()
+            isArticleLoaded.value = true
         }
     }
 

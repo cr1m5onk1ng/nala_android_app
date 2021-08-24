@@ -2,7 +2,7 @@ package com.example.nala.services.metadata
 
 import com.example.nala.domain.model.metadata.MetadataModel
 
-interface ExtractorService<T> {
+interface AsyncExtractorService<T> {
 
-    fun extractFromUrl(url: String) : T
+    suspend fun extractFromUrl(documentUrl: String): T
 }

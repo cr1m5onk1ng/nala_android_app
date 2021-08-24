@@ -4,7 +4,7 @@ import android.util.Log
 import com.example.nala.domain.model.metadata.MetadataModel
 import org.jsoup.Jsoup
 
-class MetadataExtractorService : ExtractorService {
+class MetadataExtractorService : ExtractorService<MetadataModel> {
 
     override fun extractFromUrl(url: String) : MetadataModel {
 
