@@ -1,11 +1,11 @@
-package com.example.nala.network.model.yt.comments
+package com.example.nala.network.model.yt.threads
 
 
 import com.google.gson.annotations.SerializedName
 
-data class SnippetX(
+data class SnippetXX(
     @SerializedName("authorChannelId")
-    val authorChannelId: AuthorChannelId?,
+    val authorChannelId: AuthorChannelIdX?,
     @SerializedName("authorChannelUrl")
     val authorChannelUrl: String?,
     @SerializedName("authorDisplayName")

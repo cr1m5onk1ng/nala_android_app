@@ -1,9 +1,9 @@
-package com.example.nala.network.model.yt.comments
+package com.example.nala.network.model.yt.threads
 
 
 import com.google.gson.annotations.SerializedName
 
-data class Item(
+data class Comment(
     @SerializedName("etag")
     val etag: String?,
     @SerializedName("id")

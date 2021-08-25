@@ -10,9 +10,9 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIos
 import androidx.compose.material.icons.rounded.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,7 +30,6 @@ import androidx.navigation.NavController
 import com.example.nala.domain.model.yt.*
 import com.example.nala.network.model.menus.ActionModel
 import com.example.nala.domain.model.utils.DataState
-import com.example.nala.domain.model.utils.ErrorType
 import com.example.nala.ui.composables.*
 import com.example.nala.ui.composables.menus.CustomTopBar
 import com.example.nala.ui.theme.Blue500
@@ -39,6 +38,7 @@ import com.example.nala.ui.yt.YoutubePlaybackListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerCallback
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 fun LazyListState.isLastVisibleItem(index: Int) =
@@ -174,6 +174,7 @@ fun VideoScreen(
                             player = player,
                             onSetPlayerPosition = onSetPlayerPosition,
                             activeCaption = activeCaption,
+                            scope = scope,
                             navController = navController,
                         )
                     }
@@ -368,8 +369,13 @@ private fun CommentsSection(
     player: YouTubePlayer?,
     onSetInspectedComment: (YoutubeCommentModel) -> Unit,
     onSearchWord: () -> Unit,
+    scope: CoroutineScope,
     navController: NavController,
 ) {
+
+    val displayedRepliesThread = remember { mutableStateOf<YoutubeCommentModel>(YoutubeCommentModel.Empty()) }
+    val displayedRepliesThreadIndex = remember { mutableStateOf(0) }
+
     when(commentsState) {
         is DataState.Initial<*> -> {
             Column(
@@ -398,24 +404,115 @@ private fun CommentsSection(
         }
         is DataState.Success<YoutubeCommentsList> -> {
             val listState = rememberLazyListState()
-            LazyColumn(state = listState) {
-                val comments = commentsState.data.comments
-                items(count = comments.size) { pos ->
-                    val isFocused = comments[pos] == inspectedComment
-                    CommentCard(
-                        comment = comments[pos],
-                        isFocused = isFocused,
-                        onAddCommentToFavorites = onAddCommentToFavorites,
-                        tokens = tokens,
-                        tokensMap = tokensMap,
-                        selectedWord = selectedWord,
-                        onSetSelectedWord = onSetSelectedWord,
-                        player = player,
-                        onSetInspectedComment = onSetInspectedComment,
-                        onSearchWord = onSearchWord,
-                        navController = navController,
-                    )
+            if(displayedRepliesThread.value.isEmpty()) {
+                LazyColumn(state = listState) {
+                    val comments = commentsState.data.comments
+                    items(count = comments.size) { pos ->
+                        val isFocused = comments[pos] == inspectedComment
+                        CommentCard(
+                            comment = comments[pos],
+                            commentPos = pos,
+                            currentDisplayedThread = displayedRepliesThread,
+                            currentDisplayedThreadIndex = displayedRepliesThreadIndex,
+                            isFocused = isFocused,
+                            onAddCommentToFavorites = onAddCommentToFavorites,
+                            tokens = tokens,
+                            tokensMap = tokensMap,
+                            selectedWord = selectedWord,
+                            onSetSelectedWord = onSetSelectedWord,
+                            onSetInspectedComment = onSetInspectedComment,
+                            onSearchWord = onSearchWord,
+                            navController = navController,
+                        )
+                    }
                 }
+            } else {
+                ThreadCommentsSection(
+                    inspectedComment = inspectedComment,
+                    currentDisplayedThread = displayedRepliesThread,
+                    currentDisplayedThreadIndex = displayedRepliesThreadIndex,
+                    onAddCommentToFavorites = onAddCommentToFavorites,
+                    navController = navController,
+                    tokens = tokens,
+                    tokensMap = tokensMap,
+                    selectedWord = selectedWord,
+                    onSetSelectedWord = onSetSelectedWord,
+                    player = player,
+                    onSetInspectedComment = onSetInspectedComment,
+                    onSearchWord = onSearchWord,
+                    scope = scope,
+                    listState = listState,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ThreadCommentsSection(
+    currentDisplayedThread: MutableState<YoutubeCommentModel>,
+    currentDisplayedThreadIndex: MutableState<Int>,
+    inspectedComment: YoutubeCommentModel?,
+    onAddCommentToFavorites: (String) -> Unit,
+    tokens: List<String>,
+    tokensMap: Map<Pair<Int, Int>, String>,
+    selectedWord: String,
+    onSetSelectedWord: (String) -> Unit,
+    player: YouTubePlayer?,
+    onSetInspectedComment: (YoutubeCommentModel) -> Unit,
+    onSearchWord: () -> Unit,
+    scope: CoroutineScope,
+    listState: LazyListState,
+    navController: NavController,
+) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ){
+        Row(
+            modifier = Modifier
+                .padding(5.dp)
+                .fillMaxWidth()
+                .background(Color.LightGray),
+            horizontalArrangement = Arrangement.Start,
+        ){
+            IconButton(
+                onClick = {
+                    scope.launch {
+                        listState.scrollToItem(currentDisplayedThreadIndex.value)
+                    }
+                    currentDisplayedThread.value = YoutubeCommentModel.Empty()
+                }
+            ) {
+                Icon(
+                    modifier = Modifier.size(20.dp),
+                    imageVector = Icons.Default.ArrowBackIos,
+                    contentDescription = "go back",
+                    tint = Color.DarkGray,
+                )
+            }
+        }
+        val listState = rememberLazyListState()
+        LazyColumn(state = listState) {
+            val comments = currentDisplayedThread.value.replies
+            items(count = comments.size) { pos ->
+                val isFocused = comments[pos] == inspectedComment
+                CommentCard(
+                    comment = comments[pos],
+                    commentPos = pos,
+                    currentDisplayedThread = currentDisplayedThread,
+                    currentDisplayedThreadIndex = currentDisplayedThreadIndex,
+                    isFocused = isFocused,
+                    onAddCommentToFavorites = onAddCommentToFavorites,
+                    tokens = tokens,
+                    tokensMap = tokensMap,
+                    selectedWord = selectedWord,
+                    onSetSelectedWord = onSetSelectedWord,
+                    onSetInspectedComment = onSetInspectedComment,
+                    onSearchWord = onSearchWord,
+                    navController = navController,
+                )
             }
         }
     }
@@ -424,13 +521,15 @@ private fun CommentsSection(
 @Composable
 private fun CommentCard(
     comment: YoutubeCommentModel,
+    commentPos: Int,
+    currentDisplayedThread: MutableState<YoutubeCommentModel>,
+    currentDisplayedThreadIndex: MutableState<Int>,
     isFocused: Boolean,
     onAddCommentToFavorites: (String) -> Unit,
     tokens: List<String>,
     tokensMap: Map<Pair<Int, Int>, String>,
     selectedWord: String,
     onSetSelectedWord: (String) -> Unit,
-    player: YouTubePlayer?,
     onSetInspectedComment: (YoutubeCommentModel) -> Unit,
     onSearchWord: () -> Unit,
     navController: NavController,
@@ -498,47 +597,64 @@ private fun CommentCard(
                 }
                 // Buttons Row
                 Row(
-                    modifier = Modifier.padding(3.dp),
-                    horizontalArrangement = Arrangement.Start,
+                    modifier = Modifier.padding(3.dp).fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    // Likes
                     Row(
+                        horizontalArrangement = Arrangement.Start,
                         verticalAlignment = Alignment.CenterVertically,
-                    ){
-                        Icon(
-                            modifier = Modifier.size(16.dp),
-                            imageVector = Icons.Rounded.ThumbUp,
-                            contentDescription = "likes",
-                            tint = Color.LightGray,
-                        )
-                        Text(
-                            modifier = Modifier.padding(2.dp),
-                            text = comment.likeCount.toString()
-                        )
-                    }
-                    Spacer(Modifier.padding(horizontal = 3.dp))
-                    //Dislikes
-                    Row(
-                        /*
-                        Modifier
-                            .height(40.dp)
-                            .width(60.dp), */
-                        verticalAlignment = Alignment.CenterVertically,
-                    ){
-                        Icon(
-                            modifier = Modifier.size(16.dp),
-                            imageVector = Icons.Rounded.ThumbDown,
-                            contentDescription = "dislikes",
-                            tint = Color.LightGray,
-                        )
-                        val dCounts = comment.dislikesCount ?: 0
-                        if(dCounts > 0) {
+                    ) {
+                        // Likes
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                        ){
+                            Icon(
+                                modifier = Modifier.size(16.dp),
+                                imageVector = Icons.Rounded.ThumbUp,
+                                contentDescription = "likes",
+                                tint = Color.LightGray,
+                            )
                             Text(
                                 modifier = Modifier.padding(2.dp),
-                                text = comment.dislikesCount.toString()
+                                text = comment.likeCount.toString()
                             )
                         }
+                        Spacer(Modifier.padding(horizontal = 3.dp))
+                        //Dislikes
+                        Row(
+                            /*
+                            Modifier
+                                .height(40.dp)
+                                .width(60.dp), */
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ){
+                            Icon(
+                                modifier = Modifier.size(16.dp),
+                                imageVector = Icons.Rounded.ThumbDown,
+                                contentDescription = "dislikes",
+                                tint = Color.LightGray,
+                            )
+                            val dCounts = comment.dislikesCount ?: 0
+                            if(dCounts > 0) {
+                                Text(
+                                    modifier = Modifier.padding(2.dp),
+                                    text = comment.dislikesCount.toString()
+                                )
+                            }
+                        }
+                    }
+
+                    // Show Replies Button
+                    if(comment.replies.isNotEmpty()) {
+                        CustomTextButton(
+                            text = "Show replies",
+                            onClick = {
+                                currentDisplayedThread.value = comment
+                                currentDisplayedThreadIndex.value = commentPos
+                            }
+                        )
                     }
                 }
             }
@@ -593,6 +709,7 @@ private fun SelectionTabSection(
     player: YouTubePlayer?,
     onSetPlayerPosition: (Float) -> Unit,
     activeCaption: Int,
+    scope: CoroutineScope,
     navController: NavController
 ) {
     CustomTabMenu(
@@ -637,6 +754,7 @@ private fun SelectionTabSection(
                 player = player,
                 onSetInspectedComment = onSetInspectedComment,
                 onSearchWord = onSearchWord,
+                scope = scope,
             )
         }
     }

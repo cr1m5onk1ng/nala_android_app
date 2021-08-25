@@ -3,10 +3,10 @@ package com.example.nala.db.models.yt
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.PrimaryKey
 
 @Entity(
     tableName="video_comments_cache",
-    primaryKeys = ["video_id", "author", "comment"],
     foreignKeys = [
         ForeignKey(
             entity = YoutubeDataCache::class,
@@ -18,10 +18,11 @@ import androidx.room.ForeignKey
     ]
 )
 data class YoutubeCommentsCache(
-    @ColumnInfo(name="video_id")
-    val videoId: String,
+    @PrimaryKey
     @ColumnInfo(name="comment_id")
     val commentId: String,
+    @ColumnInfo(name="video_id")
+    val videoId: String,
     @ColumnInfo(name="page")
     val page: Int? = null,
     @ColumnInfo(name="comment")

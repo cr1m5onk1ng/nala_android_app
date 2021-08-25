@@ -11,7 +11,6 @@ import com.example.nala.network.model.yt.captions.CaptionsList
 import com.example.nala.network.services.YouTubeApiService
 import com.example.nala.network.services.YoutubeCaptionsService
 import com.example.nala.services.metadata.AsyncExtractorService
-import com.example.nala.services.metadata.ExtractorService
 import com.example.nala.utils.Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -31,7 +30,7 @@ class YoutubeRepositoryImpl @Inject constructor(
 
     override suspend fun getVideoComments(videoId: String): YoutubeCommentsList {
         return commentMapper.mapToDomainModel(
-            youTubeApiService.getVideoComments(videoId = videoId)
+            youTubeApiService.getVideoTopComments(videoId = videoId)
         )
     }
 

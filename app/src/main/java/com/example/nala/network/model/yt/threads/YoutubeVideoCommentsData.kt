@@ -1,4 +1,4 @@
-package com.example.nala.network.model.yt.comments
+package com.example.nala.network.model.yt.threads
 
 
 import com.google.gson.annotations.SerializedName
