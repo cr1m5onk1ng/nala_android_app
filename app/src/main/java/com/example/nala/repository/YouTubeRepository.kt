@@ -11,7 +11,7 @@ interface YouTubeRepository {
 
     suspend fun cacheVideoCaptionTracks(videoId:String, tracks: List<YoutubeCaptionTracksModel>)
 
-    suspend fun getVideoComments(videoId: String) : YoutubeCommentsList
+    suspend fun getVideoComments(videoId: String, pageId: String?) : YoutubeCommentsList
 
     suspend fun getVideoData(videoId: String) : YoutubeVideoModel
 

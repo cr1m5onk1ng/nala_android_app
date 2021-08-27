@@ -14,7 +14,7 @@ interface YouTubeApiService {
         @Query("key") key: String = BuildConfig.YT_DATA_API_KEY,
         @Query("videoId") videoId: String,
         @Query("maxResults") maxResults: Int? = null,
-        @Query("pageToken") pageToken: Int? = null,
+        @Query("pageToken") pageToken: String? = null,
         @Query("textFormat") textFormat: String = "plainText",
         @Query("order") order: String = "relevance",
     ) : YoutubeVideoCommentsData

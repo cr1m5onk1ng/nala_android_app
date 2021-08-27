@@ -54,9 +54,6 @@ fun HomeScreen(
     isReviewsSelected: Boolean,
     toggleHome: (Boolean) -> Unit,
     toggleReviews: (Boolean) -> Unit,
-    onMinimize: () -> Unit,
-    onCheckPermissions: () -> Unit,
-    onLoadVideo: () -> Unit,
     scaffoldState: ScaffoldState,
     navController: NavController
 ) {
@@ -255,10 +252,6 @@ fun HomeScreen(
                         }
                     )
                 )
-                Spacer(Modifier.height(16.dp))
-                SmallButton(text = "load video", backgroundColor = Blue500, onCLick = {
-                    onLoadVideo()
-                }, height = 60.dp)
             }
         }
     }

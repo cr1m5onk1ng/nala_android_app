@@ -47,9 +47,6 @@ class DictionaryHomeFragment : Fragment() {
                         isReviewsSelected = viewModel.isReviewSelected.value,
                         toggleHome = viewModel::toggleHome,
                         toggleReviews = viewModel::toggleReviews,
-                        onMinimize = {},
-                        onCheckPermissions = {},
-                        onLoadVideo = {},
                         scaffoldState = scaffoldState,
                         navController = findNavController(),
                     )

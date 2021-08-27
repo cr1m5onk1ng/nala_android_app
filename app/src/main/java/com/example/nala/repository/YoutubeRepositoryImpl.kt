@@ -1,5 +1,6 @@
 package com.example.nala.repository
 
+import android.util.Log
 import com.example.nala.db.dao.VideoDao
 import com.example.nala.db.models.yt.YoutubeCaptionTracksCache
 import com.example.nala.db.models.yt.YoutubeCaptionsCache
@@ -28,9 +29,40 @@ class YoutubeRepositoryImpl @Inject constructor(
     private val commentMapper = YoutubeCommentMapper()
     private val videoMapper = YoutubeVideoMapper()
 
-    override suspend fun getVideoComments(videoId: String): YoutubeCommentsList {
+    override suspend fun getVideoComments(videoId: String, pageId: String?): YoutubeCommentsList {
+        /*
+        val cachedComments = videoDao.getCachedVideoComments(videoId)
+        if(cachedComments.isNotEmpty()) {
+            val comments = cachedComments.map{ comment ->
+                YoutubeCommentModel(
+                    videoId = comment.videoId,
+                    commentId = comment.commentId,
+                    content = comment.comment,
+                    publishedAt = comment.publishedAt ?: "",
+                    authorName = comment.author,
+                    authorProfileImageUrl = comment.profileImageUrl,
+                    likeCount = comment.likesCount ?: 0,
+                    dislikesCount = 0,
+                    replies = videoDao.getCommentResponses(comment.commentId).map{
+                        YoutubeCommentModel(
+                            videoId = it.videoId,
+                            commentId = it.commentId,
+                            content = it.comment,
+                            publishedAt = it.publishedAt ?: "",
+                            authorName = it.author,
+                            authorProfileImageUrl = it.profileImageUrl,
+                            likeCount = it.likesCount ?: 0,
+                            dislikesCount = 0,
+                        )
+                    }
+                )
+            }
+            return YoutubeCommentsList(
+                comments = comments,
+            )
+        }*/
         return commentMapper.mapToDomainModel(
-            youTubeApiService.getVideoTopComments(videoId = videoId)
+            youTubeApiService.getVideoTopComments(videoId = videoId, pageToken = pageId, maxResults=20)
         )
     }
 
@@ -212,7 +244,7 @@ class YoutubeRepositoryImpl @Inject constructor(
     }
 
     override fun getCachedVideoComments(videoId: String): Flow<List<YoutubeCommentModel>> {
-        return videoDao.getCachedVideoComments(videoId).mapLatest { comments ->
+        return videoDao.getCachedVideoCommentsFlow(videoId).mapLatest { comments ->
             comments.map{
                 YoutubeCommentModel(
                     videoId = it.videoId,

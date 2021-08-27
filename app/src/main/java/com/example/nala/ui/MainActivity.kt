@@ -77,6 +77,7 @@ class MainActivity : AppCompatActivity() {
     @ExperimentalComposeUiApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d("SHARE", "ON CREATE CALLED")
         // NEEDED TO USE POP UP DICTIONARY MODE
         checkOverlayPermissions()
         // SETTING UP NEEDED OBSERVABLES
@@ -91,7 +92,7 @@ class MainActivity : AppCompatActivity() {
                 handleSharedWord()
             }
             Intent.ACTION_SEND -> {
-                handleSharedText()
+                handleSharedText(intent)
             }
             else -> {
                 Log.d("INTENTDEBUG", "Action triggered: ${intent?.action}")
@@ -119,11 +120,6 @@ class MainActivity : AppCompatActivity() {
                             isReviewsSelected = viewModel.isReviewSelected.value,
                             toggleHome = viewModel::toggleHome,
                             toggleReviews = viewModel::toggleReviews,
-                            onMinimize = { startDictionaryWindowService("") },
-                            onCheckPermissions = { checkOverlayPermissions() },
-                            onLoadVideo = {
-                                startVideoStreaming("https://talks/kaitlyn_sadtler_and_elizabeth_wayne_how_the_covid_19_vaccines_were_created_so_quickly")
-                                          },
                             scaffoldState = scaffoldState,
                             navController = navController
                         )
@@ -246,6 +242,8 @@ class MainActivity : AppCompatActivity() {
                             inspectedComment = ytViewModel.inspectedComment.value,
                             onLoadCaptions = ytViewModel::loadCaptions,
                             onLoadComments = ytViewModel::loadComments,
+                            onUpdateComments = ytViewModel::updateComments,
+                            isUpdatingComments = ytViewModel.isUpdatingComments.value,
                             onLoadTrack = ytViewModel::onLoadTrack,
                             onAddVideoToFavorites = ytViewModel::addVideoToFavorites,
                             onRemoveVideoFromFavorites = ytViewModel::removeVideoFromFavorites,
@@ -329,21 +327,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun startVideoStreaming(url : String) {
-        lifecycleScope.launch(Dispatchers.IO){
-            val mediaPlayer = MediaPlayer().apply {
-                setAudioAttributes(
-                    AudioAttributes.Builder()
-                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                        .setUsage(AudioAttributes.USAGE_MEDIA)
-                        .build()
-                )
-                setDataSource(url)
-                prepareAsync() // might take long! (for buffering, etc)
-                start()
-            }
-        }
-
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        setIntent(intent)
     }
 
     private fun checkOverlayPermissions() {
@@ -412,9 +398,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun handleSharedText() {
+    private fun handleSharedText(intent: Intent?) {
         Log.d("SHARED", "ACTION SEND CALLED!")
-        if ("text/plain" == intent.type) {
+        if ("text/plain" == intent?.type) {
             intent.getStringExtra(Intent.EXTRA_TEXT)?.let { inputString ->
                 Log.d("SHARED", "SHARED TEXT: $inputString")
                 when(Utils.parseInputString(inputString)) {

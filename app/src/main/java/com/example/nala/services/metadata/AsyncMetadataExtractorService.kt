@@ -13,6 +13,7 @@ class AsyncMetadataExtractorService : AsyncExtractorService<MetadataModel>  {
         return skrape(AsyncFetcher) {
             request {
                 url = documentUrl
+                timeout = 20000
             }
             response {
                 htmlDocument{

@@ -77,6 +77,7 @@ fun ArticleScreen(
                             WebView(context).apply{
                                 webViewClient = WebViewClient()
                                 loadUrl(article)
+                                settings.javaScriptEnabled = true
                             }
                         },
                     )

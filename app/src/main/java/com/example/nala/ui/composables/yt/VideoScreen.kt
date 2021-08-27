@@ -1,16 +1,19 @@
 package com.example.nala.ui.composables.yt
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIos
+import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -76,6 +79,8 @@ fun VideoScreen(
     playerPosition: Float,
     onLoadCaptions: () -> Unit,
     onLoadComments: () -> Unit,
+    onUpdateComments: () -> Unit,
+    isUpdatingComments: Boolean,
     onLoadTrack: (String) -> Unit,
     onAddVideoToFavorites: () -> Unit,
     onRemoveVideoFromFavorites: () -> Unit,
@@ -158,6 +163,8 @@ fun VideoScreen(
                             inspectedCaption = inspectedCaption,
                             inspectedComment = inspectedComment,
                             commentsState = commentsState,
+                            onUpdateComments = onUpdateComments,
+                            isUpdatingComments = isUpdatingComments,
                             tokens = tokens,
                             tokensMap = tokensMap,
                             selectedWord = selectedWord,
@@ -361,6 +368,8 @@ private fun CommentsSection(
     commentsState: DataState<YoutubeCommentsList>,
     inspectedComment: YoutubeCommentModel?,
     onLoadComments: () -> Unit,
+    onUpdateComments: () -> Unit,
+    isUpdatingComments: Boolean,
     onAddCommentToFavorites: (String) -> Unit,
     tokens: List<String>,
     tokensMap: Map<Pair<Int, Int>, String>,
@@ -375,9 +384,10 @@ private fun CommentsSection(
 
     val displayedRepliesThread = remember { mutableStateOf<YoutubeCommentModel>(YoutubeCommentModel.Empty()) }
     val displayedRepliesThreadIndex = remember { mutableStateOf(0) }
+    val listState = rememberLazyListState()
 
     when(commentsState) {
-        is DataState.Initial<*> -> {
+        is DataState.Initial<YoutubeCommentsList> -> {
             Column(
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -403,29 +413,41 @@ private fun CommentsSection(
             ErrorScreen(text = "Couldn't fetch comments", subtitle = "Sorry ¯\\_(ツ)_/¯")
         }
         is DataState.Success<YoutubeCommentsList> -> {
-            val listState = rememberLazyListState()
             if(displayedRepliesThread.value.isEmpty()) {
-                LazyColumn(state = listState) {
-                    val comments = commentsState.data.comments
-                    items(count = comments.size) { pos ->
-                        val isFocused = comments[pos] == inspectedComment
-                        CommentCard(
-                            comment = comments[pos],
-                            commentPos = pos,
-                            currentDisplayedThread = displayedRepliesThread,
-                            currentDisplayedThreadIndex = displayedRepliesThreadIndex,
-                            isFocused = isFocused,
-                            onAddCommentToFavorites = onAddCommentToFavorites,
-                            tokens = tokens,
-                            tokensMap = tokensMap,
-                            selectedWord = selectedWord,
-                            onSetSelectedWord = onSetSelectedWord,
-                            onSetInspectedComment = onSetInspectedComment,
-                            onSearchWord = onSearchWord,
-                            navController = navController,
-                        )
+                if(isUpdatingComments) {
+                    LoadingIndicator()
+                } else {
+                    LazyColumn(state = listState) {
+                        val comments = commentsState.data.comments
+                        if(listState.isLastVisibleItem(comments.size -1) && listState.isScrollInProgress) {
+                            onUpdateComments()
+                        }
+                        itemsIndexed(
+                            items = comments,
+                            key = { _, item ->
+                                  item.commentId
+                            },
+                        ) { pos, item ->
+                            val isFocused = comments[pos] == inspectedComment
+                            CommentCard(
+                                comment = item,
+                                commentPos = pos,
+                                currentDisplayedThread = displayedRepliesThread,
+                                currentDisplayedThreadIndex = displayedRepliesThreadIndex,
+                                isFocused = isFocused,
+                                onAddCommentToFavorites = onAddCommentToFavorites,
+                                tokens = tokens,
+                                tokensMap = tokensMap,
+                                selectedWord = selectedWord,
+                                onSetSelectedWord = onSetSelectedWord,
+                                onSetInspectedComment = onSetInspectedComment,
+                                onSearchWord = onSearchWord,
+                                navController = navController,
+                            )
+                        }
                     }
                 }
+
             } else {
                 ThreadCommentsSection(
                     inspectedComment = inspectedComment,
@@ -468,7 +490,7 @@ fun ThreadCommentsSection(
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.Top,
     ){
         Row(
             modifier = Modifier
@@ -597,7 +619,9 @@ private fun CommentCard(
                 }
                 // Buttons Row
                 Row(
-                    modifier = Modifier.padding(3.dp).fillMaxWidth(),
+                    modifier = Modifier
+                        .padding(3.dp)
+                        .fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -623,10 +647,6 @@ private fun CommentCard(
                         Spacer(Modifier.padding(horizontal = 3.dp))
                         //Dislikes
                         Row(
-                            /*
-                            Modifier
-                                .height(40.dp)
-                                .width(60.dp), */
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween,
                         ){
@@ -700,6 +720,8 @@ private fun SelectionTabSection(
     onLoadComments: () -> Unit,
     onSetSelectedWord: (String) -> Unit,
     commentsState: DataState<YoutubeCommentsList>,
+    onUpdateComments: () -> Unit,
+    isUpdatingComments: Boolean,
     onChangeTabIndex: (Int) -> Unit,
     onAddCommentToFavorites: (String) -> Unit,
     onAddCaptionToFavorites: (String) -> Unit,
@@ -745,6 +767,8 @@ private fun SelectionTabSection(
                 commentsState = commentsState,
                 inspectedComment = inspectedComment,
                 onLoadComments = onLoadComments,
+                onUpdateComments = onUpdateComments,
+                isUpdatingComments = isUpdatingComments,
                 onAddCommentToFavorites = onAddCommentToFavorites,
                 navController = navController,
                 tokens = tokens,

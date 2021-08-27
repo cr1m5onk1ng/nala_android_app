@@ -40,19 +40,25 @@ class YoutubeViewModel @Inject constructor(
 
     val currentVideoId: StateFlow<String> = _currentVideoId
 
+    private var nextCommentsPageId: String? = null
+
     private val videoCaptionsStateFlow = _currentVideoId.mapLatest {
         youtubeRepository.getVideoCaptions(videoId = it, lang = selectedCaptionTrack.value)
     }
 
-    private val videoCommentsStateFlow = _currentVideoId.mapLatest {
-        youtubeRepository.getVideoComments(it)
-    }
+    private val videoCommentsStateFlow = _currentVideoId.mapLatest{ vId ->
+            youtubeRepository.getVideoComments(vId, nextCommentsPageId)
+        }
 
     val captionsState: MutableState<DataState<List<YoutubeCaptionModel>>> =
         mutableStateOf(DataState.Initial(listOf()))
 
     val commentsState: MutableState<DataState<YoutubeCommentsList>> =
         mutableStateOf(DataState.Initial(YoutubeCommentsList.Empty()))
+
+    val lastUpdatedComments = mutableStateOf<List<YoutubeCommentModel>>(listOf())
+
+    val isUpdatingComments = mutableStateOf(false)
 
     val activeCaption: MutableState<Int> = mutableStateOf(0)
 
@@ -189,11 +195,42 @@ class YoutubeViewModel @Inject constructor(
         commentsState.value = DataState.Loading
         try{
             videoCommentsStateFlow.collect{
-                commentsState.value = DataState.Success(it)
-                Log.d("YOUTUBEDEBUG", "Current comments: $it")
+                nextCommentsPageId = it.nextPageToken
+                val newData = ArrayList(lastUpdatedComments.value)
+                newData.addAll(it.comments)
+                lastUpdatedComments.value = newData
+                commentsState.value = DataState.Success(
+                    YoutubeCommentsList(
+                        comments = newData,
+                        nextPageToken = it.nextPageToken,
+                    )
+                )
             }
         } catch(e: Exception){
             commentsState.value = DataState.Error(ErrorType.ERROR_FETCHING_DATA)
+        }
+    }
+
+    fun updateComments() = viewModelScope.launch {
+        isUpdatingComments.value = true
+        try{
+            videoCommentsStateFlow.collect{
+                nextCommentsPageId = it.nextPageToken
+                val newData = ArrayList(lastUpdatedComments.value)
+                newData.addAll(it.comments)
+                lastUpdatedComments.value = newData
+                commentsState.value = DataState.Success(
+                    YoutubeCommentsList(
+                        comments = newData,
+                        nextPageToken = it.nextPageToken,
+                    )
+                )
+                isUpdatingComments.value = false
+            }
+        } catch(e: Exception){
+            commentsState.value = DataState.Error(ErrorType.ERROR_FETCHING_DATA)
+        } finally {
+            isUpdatingComments.value = false
         }
     }
 
