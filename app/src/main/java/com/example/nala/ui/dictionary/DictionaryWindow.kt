@@ -139,6 +139,8 @@ class DictionaryWindow (
         windowDictionaryView.findViewById<ImageView>(R.id.window_close).setOnClickListener{
             close()
         }
+        // TODO Add draggable listener
+        /*
         windowDictionaryView.setOnTouchListener{ view, event ->
             val updatedParams = mParams
             var initialX: Int = 0
@@ -164,7 +166,7 @@ class DictionaryWindow (
                 }
             }
             view.performClick()
-        }
+        } */
         mParams.gravity = Gravity.CENTER
         mParams.x = 0
         mParams.y = 0

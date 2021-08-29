@@ -21,10 +21,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="5dp"
             android:fontFamily="@font/quicksand_bold"
             android:text="TextView"
             android:textSize="28dp"
-            app:layout_constraintBottom_toTopOf="@+id/rvKanjiTags"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:listitem="@layout/word_character" />
@@ -37,10 +37,19 @@
             android:background="@color/white"
             android:orientation="horizontal"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:layout_constraintBottom_toTopOf="@id/tvKanjiStory"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tvKanji" />
+
+        <TextView
+            android:id="@+id/tvStoryTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:fontFamily="@font/quicksand_semibold"
+            android:text="Story"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/rvKanjiTags" />
 
         <it.mike5v.viewmoretextview.ViewMoreTextView
             android:id="@+id/tvKanjiStory"
@@ -50,22 +59,19 @@
             android:fontFamily="@font/quicksand_light"
             android:text="Here go the sense definitions"
             app:ellipsizeText="View More"
-            app:layout_constraintBottom_toTopOf="@+id/tvKanjiMeanings"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/rvKanjiTags" />
+            app:layout_constraintTop_toBottomOf="@+id/tvStoryTitle" />
 
         <TextView
             android:id="@+id/meaningsTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="8dp"
+            android:layout_marginLeft="8dp"
             android:fontFamily="@font/quicksand_semibold"
             android:text="Meanings"
-            app:layout_constraintBottom_toBottomOf="@+id/tvKanjiMeanings"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvKanjiStory"
-            app:layout_constraintVertical_bias="0.0" />
+            app:layout_constraintTop_toBottomOf="@+id/tvKanjiStory" />
 
         <TextView
             android:id="@+id/tvKanjiMeanings"
@@ -75,9 +81,6 @@
             android:fontFamily="@font/quicksand_regular"
             android:text="Here go the sense definitions"
             android:textAlignment="textStart"
-            app:layout_constraintBottom_toTopOf="@+id/kunTitle"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/meaningsTitle" />
 
@@ -85,13 +88,11 @@
             android:id="@+id/kunTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="8dp"
+            android:layout_marginLeft="8dp"
             android:fontFamily="@font/quicksand_semibold"
             android:text="Kunyomi"
-            app:layout_constraintBottom_toTopOf="@+id/tvKanjiKun"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvKanjiMeanings"
-            app:layout_constraintVertical_bias="0.0" />
+            app:layout_constraintTop_toBottomOf="@+id/tvKanjiMeanings" />
 
         <TextView
             android:id="@+id/tvKanjiKun"
@@ -99,23 +100,18 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:fontFamily="@font/quicksand_regular"
-            android:text="Here go the sense definitions"
+            android:text="Here go the kun readings"
             android:textAlignment="textStart"
-            app:layout_constraintBottom_toTopOf="@+id/onTitle"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.013"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/kunTitle"
-            app:layout_constraintVertical_bias="0.0" />
+            app:layout_constraintTop_toBottomOf="@+id/kunTitle" />
 
         <TextView
             android:id="@+id/onTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="8dp"
+            android:layout_marginLeft="5dp"
             android:fontFamily="@font/quicksand_semibold"
             android:text="Onyomi"
-            app:layout_constraintBottom_toTopOf="@+id/tvKanjiOn"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tvKanjiKun" />
 
@@ -124,38 +120,33 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
-            android:layout_marginBottom="8dp"
             android:fontFamily="@font/quicksand_regular"
-            android:text="Here go the sense definitions"
+            android:text="Here go the on readings"
             android:textAlignment="textStart"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/onTitle"
-            app:layout_constraintVertical_bias="0.0" />
+            app:layout_constraintTop_toBottomOf="@+id/onTitle" />
 
         <ImageView
             android:id="@+id/addKanjiToFavorites"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_marginEnd="16dp"
-            android:layout_marginBottom="5dp"
+            android:layout_marginBottom="2dp"
             android:src="@drawable/favorites_button_inactive"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/seeKanjiDetail"
-            app:layout_constraintTop_toBottomOf="@+id/tvKanjiOn" />
+            app:layout_constraintTop_toBottomOf="@+id/tvKanjiOn"/>
 
         <ImageView
             android:id="@+id/seeKanjiDetail"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_marginEnd="16dp"
-            android:layout_marginBottom="5dp"
+            android:layout_marginBottom="2dp"
             android:src="@drawable/ic_baseline_arrow_forward_24"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvKanjiOn" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvKanjiOn"/>
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -99,6 +99,8 @@ class YoutubeViewModel @Inject constructor(
 
     private val _isVideoSaved = MutableStateFlow<Boolean>(false)
 
+    val isVideoInFavorites = mutableStateOf(false)
+
     val isVideoSaved: StateFlow<Boolean> = _isVideoSaved
 
     private val isVideoSavedFlow = _isVideoSaved.flatMapLatest {
@@ -276,8 +278,13 @@ class YoutubeViewModel @Inject constructor(
         viewModelScope.launch {
             isVideoSavedFlow.collect{
                 _isVideoSaved.value = it
+                isVideoInFavorites.value = it
             }
         }
+    }
+
+    fun setVideoInFavorites(value: Boolean) {
+        isVideoInFavorites.value = value
     }
 
     fun addVideoToFavorites() =

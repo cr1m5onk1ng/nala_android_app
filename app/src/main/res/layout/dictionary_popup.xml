@@ -36,8 +36,6 @@
             android:layout_marginStart="24dp"
             android:src="@drawable/favorites_button_inactive"
             app:layout_constraintBottom_toBottomOf="@+id/tvWord"
-            app:layout_constraintEnd_toStartOf="@+id/see_word_details"
-            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toEndOf="@+id/tvWord"
             app:layout_constraintTop_toTopOf="@+id/tvWord"
             app:layout_constraintVertical_bias="0.571" />
@@ -57,11 +55,9 @@
             android:id="@+id/tvFurigana"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/quicksand_light"
             android:text="TextView"
             android:textSize="12sp"
-            android:fontFamily="@font/quicksand_light"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.049"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/window_close" />
 
@@ -69,10 +65,9 @@
             android:id="@+id/tvWord"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/quicksand_bold"
             android:text="TextView"
             android:textSize="28sp"
-            android:fontFamily="@font/quicksand_bold"
-            app:layout_constraintBottom_toTopOf="@id/rvWordTags"
             app:layout_constraintStart_toStartOf="@+id/tvFurigana"
             app:layout_constraintTop_toBottomOf="@id/tvFurigana" />
 
@@ -84,7 +79,6 @@
             android:background="@color/background"
             android:orientation="horizontal"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:layout_constraintBottom_toTopOf="@id/rvSensesList"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tvWord" />
 
@@ -94,7 +88,6 @@
             android:layout_height="wrap_content"
             android:background="@color/background"
             android:padding="8dp"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/rvWordTags"
             tools:listitem="@layout/sense_card" />

@@ -361,7 +361,7 @@ class ReviewRepositoryImpl @Inject constructor(
     }
 
     override fun getSavedArticle(url: String): Flow<List<ArticlesCache>> {
-        return reviewDao.getSavedArticle(url)
+        return reviewDao.getSavedArticleDistinctUntilChanged(url)
     }
 
     override suspend fun removeWordReview(wordReview: WordReviewModel) {

@@ -153,6 +153,22 @@ class ReviewViewModel @Inject constructor(
         selectedCategory.value = category
     }
 
+    fun setIsArticleInFavorites(value : Boolean) {
+        isArticleSaved.value = value
+    }
+
+    fun addArticleToFavorites() {
+        viewModelScope.launch{
+            reviewRepository.addArticleToFavorites(currentArticleUrl.value)
+        }
+    }
+
+    fun removeArticleFromFavorites() {
+        viewModelScope.launch{
+            reviewRepository.removeArticleFromFavorites(currentArticleUrl.value)
+        }
+    }
+
     private fun checkArticleSaved()  {
         viewModelScope.launch {
             isArticleSavedFlow.collect{

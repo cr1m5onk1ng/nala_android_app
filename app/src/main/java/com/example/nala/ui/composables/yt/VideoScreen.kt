@@ -63,7 +63,7 @@ fun VideoScreen(
     videoId: String,
     availableTracks: List<YoutubeCaptionTracksModel>,
     isVideoSaved: Boolean,
-    onSetVideoAsSaved: () -> Unit,
+    onSetVideoAsSaved: (Boolean) -> Unit,
     checkNetworkAvailable: () -> Boolean,
     videoLoading: Boolean,
     player: YouTubePlayer?,
@@ -116,12 +116,12 @@ fun VideoScreen(
                         action = {
                             if(!isVideoSaved) {
                                 onAddVideoToFavorites()
-                                //onSetVideoAsSaved()
+                                onSetVideoAsSaved(true)
                                 onShowSavedSnackBar()
                             } else {
                                 onRemoveVideoFromFavorites()
+                                onSetVideoAsSaved(false)
                                 onShowRemovedSnackBar()
-                                //onSetVideoAsSaved()
                             }
                         },
                         isActive = isVideoSaved,
@@ -201,7 +201,6 @@ fun VideoScreen(
                     .padding(16.dp)
                     .constrainAs(snackbar) {
                         bottom.linkTo(parent.bottom)
-                        start.linkTo(parent.start)
                         end.linkTo(parent.end)
                     },
                 snackbarHostState = scaffoldState.snackbarHostState,
