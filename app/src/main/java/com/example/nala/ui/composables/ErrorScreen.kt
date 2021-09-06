@@ -22,6 +22,7 @@ fun ErrorScreen(
     text: String,
     subtitle: String = "",
     action: (() -> Unit)? = null,
+    actionName: String? = null,
 ) {
     Column (
         modifier = Modifier
@@ -43,7 +44,7 @@ fun ErrorScreen(
         action?.let{
             Spacer(modifier = Modifier.height(16.dp))
             SmallerButton(
-                text = "Retry",
+                text = actionName ?: "Retry",
                 backgroundColor = Blue700,
                 onCLick = { action() },
                 height = 50.dp,

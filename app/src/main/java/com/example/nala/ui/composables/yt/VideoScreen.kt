@@ -30,6 +30,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
+import com.example.nala.domain.model.auth.UserModel
+import com.example.nala.domain.model.utils.AuthState
 import com.example.nala.domain.model.yt.*
 import com.example.nala.network.model.menus.ActionModel
 import com.example.nala.domain.model.utils.DataState
@@ -38,6 +40,8 @@ import com.example.nala.ui.composables.menus.CustomTopBar
 import com.example.nala.ui.theme.Blue500
 import com.example.nala.ui.theme.LightBlue
 import com.example.nala.ui.yt.YoutubePlaybackListener
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerCallback
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
@@ -78,7 +82,7 @@ fun VideoScreen(
     onSetSelectedWord: (String) -> Unit,
     playerPosition: Float,
     onLoadCaptions: () -> Unit,
-    onLoadComments: () -> Unit,
+    onLoadComments: (String?) -> Unit,
     onUpdateComments: () -> Unit,
     isUpdatingComments: Boolean,
     onLoadTrack: (String) -> Unit,
@@ -98,6 +102,8 @@ fun VideoScreen(
     onShowSavedSnackBar: () -> Unit,
     onShowRemovedSnackBar: () -> Unit,
     onRetry: () -> Unit,
+    authState: AuthState<UserModel?>,
+    onRequestLogin: () -> Unit,
     activeCaption: Int,
     scaffoldState: ScaffoldState,
     navController: NavController
@@ -182,6 +188,8 @@ fun VideoScreen(
                             onSetPlayerPosition = onSetPlayerPosition,
                             activeCaption = activeCaption,
                             scope = scope,
+                            authState = authState,
+                            onRequestLogin = onRequestLogin,
                             navController = navController,
                         )
                     }
@@ -366,7 +374,7 @@ private fun CaptionsCard(
 private fun CommentsSection(
     commentsState: DataState<YoutubeCommentsList>,
     inspectedComment: YoutubeCommentModel?,
-    onLoadComments: () -> Unit,
+    onLoadComments: (String?) -> Unit,
     onUpdateComments: () -> Unit,
     isUpdatingComments: Boolean,
     onAddCommentToFavorites: (String) -> Unit,
@@ -378,6 +386,8 @@ private fun CommentsSection(
     onSetInspectedComment: (YoutubeCommentModel) -> Unit,
     onSearchWord: () -> Unit,
     scope: CoroutineScope,
+    authState: AuthState<UserModel?>,
+    onRequestLogin: () -> Unit,
     navController: NavController,
 ) {
 
@@ -385,88 +395,106 @@ private fun CommentsSection(
     val displayedRepliesThreadIndex = remember { mutableStateOf(0) }
     val listState = rememberLazyListState()
 
-    when(commentsState) {
-        is DataState.Initial<YoutubeCommentsList> -> {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
-                SmallButton(
-                    text = "Load Comments",
-                    textColor = Color.White,
-                    backgroundColor = Blue500,
-                    onCLick = {
-                        onLoadComments()
-                    },
-                    icon = Icons.Rounded.Downloading,
-                    height = 60.dp,
-                    width = 100.dp,
-                )
-            }
+    when(authState) {
+        is AuthState.Unauthenticated -> {
+            ErrorScreen(
+                text = "Login to your google account to load the comments",
+                action = {
+                    onRequestLogin()
+                },
+                actionName = "Login",
+            )
         }
-        is DataState.Loading -> {
-            LoadingIndicator()
-        }
-        is DataState.Error -> {
-            ErrorScreen(text = "Couldn't fetch comments", subtitle = "Sorry ¯\\_(ツ)_/¯")
-        }
-        is DataState.Success<YoutubeCommentsList> -> {
-            if(displayedRepliesThread.value.isEmpty()) {
-                if(isUpdatingComments) {
-                    LoadingIndicator()
-                } else {
-                    LazyColumn(state = listState) {
-                        val comments = commentsState.data.comments
-                        if(listState.isLastVisibleItem(comments.size -1) && listState.isScrollInProgress) {
-                            onUpdateComments()
-                        }
-                        itemsIndexed(
-                            items = comments,
-                            key = { _, item ->
-                                  item.commentId
+        is AuthState.Authenticated<UserModel?> -> {
+            when(commentsState) {
+                is DataState.Initial<YoutubeCommentsList> -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        SmallButton(
+                            text = "Load Comments",
+                            textColor = Color.White,
+                            backgroundColor = Blue500,
+                            onCLick = {
+                                onLoadComments(authState.data?.token)
                             },
-                        ) { pos, item ->
-                            val isFocused = comments[pos] == inspectedComment
-                            CommentCard(
-                                comment = item,
-                                commentPos = pos,
-                                currentDisplayedThread = displayedRepliesThread,
-                                currentDisplayedThreadIndex = displayedRepliesThreadIndex,
-                                isFocused = isFocused,
-                                onAddCommentToFavorites = onAddCommentToFavorites,
-                                tokens = tokens,
-                                tokensMap = tokensMap,
-                                selectedWord = selectedWord,
-                                onSetSelectedWord = onSetSelectedWord,
-                                onSetInspectedComment = onSetInspectedComment,
-                                onSearchWord = onSearchWord,
-                                navController = navController,
-                            )
-                        }
+                            icon = Icons.Rounded.Downloading,
+                            height = 60.dp,
+                            width = 100.dp,
+                        )
                     }
                 }
+                is DataState.Loading -> {
+                    LoadingIndicator()
+                }
+                is DataState.Error -> {
+                    ErrorScreen(text = "Couldn't fetch comments", subtitle = "Sorry ¯\\_(ツ)_/¯")
+                }
+                is DataState.Success<YoutubeCommentsList> -> {
+                    if(displayedRepliesThread.value.isEmpty()) {
+                        if(isUpdatingComments) {
+                            LoadingIndicator()
+                        } else {
+                            LazyColumn(state = listState) {
+                                val comments = commentsState.data.comments
+                                if(listState.isLastVisibleItem(comments.size -1) && listState.isScrollInProgress) {
+                                    onUpdateComments()
+                                }
+                                itemsIndexed(
+                                    items = comments,
+                                    key = { _, item ->
+                                        item.commentId
+                                    },
+                                ) { pos, item ->
+                                    val isFocused = comments[pos] == inspectedComment
+                                    CommentCard(
+                                        comment = item,
+                                        commentPos = pos,
+                                        currentDisplayedThread = displayedRepliesThread,
+                                        currentDisplayedThreadIndex = displayedRepliesThreadIndex,
+                                        isFocused = isFocused,
+                                        onAddCommentToFavorites = onAddCommentToFavorites,
+                                        tokens = tokens,
+                                        tokensMap = tokensMap,
+                                        selectedWord = selectedWord,
+                                        onSetSelectedWord = onSetSelectedWord,
+                                        onSetInspectedComment = onSetInspectedComment,
+                                        onSearchWord = onSearchWord,
+                                        navController = navController,
+                                    )
+                                }
+                            }
+                        }
 
-            } else {
-                ThreadCommentsSection(
-                    inspectedComment = inspectedComment,
-                    currentDisplayedThread = displayedRepliesThread,
-                    currentDisplayedThreadIndex = displayedRepliesThreadIndex,
-                    onAddCommentToFavorites = onAddCommentToFavorites,
-                    navController = navController,
-                    tokens = tokens,
-                    tokensMap = tokensMap,
-                    selectedWord = selectedWord,
-                    onSetSelectedWord = onSetSelectedWord,
-                    player = player,
-                    onSetInspectedComment = onSetInspectedComment,
-                    onSearchWord = onSearchWord,
-                    scope = scope,
-                    listState = listState,
-                )
+                    } else {
+                        ThreadCommentsSection(
+                            inspectedComment = inspectedComment,
+                            currentDisplayedThread = displayedRepliesThread,
+                            currentDisplayedThreadIndex = displayedRepliesThreadIndex,
+                            onAddCommentToFavorites = onAddCommentToFavorites,
+                            navController = navController,
+                            tokens = tokens,
+                            tokensMap = tokensMap,
+                            selectedWord = selectedWord,
+                            onSetSelectedWord = onSetSelectedWord,
+                            player = player,
+                            onSetInspectedComment = onSetInspectedComment,
+                            onSearchWord = onSearchWord,
+                            scope = scope,
+                            listState = listState,
+                        )
+                    }
+                }
             }
         }
+        is AuthState.AuthError -> {
+            ErrorScreen(text = "An error occured during authentication", action = { onRequestLogin() })
+        }
     }
+
+
 }
 
 @Composable
@@ -716,7 +744,7 @@ private fun SelectionTabSection(
     selectedWord: String,
     onLoadCaptions: () -> Unit,
     onLoadTrack: (String) -> Unit,
-    onLoadComments: () -> Unit,
+    onLoadComments: (String?) -> Unit,
     onSetSelectedWord: (String) -> Unit,
     commentsState: DataState<YoutubeCommentsList>,
     onUpdateComments: () -> Unit,
@@ -731,6 +759,8 @@ private fun SelectionTabSection(
     onSetPlayerPosition: (Float) -> Unit,
     activeCaption: Int,
     scope: CoroutineScope,
+    onRequestLogin: () -> Unit,
+    authState: AuthState<UserModel?>,
     navController: NavController
 ) {
     CustomTabMenu(
@@ -777,6 +807,8 @@ private fun SelectionTabSection(
                 player = player,
                 onSetInspectedComment = onSetInspectedComment,
                 onSearchWord = onSearchWord,
+                onRequestLogin = onRequestLogin,
+                authState = authState,
                 scope = scope,
             )
         }

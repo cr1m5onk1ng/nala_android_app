@@ -1,6 +1,7 @@
 package com.example.nala.repository
 
 import android.util.Log
+import com.example.nala.BuildConfig
 import com.example.nala.db.dao.VideoDao
 import com.example.nala.db.models.yt.YoutubeCaptionTracksCache
 import com.example.nala.db.models.yt.YoutubeCaptionsCache
@@ -29,7 +30,7 @@ class YoutubeRepositoryImpl @Inject constructor(
     private val commentMapper = YoutubeCommentMapper()
     private val videoMapper = YoutubeVideoMapper()
 
-    override suspend fun getVideoComments(videoId: String, pageId: String?): YoutubeCommentsList {
+    override suspend fun getVideoComments(videoId: String, key: String?, pageId: String?): YoutubeCommentsList {
         /*
         val cachedComments = videoDao.getCachedVideoComments(videoId)
         if(cachedComments.isNotEmpty()) {
@@ -61,9 +62,25 @@ class YoutubeRepositoryImpl @Inject constructor(
                 comments = comments,
             )
         }*/
-        return commentMapper.mapToDomainModel(
-            youTubeApiService.getVideoTopComments(videoId = videoId, pageToken = pageId, maxResults=20)
-        )
+        if(key == null) {
+            return commentMapper.mapToDomainModel(
+                youTubeApiService.getVideoTopComments(
+                    videoId = videoId,
+                    key=BuildConfig.YT_DATA_API_KEY,
+                    pageToken = pageId,
+                    maxResults=20)
+            )
+        } else {
+            return commentMapper.mapToDomainModel(
+                youTubeApiService.getVideoTopCommentsWithToken(
+                    videoId = videoId,
+                    accessToken="Bearer $key",
+                    pageToken = pageId,
+                    maxResults=20)
+            )
+        }
+
+
     }
 
     override suspend fun getVideoData(videoId: String): YoutubeVideoModel {

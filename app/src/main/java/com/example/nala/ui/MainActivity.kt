@@ -1,10 +1,9 @@
 package com.example.nala.ui
 
+import android.app.Activity
 import android.app.PendingIntent
 import android.content.Intent
 import android.graphics.drawable.VectorDrawable
-import android.media.AudioAttributes
-import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
@@ -35,6 +34,9 @@ import androidx.core.graphics.drawable.toBitmap
 import com.example.nala.R
 import com.example.nala.ui.dictionary.DictionaryForegroundService
 import androidx.compose.material.*
+import com.example.nala.BuildConfig
+import com.example.nala.services.auth.GoogleAuthenticator
+import com.example.nala.ui.auth.AuthViewModel
 import com.example.nala.ui.composables.articles.ArticleScreen
 import com.example.nala.ui.composables.dictionary.DictionaryDetailScreen
 import com.example.nala.ui.composables.dictionary.HomeScreen
@@ -51,7 +53,11 @@ import com.example.nala.ui.settings.SettingsViewModel
 import com.example.nala.ui.yt.YoutubeViewModel
 import com.example.nala.utils.InputStringType
 import com.example.nala.utils.Utils
-import kotlinx.coroutines.Dispatchers
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.Scope
 
 
 @AndroidEntryPoint
@@ -61,12 +67,17 @@ class MainActivity : AppCompatActivity() {
     lateinit var app: BaseApplication
 
     // VIEW MODELS
-    private val viewModel: DictionaryViewModel by viewModels()
+    private val dictViewModel: DictionaryViewModel by viewModels()
     private val reviewViewModel: ReviewViewModel by viewModels()
     private val studyViewModel: StudyViewModel by viewModels()
     private val ytViewModel: YoutubeViewModel by viewModels()
     private val favoritesViewModel: FavoritesViewModel by viewModels()
     private val settingsViewModel: SettingsViewModel by viewModels()
+    private val authViewModel: AuthViewModel by viewModels()
+
+    // GOOGLE AUTH
+    private lateinit var googleSignInClient: GoogleSignInClient
+    private lateinit var googleAuthenticator: GoogleAuthenticator
 
     // ROUTING VARIABLES
     var startDestination = "home_screen"
@@ -77,11 +88,11 @@ class MainActivity : AppCompatActivity() {
     @ExperimentalComposeUiApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d("SHARE", "ON CREATE CALLED")
+        initGoogleAuth()
         // NEEDED TO USE POP UP DICTIONARY MODE
         checkOverlayPermissions()
         // SETTING UP NEEDED OBSERVABLES
-        viewModel.loadMightForgetItems()
+        dictViewModel.loadMightForgetItems()
         settingsViewModel.loadSharedPreferences()
         favoritesViewModel.loadSavedVideos()
         favoritesViewModel.loadSavedArticles()
@@ -110,16 +121,18 @@ class MainActivity : AppCompatActivity() {
                 NavHost(navController=navController, startDestination) {
                     composable("home_screen"){
                         HomeScreen(
-                            query = viewModel.query.value,
-                            mightForgetItemsState = viewModel.mightForgetItemsState.value,
-                            onQueryChange = viewModel::onQueryChanged,
-                            onClick = {viewModel.onTriggerEvent(DictionaryEvent.SearchWordEvent)},
-                            textReceived = viewModel.textReceived.value,
-                            sentenceReceived = viewModel.sentenceReceived.value,
-                            isHomeSelected = viewModel.isHomeSelected.value,
-                            isReviewsSelected = viewModel.isReviewSelected.value,
-                            toggleHome = viewModel::toggleHome,
-                            toggleReviews = viewModel::toggleReviews,
+                            query = dictViewModel.query.value,
+                            mightForgetItemsState = dictViewModel.mightForgetItemsState.value,
+                            onQueryChange = dictViewModel::onQueryChanged,
+                            onClick = {dictViewModel.onTriggerEvent(DictionaryEvent.SearchWordEvent)},
+                            onSignIn = googleAuthenticator::signIn,
+                            onSignOut = googleAuthenticator::signOut,
+                            textReceived = dictViewModel.textReceived.value,
+                            sentenceReceived = dictViewModel.sentenceReceived.value,
+                            isHomeSelected = dictViewModel.isHomeSelected.value,
+                            isReviewsSelected = dictViewModel.isReviewSelected.value,
+                            toggleHome = dictViewModel::toggleHome,
+                            toggleReviews = dictViewModel::toggleReviews,
                             scaffoldState = scaffoldState,
                             navController = navController
                         )
@@ -127,13 +140,13 @@ class MainActivity : AppCompatActivity() {
 
                     composable("detail_screen") {
                         DictionaryDetailScreen(
-                            searchState = viewModel.wordSearchState.value,
-                            onRetry = viewModel::retrySearch,
+                            searchState = dictViewModel.wordSearchState.value,
+                            onRetry = dictViewModel::retrySearch,
                             navController = navController,
-                            wordKanjis = viewModel.currentWordKanjis.value,
-                            setCurrentKanji = viewModel::setCurrentKanji,
-                            setCurrentStory = viewModel::setCurrentStory,
-                            addToReview =  viewModel::addWordToReview,
+                            wordKanjis = dictViewModel.currentWordKanjis.value,
+                            setCurrentKanji = dictViewModel::setCurrentKanji,
+                            setCurrentStory = dictViewModel::setCurrentStory,
+                            addToReview =  dictViewModel::addWordToReview,
                             loadWordReviews = reviewViewModel::loadWordReviewItems,
                             scaffoldState = scaffoldState,
                             showSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
@@ -142,13 +155,13 @@ class MainActivity : AppCompatActivity() {
 
                     composable("kanji_detail_screen"){
                         KanjiDetailScreen(
-                            kanjiSearchState = viewModel.kanjiSearchState.value,
-                            kanjiStoryState = viewModel.kanjiStoryState.value,
-                            storyFormActive = viewModel.editStoryFormActive.value,
-                            addKanjiToReview = viewModel::addKanjiToReview,
-                            updateKanjiStory = viewModel::updateKanjiStory,
-                            setCurrentStory = viewModel::setCurrentStory,
-                            toggleStoryEditForm = viewModel::toggleEditStoryForm,
+                            kanjiSearchState = dictViewModel.kanjiSearchState.value,
+                            kanjiStoryState = dictViewModel.kanjiStoryState.value,
+                            storyFormActive = dictViewModel.editStoryFormActive.value,
+                            addKanjiToReview = dictViewModel::addKanjiToReview,
+                            updateKanjiStory = dictViewModel::updateKanjiStory,
+                            setCurrentStory = dictViewModel::setCurrentStory,
+                            toggleStoryEditForm = dictViewModel::toggleEditStoryForm,
                             navController = navController,
                             scaffoldState = scaffoldState,
                             showSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
@@ -162,20 +175,20 @@ class MainActivity : AppCompatActivity() {
                             wordReviewItems = reviewViewModel.wordReviewItems.value,
                             sentenceReviewItems = reviewViewModel.sentenceReviewItems.value,
                             kanjiReviewItems = reviewViewModel.kanjiReviewItems.value,
-                            setWordItem = viewModel::setCurrentWordFromReview,
+                            setWordItem = dictViewModel::setCurrentWordFromReview,
                             setSentenceItem = studyViewModel::setStudyContext,
                             setTargetWordItem = studyViewModel::setStudyTargetWord,
-                            setKanjiItem = viewModel::setCurrentKanji,
+                            setKanjiItem = dictViewModel::setCurrentKanji,
                             removeWordReview = reviewViewModel::removeWordReviewItem,
                             removeSentenceReview = reviewViewModel::removeSentenceReviewItem,
                             removeKanjiReview = reviewViewModel::removeKanjiReviewItem,
                             dismissWordReview = {},
                             dismissSentenceReview = {},
                             dismissKanjiReview = {},
-                            isHomeSelected = viewModel.isHomeSelected.value,
-                            isReviewsSelected = viewModel.isReviewSelected.value,
-                            toggleHome = viewModel::toggleHome,
-                            toggleReviews = viewModel::toggleReviews,
+                            isHomeSelected = dictViewModel.isHomeSelected.value,
+                            isReviewsSelected = dictViewModel.isReviewSelected.value,
+                            toggleHome = dictViewModel::toggleHome,
+                            toggleReviews = dictViewModel::toggleReviews,
                             updateWordReviewItem = reviewViewModel::updateWordReviewItem,
                             updateSentenceReviewItem= reviewViewModel::updateSentenceReviewItem,
                             updateKanjiReviewItem = reviewViewModel::updateKanjiReviewItem,
@@ -192,19 +205,19 @@ class MainActivity : AppCompatActivity() {
 
                     composable("sentence_form_screen"){
                         OneTargetForm(
-                            sentenceState = viewModel.sentenceState.value,
-                            tokens = viewModel.sharedSentenceTokens.value,
-                            tokensIndexMap = viewModel.sharedSentenceTokensIndexMap.value,
+                            sentenceState = dictViewModel.sentenceState.value,
+                            tokens = dictViewModel.sharedSentenceTokens.value,
+                            tokensIndexMap = dictViewModel.sharedSentenceTokensIndexMap.value,
                             fromLookup = fromLookup,
                             selectedWord = studyViewModel.selectedWord.value,
                             onSentenceAdd = studyViewModel::setStudyContext,
                             setKanjis = studyViewModel::setCurrentWordKanjis,
                             onWordAdd = studyViewModel::setStudyTargetWord,
                             onWordSelect = studyViewModel::setSelectedWord,
-                            addSentenceToReview = viewModel::addSentenceToReview,
+                            addSentenceToReview = dictViewModel::addSentenceToReview,
                             loadSentenceReviews = reviewViewModel::loadSentenceReviewItems,
                             unsetSelectedWord = studyViewModel::unsetSelectedWord,
-                            unsetSharedSentence = viewModel::unsetSharedSentence,
+                            unsetSharedSentence = dictViewModel::unsetSharedSentence,
                             showSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
                             scaffoldState = scaffoldState,
                             navController = navController,
@@ -218,13 +231,13 @@ class MainActivity : AppCompatActivity() {
                             targetWordState = studyViewModel.targetWordState.value,
                             similarSentencesState = studyViewModel.similarSentencesState.value,
                             navController = navController,
-                            setSharedSentence = viewModel::setSharedSentence,
-                            setCurrentWord = viewModel::setCurrentWordFromStudy,
+                            setSharedSentence = dictViewModel::setSharedSentence,
+                            setCurrentWord = dictViewModel::setCurrentWordFromStudy,
                             unsetTargetWord = studyViewModel::unsetSelectedWord,
-                            addSentenceToReview = viewModel::addSentenceToReview,
+                            addSentenceToReview = dictViewModel::addSentenceToReview,
                             loadSentenceReviews = reviewViewModel::loadSentenceReviewItems,
                             loadSimilarSentences = studyViewModel::loadSimilarSentences,
-                            setIsWordFromForm = viewModel::setIsWordFromForm,
+                            setIsWordFromForm = dictViewModel::setIsWordFromForm,
                             scaffoldState = scaffoldState,
                             showReviewSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
                             showSaveSnackbar = {showSnackbar(scaffoldState, message="Sentence added to corpus")}
@@ -265,8 +278,8 @@ class MainActivity : AppCompatActivity() {
                             onPlayerTimeElapsed = ytViewModel::onPlayerTimeElapsed,
                             onClickCaption = ytViewModel::onSeekTo,
                             onChangeSelectedTab = ytViewModel::setSelectedTab,
-                            onShowCaptionsDetails = viewModel::setSharedSentence,
-                            onShowCommentsDetails = viewModel::setSharedSentence,
+                            onShowCaptionsDetails = dictViewModel::setSharedSentence,
+                            onShowCommentsDetails = dictViewModel::setSharedSentence,
                             onSearchWord = {
                                 startDictionaryWindowService(ytViewModel.inspectedElementSelectedWord.value)
                                            },
@@ -274,6 +287,8 @@ class MainActivity : AppCompatActivity() {
                             onShowSavedSnackBar = { showSnackbar(scaffoldState, message="Added to favorites") },
                             onShowRemovedSnackBar = { showSnackbar(scaffoldState, message="Removed from favorites") },
                             onRetry = ytViewModel::onRetry,
+                            onRequestLogin = googleAuthenticator::signIn,
+                            authState = authViewModel.account.value,
                             activeCaption = ytViewModel.activeCaption.value,
                             scaffoldState = scaffoldState,
                             navController = navController,
@@ -332,6 +347,24 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         setIntent(intent)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == GoogleAuthenticator.RC_SIGN_IN) {
+            if (resultCode == Activity.RESULT_OK) {
+                val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+                try {
+                    val account = task.getResult(ApiException::class.java)
+                    Log.d("AUTHDEBUG", "Account: $account")
+                    Log.d("AUTHDEBUG", "Auth Code: ${account?.serverAuthCode ?: "Account is NULL"}")
+                    authViewModel.setAccount(account)
+                } catch (e: ApiException) {
+                    Log.d("AUTHDEBUG", "ERROR: $e")
+                    authViewModel.setAuthError()
+                }
+            }
+        }
     }
 
     private fun checkOverlayPermissions() {
@@ -407,7 +440,7 @@ class MainActivity : AppCompatActivity() {
                 Log.d("SHARED", "SHARED TEXT: $inputString")
                 when(Utils.parseInputString(inputString)) {
                     InputStringType.Sentence -> {
-                        viewModel.setSharedSentence(inputString)
+                        dictViewModel.setSharedSentence(inputString)
                         startDestination = "sentence_form_screen"
                         fromLookup = true
                     }
@@ -440,6 +473,21 @@ class MainActivity : AppCompatActivity() {
             startDictionaryWindowService(word)
             finish()
         }
+    }
+
+    private fun initGoogleAuth() {
+        val gso =
+            GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestServerAuthCode(BuildConfig.OAUTH_ID)
+                .requestScopes(Scope("https://www.googleapis.com/auth/youtube.force-ssl"))
+                .requestEmail()
+                .build()
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
+        googleAuthenticator = GoogleAuthenticator(
+            this,
+            googleSignInClient,
+            authViewModel::invalidateAccount
+        )
     }
 
 

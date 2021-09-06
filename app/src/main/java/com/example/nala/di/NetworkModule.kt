@@ -7,13 +7,17 @@ import com.example.nala.network.services.DictionaryService
 import com.example.nala.network.services.SearchApiService
 import com.example.nala.network.services.YouTubeApiService
 import com.example.nala.network.services.YoutubeCaptionsService
+import com.example.nala.services.auth.GoogleAuthenticator
 import com.example.nala.services.tokenization.JapaneseTokenizerService
 import com.example.nala.utils.NetworkConstants
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ActivityContext
 import dagger.hilt.components.SingletonComponent
+import okhttp3.Authenticator
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -86,6 +90,8 @@ object NetworkModule {
     @Provides
     fun provideYoutubeDataApiService() : YouTubeApiService {
         return Retrofit.Builder()
+            .client(OkHttpClient.Builder().addInterceptor(HttpLoggingInterceptor().setLevel(
+                HttpLoggingInterceptor.Level.BODY )).build())
             .baseUrl(NetworkConstants.YT_ENTRY_POINT)
             .addConverterFactory(GsonConverterFactory.create(GsonBuilder().create()))
             .build()

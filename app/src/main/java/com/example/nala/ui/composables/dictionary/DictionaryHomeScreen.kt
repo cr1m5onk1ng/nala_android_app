@@ -29,6 +29,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import com.example.nala.db.models.review.WordReviewModel
 import com.example.nala.domain.model.utils.DataState
@@ -37,6 +38,7 @@ import com.example.nala.ui.composables.LoadingIndicator
 import com.example.nala.ui.composables.SmallButton
 import com.example.nala.ui.composables.menus.CustomDrawer
 import com.example.nala.ui.theme.*
+import com.google.android.gms.common.SignInButton
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
@@ -48,6 +50,8 @@ fun HomeScreen(
     mightForgetItemsState: DataState<List<WordReviewModel>>,
     onQueryChange: (String) -> Unit,
     onClick: () -> Unit,
+    onSignIn: () -> Unit,
+    onSignOut: () -> Unit,
     textReceived: Boolean,
     sentenceReceived: Boolean,
     isHomeSelected: Boolean,
@@ -251,6 +255,22 @@ fun HomeScreen(
                             navController.navigate("detail_screen")
                         }
                     )
+                )
+                AndroidView(
+                    factory = { context ->
+                        SignInButton(context).apply{
+                            setOnClickListener {
+                                onSignIn()
+                            }
+                        }
+                    }
+                )
+
+                SmallButton(
+                    text = "Logout",
+                    backgroundColor = Blue500,
+                    onCLick = { onSignOut() },
+                    height = 60.dp
                 )
             }
         }

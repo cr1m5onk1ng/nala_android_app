@@ -34,6 +34,8 @@ class YoutubeViewModel @Inject constructor(
 
     private val _currentVideoId = MutableStateFlow<String>("")
 
+    private var authToken: String? = null
+
     val videoDataLoading = mutableStateOf(false)
 
     val currentVideoUrl = mutableStateOf("")
@@ -47,7 +49,8 @@ class YoutubeViewModel @Inject constructor(
     }
 
     private val videoCommentsStateFlow = _currentVideoId.mapLatest{ vId ->
-            youtubeRepository.getVideoComments(vId, nextCommentsPageId)
+        Log.d("AUTHDEBUG", "LOADING COMMENTS WIHT TOKEN: $authToken")
+            youtubeRepository.getVideoComments(vId, authToken, nextCommentsPageId)
         }
 
     val captionsState: MutableState<DataState<List<YoutubeCaptionModel>>> =
@@ -100,8 +103,6 @@ class YoutubeViewModel @Inject constructor(
     private val _isVideoSaved = MutableStateFlow<Boolean>(false)
 
     val isVideoInFavorites = mutableStateOf(false)
-
-    val isVideoSaved: StateFlow<Boolean> = _isVideoSaved
 
     private val isVideoSavedFlow = _isVideoSaved.flatMapLatest {
         youtubeRepository.getSavedVideo(currentVideoId.value).map {
@@ -193,8 +194,9 @@ class YoutubeViewModel @Inject constructor(
         }
     }
 
-    fun loadComments() = viewModelScope.launch{
+    fun loadComments(accessToken: String?) = viewModelScope.launch{
         commentsState.value = DataState.Loading
+        setAccessToken(accessToken)
         try{
             videoCommentsStateFlow.collect{
                 nextCommentsPageId = it.nextPageToken
@@ -209,6 +211,7 @@ class YoutubeViewModel @Inject constructor(
                 )
             }
         } catch(e: Exception){
+            Log.d("AUTHDEBUG", "Error Fetching Comments: $e")
             commentsState.value = DataState.Error(ErrorType.ERROR_FETCHING_DATA)
         }
     }
@@ -305,6 +308,10 @@ class YoutubeViewModel @Inject constructor(
         }
     }
 
+    private fun setAccessToken(token: String?) {
+        authToken = token
+    }
+
     private fun getVideoData(videoId: String) {
         viewModelScope.launch{
             videoDataLoading.value = true
@@ -360,6 +367,7 @@ class YoutubeViewModel @Inject constructor(
         }
         return null
     }
+
 
 
 

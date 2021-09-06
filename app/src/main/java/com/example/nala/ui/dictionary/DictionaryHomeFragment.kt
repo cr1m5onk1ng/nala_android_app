@@ -41,6 +41,8 @@ class DictionaryHomeFragment : Fragment() {
                         mightForgetItemsState = viewModel.mightForgetItemsState.value,
                         onQueryChange = viewModel::onQueryChanged,
                         onClick = {viewModel.onTriggerEvent(DictionaryEvent.SearchWordEvent)},
+                        onSignIn = {},
+                        onSignOut = {},
                         textReceived = viewModel.textReceived.value,
                         sentenceReceived = viewModel.sentenceReceived.value,
                         isHomeSelected = viewModel.isHomeSelected.value,
