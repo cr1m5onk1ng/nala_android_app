@@ -21,6 +21,7 @@ class YoutubeCommentMapper : NetworkMapper<YoutubeVideoCommentsData, YoutubeComm
                         videoId = it.snippet?.videoId ?: "",
                         commentId = it.id ?: "",
                         content = it.snippet?.textOriginal ?: "",
+                        pageId = networkModel.nextPageToken,
                         publishedAt = it.snippet?.publishedAt ?: "",
                         authorName = it.snippet?.authorDisplayName ?: "",
                         authorProfileImageUrl = it.snippet?.authorProfileImageUrl ?: "",

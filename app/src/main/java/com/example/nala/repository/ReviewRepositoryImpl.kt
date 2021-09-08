@@ -15,13 +15,14 @@ import com.example.nala.utils.MetadataExtractionException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
 import java.util.*
 import javax.inject.Inject
 
 class ReviewRepositoryImpl @Inject constructor(
     private val reviewDao: ReviewDao,
-    private val metadataExtractorService: AsyncExtractorService<MetadataModel>,
+    private val metadataExtractorService: ExtractorService<MetadataModel>,
 ) : ReviewRepository {
 
 
@@ -360,8 +361,14 @@ class ReviewRepositoryImpl @Inject constructor(
         reviewDao.updateWordReviewItem(updatedWordReview)
     }
 
-    override fun getSavedArticle(url: String): Flow<List<ArticlesCache>> {
-        return reviewDao.getSavedArticleDistinctUntilChanged(url)
+    override fun getSavedArticle(url: String): Flow<ArticlesCache> {
+        return reviewDao.getSavedArticleDistinctUntilChanged(url).mapLatest{
+            if(it.isEmpty()) {
+                ArticlesCache.Empty()
+            } else {
+                it.first()
+            }
+        }
     }
 
     override suspend fun removeWordReview(wordReview: WordReviewModel) {

@@ -36,4 +36,8 @@ data class ArticlesCache (
             )
         }
     }
+
+    fun isEmpty() : Boolean {
+        return url.isEmpty()
+    }
 }

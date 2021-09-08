@@ -58,6 +58,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.Scope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 
 @AndroidEntryPoint
@@ -84,6 +85,7 @@ class MainActivity : AppCompatActivity() {
     // flag that checks if the dictionary was called from an article
     var fromLookup = false
 
+    @ExperimentalCoroutinesApi
     @RequiresApi(Build.VERSION_CODES.M)
     @ExperimentalComposeUiApi
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -123,10 +125,11 @@ class MainActivity : AppCompatActivity() {
                         HomeScreen(
                             query = dictViewModel.query.value,
                             mightForgetItemsState = dictViewModel.mightForgetItemsState.value,
+                            authState = authViewModel.account.value,
                             onQueryChange = dictViewModel::onQueryChanged,
                             onClick = {dictViewModel.onTriggerEvent(DictionaryEvent.SearchWordEvent)},
                             onSignIn = googleAuthenticator::signIn,
-                            onSignOut = googleAuthenticator::signOut,
+                            onSignOut = { onLogOut() },
                             textReceived = dictViewModel.textReceived.value,
                             sentenceReceived = dictViewModel.sentenceReceived.value,
                             isHomeSelected = dictViewModel.isHomeSelected.value,
@@ -356,7 +359,9 @@ class MainActivity : AppCompatActivity() {
                 val task = GoogleSignIn.getSignedInAccountFromIntent(data)
                 try {
                     val account = task.getResult(ApiException::class.java)
-                    Log.d("AUTHDEBUG", "Account: $account")
+                    Log.d("AUTHDEBUG", "User: ${account?.displayName}")
+                    Log.d("AUTHDEBUG", "Email: ${account?.email}")
+                    Log.d("AUTHDEBUG", "Profile pic: ${account?.photoUrl}")
                     Log.d("AUTHDEBUG", "Auth Code: ${account?.serverAuthCode ?: "Account is NULL"}")
                     authViewModel.setAccount(account)
                 } catch (e: ApiException) {
@@ -433,6 +438,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @ExperimentalCoroutinesApi
     private fun handleSharedText(intent: Intent?) {
         Log.d("SHARED", "ACTION SEND CALLED!")
         if ("text/plain" == intent?.type) {
@@ -479,7 +485,7 @@ class MainActivity : AppCompatActivity() {
         val gso =
             GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestServerAuthCode(BuildConfig.OAUTH_ID)
-                .requestScopes(Scope("https://www.googleapis.com/auth/youtube.force-ssl"))
+                //.requestScopes(Scope("https://www.googleapis.com/auth/youtube.force-ssl"))
                 .requestEmail()
                 .build()
         googleSignInClient = GoogleSignIn.getClient(this, gso)
@@ -490,6 +496,10 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
+    private fun onLogOut() {
+        googleAuthenticator.signOut()
+        authViewModel.invalidateAccount()
+    }
 
 
 }

@@ -33,18 +33,23 @@ class AuthViewModel @Inject constructor() : ViewModel() {
             tokenRequestPending.value = true
             val authCode = gAccount?.serverAuthCode
             if(authCode == null) {
-                account.value = AuthState.AuthError(ErrorType.ERROR_FETCHING_DATA)
+                account. value = AuthState.AuthError(ErrorType.LOGIN_ERROR)
             } else {
                 val accessToken = requestAccessToken(authCode)
-                account.value = AuthState.Authenticated(
-                    UserModel(
-                        username = gAccount?.displayName ?: "",
-                        email = gAccount?.email,
-                        token = accessToken,
+                if(accessToken == null)  {
+                    account.value = AuthState.AuthError(ErrorType.OAUTH_ERROR)
+                } else {
+                    account.value = AuthState.Authenticated(
+                        UserModel(
+                            username = gAccount.displayName ?: "",
+                            email = gAccount.email,
+                            photoUrl = gAccount.photoUrl.toString(),
+                            token = accessToken,
+                        )
                     )
-                )
-                tokenRequestPending.value = false
+                }
             }
+            tokenRequestPending.value = false
         }
     }
 
@@ -53,11 +58,12 @@ class AuthViewModel @Inject constructor() : ViewModel() {
     }
 
     fun setAuthError() {
-        this.account.value = AuthState.AuthError(ErrorType.ERROR_FETCHING_DATA)
+        this.account.value = AuthState.AuthError(ErrorType.LOGIN_ERROR)
     }
 
     private suspend fun requestAccessToken(authCode: String) : String? {
             return withContext(Dispatchers.IO) {
+
                 var ret: String?
                 val client = OkHttpClient()
                 val requestBody = FormBody.Builder()

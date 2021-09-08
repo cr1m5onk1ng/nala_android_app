@@ -4,4 +4,6 @@ enum class ErrorType {
     NETWORK_NOT_AVAILABLE,
     DATA_NOT_AVAILABLE,
     ERROR_FETCHING_DATA,
+    LOGIN_ERROR,
+    OAUTH_ERROR,
 }

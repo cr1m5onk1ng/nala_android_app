@@ -1,6 +1,5 @@
 package com.example.nala.repository
 
-import android.util.Log
 import com.example.nala.BuildConfig
 import com.example.nala.db.dao.VideoDao
 import com.example.nala.db.models.yt.YoutubeCaptionTracksCache
@@ -15,6 +14,7 @@ import com.example.nala.network.services.YoutubeCaptionsService
 import com.example.nala.services.metadata.AsyncExtractorService
 import com.example.nala.utils.Utils
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
@@ -31,8 +31,7 @@ class YoutubeRepositoryImpl @Inject constructor(
     private val videoMapper = YoutubeVideoMapper()
 
     override suspend fun getVideoComments(videoId: String, key: String?, pageId: String?): YoutubeCommentsList {
-        /*
-        val cachedComments = videoDao.getCachedVideoComments(videoId)
+        val cachedComments = videoDao.getCachedVideoComments(videoId, pageId)
         if(cachedComments.isNotEmpty()) {
             val comments = cachedComments.map{ comment ->
                 YoutubeCommentModel(
@@ -61,26 +60,27 @@ class YoutubeRepositoryImpl @Inject constructor(
             return YoutubeCommentsList(
                 comments = comments,
             )
-        }*/
-        if(key == null) {
-            return commentMapper.mapToDomainModel(
-                youTubeApiService.getVideoTopComments(
-                    videoId = videoId,
-                    key=BuildConfig.YT_DATA_API_KEY,
-                    pageToken = pageId,
-                    maxResults=20)
-            )
         } else {
-            return commentMapper.mapToDomainModel(
-                youTubeApiService.getVideoTopCommentsWithToken(
-                    videoId = videoId,
-                    accessToken="Bearer $key",
-                    pageToken = pageId,
-                    maxResults=20)
-            )
+            val comments = if(key == null) {
+                commentMapper.mapToDomainModel(
+                    youTubeApiService.getVideoTopComments(
+                        videoId = videoId,
+                        key=BuildConfig.YT_DATA_API_KEY,
+                        pageToken = pageId,
+                        maxResults=20)
+                )
+            } else {
+                commentMapper.mapToDomainModel(
+                    youTubeApiService.getVideoTopCommentsWithToken(
+                        videoId = videoId,
+                        accessToken="Bearer $key",
+                        pageToken = pageId,
+                        maxResults=20)
+                )
+            }
+            cacheVideoComments(comments.comments)
+            return comments
         }
-
-
     }
 
     override suspend fun getVideoData(videoId: String): YoutubeVideoModel {
@@ -134,9 +134,11 @@ class YoutubeRepositoryImpl @Inject constructor(
     ): List<YoutubeCaptionModel> {
         val cachedCaptions = videoDao.getCachedVideoCaptions(videoId, lang)
         return if(cachedCaptions.isEmpty()) {
-            mapNetworkCaptionsToDomainModel(
+            val captions = mapNetworkCaptionsToDomainModel(
                 youtubeCaptionsService.getVideoCaptions(videoId = videoId, lang = lang)
             )
+            cacheVideoCaptions(videoId, lang, captions)
+            captions
         } else {
             mapCachedCaptionsToDomainModel(cachedCaptions)
         }
@@ -155,6 +157,7 @@ class YoutubeRepositoryImpl @Inject constructor(
         }
     }
 
+    @ExperimentalCoroutinesApi
     override fun getSavedVideo(videoId: String): Flow<YoutubeVideoModel> {
         return videoDao.getCachedVideoDistinctUntilChanged(videoId).mapLatest {
             if(it.isEmpty()){
@@ -193,10 +196,12 @@ class YoutubeRepositoryImpl @Inject constructor(
                     langDefault = it.langDefault.toBoolean(),
                 )
             } ?: listOf()
+            if(tracks.isNotEmpty()) cacheVideoCaptionTracks(videoId, tracks)
         }
         return tracks
     }
 
+    @ExperimentalCoroutinesApi
     override fun getSavedVideos(): Flow<List<YoutubeVideoModel>> {
         return videoDao.getCachedVideos().mapLatest { videos ->
             videos.map{
@@ -211,12 +216,34 @@ class YoutubeRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun cacheVideoComments(comments: List<YoutubeCommentModel>) {
+    @ExperimentalCoroutinesApi
+    override fun getCachedVideoComments(videoId: String): Flow<List<YoutubeCommentModel>> {
+        return videoDao.getCachedVideoCommentsFlow(videoId).mapLatest { comments ->
+            comments.map{
+                YoutubeCommentModel(
+                    videoId = it.videoId,
+                    commentId = it.commentId,
+                    content = it.comment,
+                    publishedAt = it.publishedAt ?: "",
+                    authorName = it.author,
+                    authorProfileImageUrl = it.profileImageUrl,
+                    dislikesCount = it.dislikesCount,
+                    likeCount = it.likesCount,
+                )
+            }
+        }
+    }
+
+    override suspend fun removeVideoFromFavorites(videoId: String) {
+        videoDao.removeVideoFromFavorites(videoId)
+    }
+
+    private suspend fun cacheVideoComments(comments: List<YoutubeCommentModel>) {
         val toCache = comments.map{
             YoutubeCommentsCache(
                 videoId = it.videoId,
                 commentId = it.commentId,
-                page = it.page,
+                pageId = it.pageId,
                 comment = it.content,
                 author = it.authorName,
                 profileImageUrl = it.authorProfileImageUrl,
@@ -228,7 +255,7 @@ class YoutubeRepositoryImpl @Inject constructor(
         videoDao.cacheVideoComments(*toCache)
     }
 
-    override suspend fun cacheVideoCaptions(videoId: String, langCode: String, captions: List<YoutubeCaptionModel>) {
+    private suspend fun cacheVideoCaptions(videoId: String, langCode: String, captions: List<YoutubeCaptionModel>) {
         val toCache = captions.map{
             YoutubeCaptionsCache(
                 videoId = videoId,
@@ -241,7 +268,7 @@ class YoutubeRepositoryImpl @Inject constructor(
         videoDao.cacheVideoCaptions(*toCache)
     }
 
-    override suspend fun cacheVideoCaptionTracks(videoId: String, tracks: List<YoutubeCaptionTracksModel>) {
+    private suspend fun cacheVideoCaptionTracks(videoId: String, tracks: List<YoutubeCaptionTracksModel>) {
         val toCache = tracks.map{
             YoutubeCaptionTracksCache(
                 videoId = videoId,
@@ -254,27 +281,6 @@ class YoutubeRepositoryImpl @Inject constructor(
             )
         }.toTypedArray()
         videoDao.cacheVideoCaptionTracks(*toCache)
-    }
-
-    override suspend fun removeVideoFromFavorites(videoId: String) {
-        videoDao.removeVideoFromFavorites(videoId)
-    }
-
-    override fun getCachedVideoComments(videoId: String): Flow<List<YoutubeCommentModel>> {
-        return videoDao.getCachedVideoCommentsFlow(videoId).mapLatest { comments ->
-            comments.map{
-                YoutubeCommentModel(
-                    videoId = it.videoId,
-                    commentId = it.commentId,
-                    content = it.comment,
-                    publishedAt = it.publishedAt ?: "",
-                    authorName = it.author ?: "",
-                    authorProfileImageUrl = it.profileImageUrl,
-                    dislikesCount = it.dislikesCount,
-                    likeCount = it.likesCount,
-                )
-            }
-        }
     }
 
     private fun mapCachedCaptionsToDomainModel(captions: List<YoutubeCaptionsCache>) : List<YoutubeCaptionModel> {

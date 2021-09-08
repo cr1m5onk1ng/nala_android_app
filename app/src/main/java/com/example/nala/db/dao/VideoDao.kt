@@ -29,8 +29,8 @@ interface VideoDao {
     @Query("SELECT * FROM video_comments_cache WHERE video_id=:videoId ORDER BY published_at DESC")
     fun getCachedVideoCommentsFlow(videoId: String) : Flow<List<YoutubeCommentsCache>>
 
-    @Query("SELECT * FROM video_comments_cache WHERE video_id=:videoId ORDER BY published_at DESC")
-    suspend fun getCachedVideoComments(videoId: String) : List<YoutubeCommentsCache>
+    @Query("SELECT * FROM video_comments_cache WHERE video_id=:videoId AND page_id=:pageId ORDER BY published_at DESC")
+    suspend fun getCachedVideoComments(videoId: String, pageId: String?) : List<YoutubeCommentsCache>
 
     @Query("SELECT * FROM video_comments_cache WHERE parent_comment_id=:topCommentId")
     suspend fun getCommentResponses(topCommentId: String) : List<YoutubeCommentsCache>

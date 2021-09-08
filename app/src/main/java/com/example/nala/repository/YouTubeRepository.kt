@@ -5,12 +5,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface YouTubeRepository {
 
-    suspend fun cacheVideoComments(comments: List<YoutubeCommentModel>)
-
-    suspend fun cacheVideoCaptions(videoId: String, langCode: String, captions: List<YoutubeCaptionModel>)
-
-    suspend fun cacheVideoCaptionTracks(videoId:String, tracks: List<YoutubeCaptionTracksModel>)
-
     suspend fun getVideoComments(videoId: String, key: String?, pageId: String?) : YoutubeCommentsList
 
     suspend fun getVideoData(videoId: String) : YoutubeVideoModel

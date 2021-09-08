@@ -9,13 +9,6 @@ import androidx.room.PrimaryKey
     tableName="video_comments_cache",
     foreignKeys = [
         ForeignKey(
-            entity = YoutubeDataCache::class,
-            parentColumns = arrayOf("video_id"),
-            childColumns = arrayOf("video_id"),
-            onUpdate = ForeignKey.CASCADE,
-            onDelete = ForeignKey.CASCADE,
-        ),
-        ForeignKey(
             entity = YoutubeCommentsCache::class,
             parentColumns = arrayOf("comment_id"),
             childColumns = arrayOf("parent_comment_id"),
@@ -32,8 +25,8 @@ data class YoutubeCommentsCache(
     val parentCommentId: String? = null,
     @ColumnInfo(name="video_id")
     val videoId: String,
-    @ColumnInfo(name="page")
-    val page: Int? = null,
+    @ColumnInfo(name="page_id")
+    val pageId: String? = null,
     @ColumnInfo(name="comment")
     val comment: String,
     @ColumnInfo(name="author")

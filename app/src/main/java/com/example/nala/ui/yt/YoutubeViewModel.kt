@@ -18,6 +18,7 @@ import com.example.nala.utils.Utils
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -32,7 +33,7 @@ class YoutubeViewModel @Inject constructor(
 
     val ytPlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
 
-    private val _currentVideoId = MutableStateFlow<String>("")
+    private val _currentVideoId = MutableStateFlow("")
 
     private var authToken: String? = null
 
@@ -44,10 +45,12 @@ class YoutubeViewModel @Inject constructor(
 
     private var nextCommentsPageId: String? = null
 
+    @ExperimentalCoroutinesApi
     private val videoCaptionsStateFlow = _currentVideoId.mapLatest {
         youtubeRepository.getVideoCaptions(videoId = it, lang = selectedCaptionTrack.value)
     }
 
+    @ExperimentalCoroutinesApi
     private val videoCommentsStateFlow = _currentVideoId.mapLatest{ vId ->
         Log.d("AUTHDEBUG", "LOADING COMMENTS WIHT TOKEN: $authToken")
             youtubeRepository.getVideoComments(vId, authToken, nextCommentsPageId)
@@ -88,22 +91,25 @@ class YoutubeViewModel @Inject constructor(
 
     val inspectedElementSelectedWord: MutableState<String> = mutableStateOf("")
 
+    @ExperimentalCoroutinesApi
     private val inspectedCaptionTokensFlow = _inspectedCaption.mapLatest { caption ->
         caption?.caption?.let{
            dictRepository.tokenize(it)
         }
     }
 
+    @ExperimentalCoroutinesApi
     private val inspectedCommentTokensFlow = _inspectedComment.mapLatest { comment ->
         comment?.content?.let{
             dictRepository.tokenize(it)
         }
     }
 
-    private val _isVideoSaved = MutableStateFlow<Boolean>(false)
+    private val _isVideoSaved = MutableStateFlow(false)
 
     val isVideoInFavorites = mutableStateOf(false)
 
+    @ExperimentalCoroutinesApi
     private val isVideoSavedFlow = _isVideoSaved.flatMapLatest {
         youtubeRepository.getSavedVideo(currentVideoId.value).map {
             !it.isEmpty()
@@ -115,6 +121,7 @@ class YoutubeViewModel @Inject constructor(
 
     val selectedCaptionTrack = mutableStateOf("")
 
+    @ExperimentalCoroutinesApi
     fun onLoadTrack(langCode: String) {
         viewModelScope.launch{
             selectedCaptionTrack.value = langCode
@@ -126,6 +133,7 @@ class YoutubeViewModel @Inject constructor(
         inspectedElementSelectedWord.value = word
     }
 
+    @ExperimentalCoroutinesApi
     fun onInspectComment(comment: YoutubeCommentModel) {
         viewModelScope.launch {
             _inspectedComment.value = comment
@@ -139,6 +147,7 @@ class YoutubeViewModel @Inject constructor(
         }
     }
 
+    @ExperimentalCoroutinesApi
     fun onInspectCaption(caption: YoutubeCaptionModel) {
         viewModelScope.launch {
             _inspectedCaption.value = caption
@@ -160,6 +169,7 @@ class YoutubeViewModel @Inject constructor(
         selectedTab.value = index
     }
 
+    @ExperimentalCoroutinesApi
     fun setVideoModel(url: String) {
         currentVideoUrl.value = url
         val videoId = Utils.parseVideoIdFromUrl(url)
@@ -167,6 +177,7 @@ class YoutubeViewModel @Inject constructor(
         setIsVideoSaved()
     }
 
+    @ExperimentalCoroutinesApi
     fun setVideoModelFromCache(video: YoutubeVideoModel) {
         getVideoData(video.id)
         setIsVideoSaved()
@@ -176,6 +187,7 @@ class YoutubeViewModel @Inject constructor(
         currentPlayerPosition.value = position
     }
 
+    @ExperimentalCoroutinesApi
     fun loadCaptions() = viewModelScope.launch{
         if(!networkChecker.isNetworkAvailable()) {
             captionsState.value = DataState.Error(ErrorType.NETWORK_NOT_AVAILABLE)
@@ -194,6 +206,7 @@ class YoutubeViewModel @Inject constructor(
         }
     }
 
+    @ExperimentalCoroutinesApi
     fun loadComments(accessToken: String?) = viewModelScope.launch{
         commentsState.value = DataState.Loading
         setAccessToken(accessToken)
@@ -216,6 +229,7 @@ class YoutubeViewModel @Inject constructor(
         }
     }
 
+    @ExperimentalCoroutinesApi
     fun updateComments() = viewModelScope.launch {
         isUpdatingComments.value = true
         try{
@@ -239,31 +253,6 @@ class YoutubeViewModel @Inject constructor(
         }
     }
 
-    fun cacheComments(comments: List<YoutubeCommentModel>) {
-        viewModelScope.launch{
-            youtubeRepository.cacheVideoComments(comments)
-        }
-    }
-
-    fun cacheCaptions(langCode: String, captions: List<YoutubeCaptionModel>) {
-        viewModelScope.launch{
-            youtubeRepository.cacheVideoCaptions(
-                currentVideoId.value,
-                langCode,
-                captions
-            )
-        }
-    }
-
-    fun cacheCaptionTracks() {
-        viewModelScope.launch{
-            youtubeRepository.cacheVideoCaptionTracks(
-                currentVideoId.value,
-                availableCaptionTracks.value,
-            )
-        }
-    }
-
     fun onPlayerTimeElapsed(secondsElapsed: Float){
         val currentCaption = bucketSearch(secondsElapsed)
         currentCaption?.let{
@@ -277,6 +266,7 @@ class YoutubeViewModel @Inject constructor(
         }
     }
 
+    @ExperimentalCoroutinesApi
     fun setIsVideoSaved()  {
         viewModelScope.launch {
             isVideoSavedFlow.collect{
@@ -303,15 +293,14 @@ class YoutubeViewModel @Inject constructor(
     fun checkNetworkAvailable() = networkChecker.isNetworkAvailable()
 
     fun onRetry() {
-        ytPlayer.value?.let{
-            it.loadVideo(currentVideoId.value, 0f)
-        }
+        ytPlayer.value?.loadVideo(currentVideoId.value, 0f)
     }
 
     private fun setAccessToken(token: String?) {
         authToken = token
     }
 
+    @ExperimentalCoroutinesApi
     private fun getVideoData(videoId: String) {
         viewModelScope.launch{
             videoDataLoading.value = true

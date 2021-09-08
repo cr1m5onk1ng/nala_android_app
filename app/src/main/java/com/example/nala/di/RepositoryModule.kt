@@ -56,19 +56,11 @@ object RepositoryModule {
     @Provides
     fun provideReviewRepository(
         reviewDao: ReviewDao,
-        metadataExtractor: AsyncExtractorService<MetadataModel>,
-        //wordReviewMapper: WordReviewDbDtoMapper,
-        //wordSensesMapper: WordSenseDbDtoMapper,
-        //sentenceReviewMapper: SentenceReviewDbDtoMapper,
-        //kanjiReviewMapper: KanjiReviewDbDtoMapper
+        metadataExtractor: ExtractorService<MetadataModel>,
     ) : ReviewRepository {
         return ReviewRepositoryImpl(
             reviewDao,
             metadataExtractor,
-            //wordReviewMapper,
-            //wordSensesMapper,
-            //sentenceReviewMapper,
-            //kanjiReviewMapper
         )
     }
 

@@ -10,6 +10,8 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.findNavController
+import com.example.nala.domain.model.utils.AuthState
+import com.example.nala.domain.model.utils.ErrorType
 import com.example.nala.ui.BaseApplication
 import com.example.nala.ui.composables.dictionary.HomeScreen
 import com.example.nala.ui.theme.AppTheme
@@ -39,6 +41,7 @@ class DictionaryHomeFragment : Fragment() {
                     HomeScreen(
                         query = viewModel.query.value,
                         mightForgetItemsState = viewModel.mightForgetItemsState.value,
+                        authState = AuthState.AuthError(ErrorType.OAUTH_ERROR),
                         onQueryChange = viewModel::onQueryChanged,
                         onClick = {viewModel.onTriggerEvent(DictionaryEvent.SearchWordEvent)},
                         onSignIn = {},

@@ -8,24 +8,20 @@ import androidx.lifecycle.viewModelScope
 import com.example.nala.db.models.review.ArticlesCache
 import com.example.nala.db.models.review.KanjiReviewModel
 import com.example.nala.db.models.review.WordReviewModel
-import com.example.nala.domain.model.metadata.MetadataModel
 import com.example.nala.domain.model.review.ReviewCategory
 import com.example.nala.domain.model.review.SentenceReviewModel
 import com.example.nala.repository.ReviewRepository
-import com.example.nala.services.metadata.ExtractorService
 import com.example.nala.domain.model.utils.DataState
 import com.example.nala.domain.model.utils.ErrorType
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.withContext
 
 @HiltViewModel
 class ReviewViewModel @Inject constructor(
     private val reviewRepository: ReviewRepository,
-    private val metadataService: ExtractorService<MetadataModel>,
 ) : ViewModel() {
 
     val reviewsLoading: MutableState<Boolean> = mutableStateOf(false)
@@ -41,12 +37,15 @@ class ReviewViewModel @Inject constructor(
 
     val currentArticleUrl = mutableStateOf("")
 
+    private val _isArticleSaved = MutableStateFlow(false)
     val isArticleSaved = mutableStateOf(false)
 
-    private val isArticleSavedFlow =
+    @ExperimentalCoroutinesApi
+    private val isArticleSavedFlow = _isArticleSaved.flatMapLatest{
         reviewRepository.getSavedArticle(currentArticleUrl.value).map {
-            it.isNotEmpty()
+            !it.isEmpty()
         }
+    }
 
     init {
         loadWordReviewItems()
@@ -56,6 +55,7 @@ class ReviewViewModel @Inject constructor(
 
     val selectedCategory: MutableState<ReviewCategory> = mutableStateOf(ReviewCategory.Word)
 
+    @ExperimentalCoroutinesApi
     fun setArticle(url: String) {
         viewModelScope.launch{
             isArticleLoaded.value = false
@@ -169,9 +169,11 @@ class ReviewViewModel @Inject constructor(
         }
     }
 
+    @ExperimentalCoroutinesApi
     private fun checkArticleSaved()  {
         viewModelScope.launch {
             isArticleSavedFlow.collect{
+                _isArticleSaved.value = it
                 isArticleSaved.value = it
             }
         }

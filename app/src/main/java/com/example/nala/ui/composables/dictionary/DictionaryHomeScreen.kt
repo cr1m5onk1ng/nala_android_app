@@ -32,6 +32,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import com.example.nala.db.models.review.WordReviewModel
+import com.example.nala.domain.model.auth.UserModel
+import com.example.nala.domain.model.utils.AuthState
 import com.example.nala.domain.model.utils.DataState
 import com.example.nala.ui.composables.BottomBar
 import com.example.nala.ui.composables.LoadingIndicator
@@ -48,6 +50,7 @@ import kotlin.random.Random
 fun HomeScreen(
     query: String,
     mightForgetItemsState: DataState<List<WordReviewModel>>,
+    authState: AuthState<UserModel?>,
     onQueryChange: (String) -> Unit,
     onClick: () -> Unit,
     onSignIn: () -> Unit,
@@ -87,6 +90,9 @@ fun HomeScreen(
             CustomDrawer(
                 modifier = Modifier.background(color = Color.White),
                 scope = scope,
+                authState = authState,
+                onSignIn = onSignIn,
+                onSignOut = onSignOut,
                 scaffoldState = scaffoldState,
                 navController = navController,
             )
@@ -255,22 +261,6 @@ fun HomeScreen(
                             navController.navigate("detail_screen")
                         }
                     )
-                )
-                AndroidView(
-                    factory = { context ->
-                        SignInButton(context).apply{
-                            setOnClickListener {
-                                onSignIn()
-                            }
-                        }
-                    }
-                )
-
-                SmallButton(
-                    text = "Logout",
-                    backgroundColor = Blue500,
-                    onCLick = { onSignOut() },
-                    height = 60.dp
                 )
             }
         }

@@ -5,6 +5,7 @@ import androidx.compose.material.icons.filled.Article
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.VideoLibrary
+import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.nala.ui.theme.*

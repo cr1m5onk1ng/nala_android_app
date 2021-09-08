@@ -84,7 +84,7 @@ interface ReviewRepository {
 
     suspend fun removeArticleFromFavorites(url: String)
 
-    fun getSavedArticle(url: String) : Flow<List<ArticlesCache>>
+    fun getSavedArticle(url: String) : Flow<ArticlesCache>
 
     fun getSavedArticles() : Flow<List<ArticlesCache>>
 
