@@ -38,7 +38,6 @@ class StudyScreenFragment : CustomFragment() {
                     setCurrentWord = viewModel::setCurrentWordFromStudy,
                     unsetTargetWord = studyViewModel::unsetSelectedWord,
                     addSentenceToReview = viewModel::addSentenceToReview,
-                    loadSentenceReviews = reviewViewModel::loadSentenceReviewItems,
                     loadSimilarSentences = studyViewModel::loadSimilarSentences,
                     setIsWordFromForm = viewModel::setIsWordFromForm,
                     scaffoldState = scaffoldState,

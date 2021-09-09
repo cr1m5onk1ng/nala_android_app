@@ -1,6 +1,5 @@
 package com.example.nala.ui.composables
 
-import android.graphics.drawable.Icon
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -56,7 +55,7 @@ fun MainButton(
             ) {
                 Icon(
                     Icons.Rounded.Add,
-                    contentDescription = "add to review",
+                    contentDescription = text,
                     modifier = Modifier
                         .size(14.dp)
                         .background(color=Color.White)

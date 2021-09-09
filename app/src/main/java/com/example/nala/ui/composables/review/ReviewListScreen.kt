@@ -20,9 +20,11 @@ import androidx.navigation.NavController
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.constraintlayout.compose.ConstraintLayout
+import com.example.nala.R
 import com.example.nala.db.models.review.KanjiReviewModel
 import com.example.nala.db.models.review.WordReviewModel
 import com.example.nala.domain.model.review.ReviewCategory
@@ -102,7 +104,7 @@ fun ReviewListScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        "Reviews",
+                        stringResource(R.string.reviews_header),
                         style = TextStyle(
                             fontFamily = Quicksand,
                             fontSize = 24.sp,
@@ -127,7 +129,12 @@ fun ReviewListScreen(
                                     item {CircularProgressIndicator()}
                                 }
                                 is DataState.Error -> {
-                                    item { ErrorScreen(text = "No word added to review", subtitle = "") }
+                                    item {
+                                        ErrorScreen(
+                                            text = stringResource(R.string.no_words_in_review),
+                                            subtitle = ""
+                                        )
+                                    }
                                 }
                                 is DataState.Success<List<WordReviewModel>>  -> {
                                     items(count = wordReviewItems.data.size) { index ->
@@ -149,7 +156,12 @@ fun ReviewListScreen(
                                     item {CircularProgressIndicator()}
                                 }
                                 is DataState.Error -> {
-                                    item { ErrorScreen(text = "No word added to review", subtitle = "") }
+                                    item {
+                                        ErrorScreen(
+                                            text = stringResource(R.string.no_sentence_in_review),
+                                            subtitle = ""
+                                        )
+                                    }
                                 }
                                 is DataState.Success<List<SentenceReviewModel>>  -> {
                                     items(count = sentenceReviewItems.data.size) { index ->
@@ -172,7 +184,12 @@ fun ReviewListScreen(
                                     item {CircularProgressIndicator()}
                                 }
                                 is DataState.Error -> {
-                                    item { ErrorScreen(text = "No word added to review", subtitle = "") }
+                                    item {
+                                        ErrorScreen(
+                                            text = stringResource(R.string.no_kanjis_in_review),
+                                            subtitle = ""
+                                        )
+                                    }
                                 }
                                 is DataState.Success<List<KanjiReviewModel>>  -> {
                                     items(count = kanjiReviewItems.data.size) { index ->
@@ -474,7 +491,7 @@ fun CheckBoxRow(
             verticalAlignment = Alignment.CenterVertically
         ){
             CustomCheckBox(
-                label = "Easy",
+                label = stringResource(R.string.review_feedback_easy),
                 isChecked = isEasyChecked,
                 onCheckedChange = { checked ->
                     if(checked) {
@@ -489,7 +506,7 @@ fun CheckBoxRow(
                 colors = CheckboxDefaults.colors(Color.Blue)
             )
             CustomCheckBox(
-                label = "OK",
+                label = stringResource(R.string.review_feedback_ok),
                 isChecked = isOkChecked,
                 onCheckedChange = {
                     if(it) {
@@ -504,7 +521,7 @@ fun CheckBoxRow(
                 colors = CheckboxDefaults.colors(Color.Green)
             )
             CustomCheckBox(
-                label = "KO",
+                label = stringResource(R.string.review_feedback_ko),
                 isChecked = isKoChecked,
                 onCheckedChange = {
                     if(it) {
@@ -525,7 +542,7 @@ fun CheckBoxRow(
                     Icons.Rounded.CheckCircle,
                     modifier = Modifier
                         .size(22.dp),
-                    contentDescription = "Ok",
+                    contentDescription = "Ko",
                     tint = LightBlue
                 )
             }
@@ -570,7 +587,7 @@ fun ButtonsRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         CustomTextButton(
-            text = "Remove",
+            text = stringResource(R.string.remove_review_button_text),
             onClick = removeAction,
         )
     }
@@ -589,7 +606,7 @@ fun FilterButtonsRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         TagButton(
-            text = "Word",
+            text = stringResource(R.string.reviews_filter_word),
             textWeight = if (selectedCategory == ReviewCategory.Word) FontWeight.W500
                             else FontWeight.Light,
             height = 40.dp,
@@ -601,7 +618,7 @@ fun FilterButtonsRow(
             }
         )
         TagButton(
-            text = "Sentence",
+            text = stringResource(R.string.reviews_filter_sentence),
             textWeight = if (selectedCategory == ReviewCategory.Sentence) FontWeight.W500
                             else FontWeight.Light,
             height = 40.dp,
@@ -613,7 +630,7 @@ fun FilterButtonsRow(
             }
         )
         TagButton(
-            text = "Kanji",
+            text = stringResource(R.string.reviews_filter_kanjis),
             textWeight = if (selectedCategory == ReviewCategory.Kanji) FontWeight.W500
                             else FontWeight.Light,
             height = 40.dp,

@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -31,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
+import com.example.nala.R
 import com.example.nala.db.models.review.WordReviewModel
 import com.example.nala.domain.model.auth.UserModel
 import com.example.nala.domain.model.utils.AuthState
@@ -166,7 +168,7 @@ fun HomeScreen(
                     }
                     is DataState.Success<List<WordReviewModel>> -> {
                         Text(
-                            "Words you might forget",
+                           stringResource(R.string.might_forget),
                             modifier = Modifier
                                 .padding(16.dp),
                             style = TextStyle(
@@ -228,7 +230,7 @@ fun HomeScreen(
                         focusedIndicatorColor =  Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent),
                     shape = RoundedCornerShape(32.dp),
-                    placeholder = { Text("Search in dictionary") },
+                    placeholder = { Text(stringResource(R.string.search_in_dictionary)) },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Rounded.Search,

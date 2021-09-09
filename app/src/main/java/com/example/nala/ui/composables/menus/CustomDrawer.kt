@@ -41,7 +41,7 @@ fun CustomDrawer(
         modifier = modifier,
     ) {
        val elements = listOf(
-           DrawerItem.Chronology,
+           //DrawerItem.Chronology,
            DrawerItem.Articles,
            DrawerItem.Videos,
            DrawerItem.Settings,

@@ -20,7 +20,7 @@ import com.example.nala.db.models.review.*
     KanjiOn::class,
     KanjiKun::class,
     ArticlesCache::class],
-    version=3)
+    version=4)
 @TypeConverters(TimeConverter::class)
 abstract class ReviewDatabase : RoomDatabase() {
     abstract  fun reviewDao() : ReviewDao

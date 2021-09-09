@@ -1,35 +1,28 @@
 package com.example.nala.ui.composables.study
 
 import android.app.Activity
-import android.util.Log
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.ClickableText
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
+import com.example.nala.R
 import com.example.nala.domain.model.utils.DataState
 import com.example.nala.ui.composables.*
 import com.example.nala.ui.theme.*
@@ -92,15 +85,16 @@ fun OneTargetForm(
                             LoadingIndicator()
                         }
                         is DataState.Error -> {
-                            ErrorScreen(text = "Data invalid", "Try to import a valid sentence")
+                            ErrorScreen(
+                                text = stringResource(R.string.target_form_invalid_data),
+                                stringResource(R.string.target_form_invalid_data_sub)
+                            )
                         }
                         is DataState.Success<String> -> {
                             val sentence = sentenceState.data
 
                             //Body
                             val listState = rememberLazyListState()
-                            // Remember a CoroutineScope to be able to launch
-                            val coroutineScope = rememberCoroutineScope()
                             LazyColumn(
                                 state = listState,
                                 modifier = Modifier
@@ -111,7 +105,7 @@ fun OneTargetForm(
                                 item{
                                     Column() {
                                         Text(
-                                            text = "Tap to select your target word: ",
+                                            text = stringResource(R.string.target_form_select_word),
                                             modifier = Modifier.padding(5.dp),
                                             style = TextStyle(
                                                 fontFamily = Quicksand,
@@ -131,7 +125,7 @@ fun OneTargetForm(
                                         Spacer(modifier = Modifier.padding(vertical=8.dp))
                                         // SELECTED WORD
                                         Text(
-                                            if(selectedWord.isNotEmpty()) selectedWord else "No word selected",
+                                            if(selectedWord.isNotEmpty()) selectedWord else stringResource(R.string.target_form_no_word_selected),
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .padding(8.dp),
@@ -153,7 +147,7 @@ fun OneTargetForm(
                                         ) {
                                             SmallerButton(
                                                 backgroundColor = LightGreen,
-                                                text = "Study",
+                                                text = stringResource(R.string.study_button),
                                                 icon = Icons.Rounded.ArrowForward,
                                                 onCLick = {
                                                     if(selectedWord.isNotEmpty()) {
@@ -205,115 +199,3 @@ fun OneTargetForm(
     }
 }
 
-@Composable
-fun TokenSelectionRow(
-    tokens: List<String>,
-    selectedToken: String,
-    onWordSelect: (String) -> Unit,
-){
-    LazyRow(
-        modifier = Modifier
-            .padding(8.dp)
-            .background(color = Color.White),
-        horizontalArrangement = Arrangement.spacedBy(3.dp)
-    ){
-        items(count=tokens.size){
-            for (token in tokens) {
-                TagButton(
-                    onClick = {
-                        onWordSelect(token)
-                    },
-                    text = token,
-                    textSize = 16.sp,
-                    textWeight = FontWeight.W500,
-                    height = 50.dp,
-                    padding = 3.dp,
-                    backgroundColor =
-                    if(token == selectedToken) LightBlue else Color.White
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun TokensContainer(
-    tokens: List<String>,
-    selectedToken: String,
-    chunk: Int = 5,
-    onWordSelect: (String) -> Unit,
-    onClick: (() -> Unit)? = null,
-) {
-    val tokensChunks = tokens.chunked(chunk)
-    Column(
-        modifier = Modifier
-            .padding(16.dp)
-    ) {
-        for(chunk in tokensChunks){
-            LazyRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(color = Color.Transparent)
-                    .height(55.dp),
-                horizontalArrangement = Arrangement.Center
-            ){
-                items(count=chunk.size) {
-                    for(token in chunk) {
-                        TagButton(
-                            onClick = {
-                                onWordSelect(token)
-                                onClick?.let{ onCLick ->
-                                    onClick()
-                                }
-                            },
-                            text = token,
-                            textSize = 14.sp,
-                            textWeight = FontWeight.W500,
-                            height = 40.dp,
-                            padding = 0.dp,
-                            backgroundColor =
-                                if(token == selectedToken) LightBlue else Color.White
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun CustomSelectionContainer(
-    sentence: String,
-) {
-    ClickableText(
-        text = AnnotatedString(sentence),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        onClick = { offset ->
-            Log.d("TextDebug", "offset: $offset")
-
-        }
-    )
-}
-
-@Composable
-fun CustomOutlinedTextField(
-    selectedWord: String,
-    onWordSelect: (String) -> Unit,
-) {
-    OutlinedTextField(
-        value = selectedWord,
-        onValueChange = onWordSelect,
-        label = { Text("Word") },
-        placeholder = { Text("Select a target word") },
-        colors = TextFieldDefaults.outlinedTextFieldColors(
-            focusedBorderColor = Blue500,
-            focusedLabelColor = Blue700,
-        ),
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Text,
-            imeAction = ImeAction.Default,
-        ),
-    )
-}

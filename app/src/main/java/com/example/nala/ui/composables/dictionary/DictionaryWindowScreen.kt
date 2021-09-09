@@ -6,8 +6,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
+import com.example.nala.R
 import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.domain.model.utils.DataState
 import com.example.nala.ui.composables.ErrorScreen
@@ -30,7 +32,7 @@ fun DictionaryWindowScreen(
                         .padding(16.dp),
                 ) {
                     ErrorScreen(
-                        text = "No word found in Jisho dictionary",
+                        text = stringResource(R.string.no_result_from_jisho),
                         subtitle = "¯\\_(ツ)_/¯"
                     )
                 }

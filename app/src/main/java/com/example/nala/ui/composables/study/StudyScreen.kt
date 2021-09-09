@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -22,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
+import com.example.nala.R
 import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.domain.model.utils.DataState
 import com.example.nala.ui.composables.*
@@ -51,7 +53,6 @@ fun StudyScreen(
     setCurrentWord: (String) -> Unit,
     unsetTargetWord: () -> Unit,
     addSentenceToReview: (String, String) -> Unit,
-    loadSentenceReviews: () -> Unit,
     loadSimilarSentences: () -> Unit,
     setIsWordFromForm: () -> Unit,
     scaffoldState: ScaffoldState,
@@ -68,7 +69,7 @@ fun StudyScreen(
             }
             is DataState.Error -> {
                 ErrorScreen(
-                    text = "An error occurred while loading study data",
+                    text = stringResource(R.string.study_data_fetch_error),
                     subtitle = "¯\\_(ツ)_/¯"
                 )
             }
@@ -80,7 +81,7 @@ fun StudyScreen(
                     }
                     is DataState.Error -> {
                         ErrorScreen(
-                            text = "An error occured while loading target word data",
+                            text = stringResource(R.string.study_data_word_fetch_error),
                             subtitle = "¯\\_(ツ)_/¯"
                         )
                     }
@@ -88,7 +89,6 @@ fun StudyScreen(
                         val wordModel = targetWordState.data
                         ConstraintLayout(modifier = Modifier.padding(paddingValue)) {
                             val word = wordModel.word
-                            val reading = wordModel.reading
                             val parts = context.split(Regex(word))
                             Column(
                                 modifier = Modifier
@@ -125,7 +125,7 @@ fun StudyScreen(
                                         ContextSection( word = word, parts = parts)
                                         SmallButton(
                                             backgroundColor = Blue700,
-                                            text = "Add to review",
+                                            text = stringResource(R.string.add_to_review),
                                             icon = Icons.Rounded.Add,
                                             onCLick = {
                                                 addSentenceToReview(word, context)
@@ -141,7 +141,7 @@ fun StudyScreen(
                                                     horizontalArrangement = Arrangement.End
                                                 ) {
                                                     CustomTextButton(
-                                                        text = "See similar sentences",
+                                                        text = stringResource(R.string.see_similar_sentences),
                                                         onClick = {
                                                             loadSimilarSentences()
                                                         }
@@ -153,14 +153,14 @@ fun StudyScreen(
                                             }
                                             is DataState.Error -> {
                                                 ErrorScreen(
-                                                    text = "Couldn't fetch similar sentences.",
+                                                    text = stringResource(R.string.similar_sentences_fetch_error),
                                                     subtitle = "¯\\_(ツ)_/¯"
                                                 )
                                             }
                                             is DataState.Success<List<String>> -> {
                                                 val similarSentences = similarSentencesState.data
                                                 Text(
-                                                    "Similar sentences",
+                                                    stringResource(R.string.similar_sentences_button),
                                                     modifier = Modifier
                                                         .fillMaxWidth()
                                                         .padding(16.dp),
@@ -179,11 +179,8 @@ fun StudyScreen(
                                                         SentenceCard(
                                                             sentence = sent,
                                                             category = "Music",
-                                                            addSentenceToReview = addSentenceToReview,
-                                                            loadSentenceReviews = loadSentenceReviews,
                                                             setSharedSentence = setSharedSentence,
                                                             unsetTargetWord = unsetTargetWord,
-                                                            showReviewSnackbar = showReviewSnackbar,
                                                             showSaveSnackbar = showSaveSnackbar,
                                                             navController = navController,
                                                         )
@@ -258,11 +255,8 @@ fun SentenceCard(
     sentence: String,
     category: String,
     targetWord: String? = null,
-    addSentenceToReview: (String, String) -> Unit,
-    loadSentenceReviews: () -> Unit,
     setSharedSentence: (String) -> Unit,
     unsetTargetWord: () -> Unit,
-    showReviewSnackbar: () -> Unit,
     showSaveSnackbar: () -> Unit,
     navController: NavController,
 
@@ -331,7 +325,7 @@ fun SentenceCard(
                 horizontalArrangement = Arrangement.End
             ) {
                 SmallerButton(
-                    text = "Save",
+                    text = stringResource(R.string.save_button),
                     backgroundColor = LightGreen,
                     onCLick = {
                               //TODO(ADD TO CORPUS FUNCTIONALITY)

@@ -1,6 +1,5 @@
 package com.example.nala.ui.composables
 
-import android.util.Log
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -15,13 +14,11 @@ import com.example.nala.ui.theme.Blue700
 
 
 fun getTokenFromIndexedMap(indexedTokens: Map<Pair<Int, Int>, String>, offset: Int) : String? {
-    Log.d("TOKENIZATIONDEBUG", "Tokens Map: $indexedTokens ")
     for(entry in indexedTokens) {
         val indexes = entry.key
         val start = indexes.first
         val end = indexes.second
         if(offset in start..end){
-            Log.d("TOKENIZATIONDEBUG", "Triggered indexs: $indexes ")
             return entry.value
         }
     }
@@ -44,13 +41,13 @@ fun CustomClickableText(
     val annotatedText = buildAnnotatedString {
         val activeColor = selectedColor ?: Blue700
         val normalColor = tokensColor ?: Color.Black
-        val fontWeight = fontWeight ?: FontWeight.W500
+        val fw = fontWeight ?: FontWeight.W500
         for(t in tokens) {
             withStyle(
                 style = SpanStyle(
                     color = if(t == selectedToken) activeColor else normalColor,
                     fontSize = fontSize ?: 14.sp,
-                    fontWeight = if(t == selectedToken) FontWeight.Bold else fontWeight
+                    fontWeight = if(t == selectedToken) FontWeight.Bold else fw
                 )
             ) {
                 append(t)

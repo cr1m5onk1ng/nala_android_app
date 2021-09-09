@@ -1,8 +1,6 @@
 package com.example.nala.ui.composables.settings
 
-import android.widget.CheckBox
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -12,10 +10,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp.Companion.Hairline
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.nala.R
 import com.example.nala.ui.composables.menus.CustomTopBar
 
 @Composable
@@ -32,7 +31,7 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             CustomTopBar(
-                title = "Settings",
+                title = stringResource(R.string.settings_header),
                 scope = scope,
                 navIcon = Icons.Rounded.ArrowBack,
                 navIconAction = {
@@ -52,33 +51,33 @@ fun SettingsScreen(
             Spacer(Modifier.height(24.dp))
             Text(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp),
-                text = "Target Languages",
+                text = stringResource(R.string.settings_target_languages),
                 style = MaterialTheme.typography.h5,
             )
             // Japanese
             SettingCard(
-                lang = "Japanese",
+                lang = stringResource(R.string.japanese),
                 isChecked = isJapaneseSelected,
                 onChecked = {
                     setLangSelected("ja", it)
                 }
             )
             SettingCard(
-                lang = "English",
+                lang = stringResource(R.string.english),
                 isChecked = isEnglishSelected,
                 onChecked = {
                     setLangSelected("en", it)
                 }
             )
             SettingCard(
-                lang = "French",
+                lang = stringResource(R.string.french),
                 isChecked = isFrenchSelected,
                 onChecked = {
                     setLangSelected("fr", it)
                 }
             )
             SettingCard(
-                lang = "Spanish",
+                lang = stringResource(R.string.spanish),
                 isChecked = isSpanishSelected,
                 onChecked = {
                     setLangSelected("es", it)

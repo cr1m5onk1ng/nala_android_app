@@ -8,24 +8,22 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.DeleteOutline
-import androidx.compose.material.icons.rounded.Remove
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
+import com.example.nala.R
 import com.example.nala.db.models.review.ArticlesCache
 import com.example.nala.domain.model.utils.DataState
-import com.example.nala.ui.composables.CustomAvatar
-import com.example.nala.ui.composables.CustomExpandableText
 import com.example.nala.ui.composables.ErrorScreen
 import com.example.nala.ui.composables.LoadingIndicator
 import com.example.nala.ui.composables.menus.CustomTopBar
@@ -43,7 +41,7 @@ fun SavedArticlesScreen(
     Scaffold(
         topBar = {
             CustomTopBar(
-                title = "Articles",
+                title = stringResource(R.string.saved_articles_header),
                 backgroundColor = Blue500,
                 contentColor = Color.White,
                 navIcon = Icons.Rounded.ArrowBack,
@@ -66,12 +64,15 @@ fun SavedArticlesScreen(
                     LoadingIndicator()
                 }
                 is DataState.Error -> {
-                    ErrorScreen(text = "Couldn't fetch articles from cache", subtitle = "Sorry dude")
+                    ErrorScreen(text = stringResource(R.string.articles_fetch_error), subtitle = "Sorry dude")
                 }
                 is DataState.Success<List<ArticlesCache>> -> {
                     val articlesData = articles.data
                     if(articlesData.isEmpty()) {
-                        ErrorScreen(text = "No articles saved", subtitle = "Add an article by sharing it with the app")
+                        ErrorScreen(
+                            text = stringResource(R.string.no_articles_saved_error),
+                            subtitle = stringResource(R.string.no_articles_saved_error_subtitle),
+                        )
                     } else {
                         LazyColumn(
                             modifier = Modifier.padding(16.dp),
@@ -103,7 +104,7 @@ private fun ItemCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
             .height(128.dp)
             .clickable {
                 onSetArticle(item)
@@ -114,12 +115,13 @@ private fun ItemCard(
         border = BorderStroke(0.5.dp, Color.LightGray),
         backgroundColor = Color.White,
     ) {
-        Column() {
+        Column(modifier = Modifier.fillMaxSize()) {
             // Data Row
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.Start,
             ) {
                 // Image Section
                 Column(
@@ -129,7 +131,7 @@ private fun ItemCard(
                 ) {
                     Image(
                         modifier = Modifier
-                            .height(128.dp)
+                            .fillMaxHeight()
                             .width(214.dp),
                         contentScale = ContentScale.FillBounds,
                         painter = rememberImagePainter(item.thumbnailUrl),
@@ -137,123 +139,57 @@ private fun ItemCard(
                     )
                 }
                 // Content section
-                Column(
-                    modifier = Modifier
-                        .padding(5.dp).fillMaxHeight(),
-                    verticalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    // Title
-                    Text(
-                        text = if(item.title.isNotEmpty()) item.title else "No title provided",
-                        style = MaterialTheme.typography.body1,
-                        maxLines = 3,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    /*
-                   Spacer(Modifier.height(5.dp))
-                   // Description
-                   CustomExpandableText(
-                       modifier = Modifier.padding(3.dp),
-                       text = item.description ?: "No description provided",
-                       style = MaterialTheme.typography.body2,
-                       maxLines = 3,
-                   ) */
-                    // Buttons Row
-                    Row(
-                        modifier = Modifier
-                            .padding(bottom = 1.dp, end = 1.dp)
-                            .height(20.dp)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End,
-                    ) {
-                        IconButton(
-                            onClick = { onRemoveArticle(item.url) }
-                        ) {
-                            Icon(
-                                modifier = Modifier.size(18.dp),
-                                imageVector = Icons.Rounded.DeleteOutline,
-                                contentDescription = "remove",
-                                tint = Color.LightGray,
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun SavedArticleCardItem(
-    item: ArticlesCache,
-    onRemoveArticle: (String) -> Unit,
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        elevation = 5.dp,
-        shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(0.5.dp, Color.LightGray),
-        backgroundColor = Color.White,
-    ) {
-        Row (
-            modifier = Modifier
-                .padding(5.dp)
-                .fillMaxSize(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ){
-            // Video Thumbnail Column
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth(0.3f)
-                    .fillMaxHeight(),
-                verticalArrangement = Arrangement.Top,
-            ) {
-                CustomAvatar(
-                    modifier = Modifier
-                        .size(50.dp),
-                    imageUrl = item.thumbnailUrl,
-                )
-            }
-            // Video Data column
-            Column(
-                modifier = Modifier
-                    .padding(3.dp)
-                    .fillMaxWidth(0.7f),
-                horizontalAlignment = Alignment.Start,
-            ) {
-                // Title
-                Text(
-                    text = item.title,
-                    style = MaterialTheme.typography.body1,
-                )
-                // Description
-                item.description?.let{
-                    CustomExpandableText(
-                        modifier = Modifier.padding(3.dp),
-                        text = item.description,
-                    )
-                }
-                // Buttons Row
                 Row(
-                    modifier = Modifier.padding(3.dp),
-                    horizontalArrangement = Arrangement.Start,
-                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(start = 5.dp, top = 5.dp, bottom = 5.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
-                    // Remove Button
-                    IconButton(
-                        onClick = { onRemoveArticle(item.url) }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Remove,
-                            contentDescription = "remove",
-                            tint = Color.LightGray,
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                    ){
+                        // Buttons Row
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(22.dp),
+                            verticalAlignment = Alignment.Top,
+                            horizontalArrangement = Arrangement.End,
+                        ) {
+                            IconButton(
+                                onClick = { onRemoveArticle(item.url) }
+                            ) {
+                                Icon(
+                                    modifier = Modifier.size(18.dp),
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "remove",
+                                    tint = Color.LightGray,
+                                )
+                            }
+                        }
+                        // Title
+                        Text(
+                            modifier = Modifier.padding(horizontal = 5.dp),
+                            text = if(item.title.isNotEmpty()) item.title else item.url,
+                            style = MaterialTheme.typography.subtitle2,
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        // Domain
+                        Text(
+                            modifier = Modifier.padding(horizontal = 5.dp),
+                            text = item.domain ?: "unknown domain",
+                            style = MaterialTheme.typography.body2,
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis,
                         )
                     }
                 }
             }
+
         }
     }
 }
+
+

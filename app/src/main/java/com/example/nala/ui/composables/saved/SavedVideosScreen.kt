@@ -2,13 +2,13 @@ package com.example.nala.ui.composables.saved
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -16,14 +16,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
+import com.example.nala.R
 import com.example.nala.domain.model.yt.YoutubeVideoModel
 import com.example.nala.domain.model.utils.DataState
-import com.example.nala.ui.composables.CustomAvatar
-import com.example.nala.ui.composables.CustomExpandableText
 import com.example.nala.ui.composables.ErrorScreen
 import com.example.nala.ui.composables.LoadingIndicator
 import com.example.nala.ui.composables.menus.CustomTopBar
@@ -41,7 +41,7 @@ fun SavedVideosScreen(
     Scaffold(
         topBar = {
             CustomTopBar(
-                title = "Videos",
+                title = stringResource(R.string.saved_videos_header),
                 backgroundColor = Blue500,
                 contentColor = Color.White,
                 navIcon = Icons.Rounded.ArrowBack,
@@ -64,12 +64,15 @@ fun SavedVideosScreen(
                     LoadingIndicator()
                 }
                 is DataState.Error -> {
-                    ErrorScreen(text = "Couldn't fetch videos from cache", subtitle = "sorry dude")
+                    ErrorScreen(text = stringResource(R.string.saved_videos_fetch_error), subtitle = "sorry dude")
                 }
                 is DataState.Success<List<YoutubeVideoModel>> -> {
                     val videosData = videos.data
                     if(videosData.isEmpty()) {
-                        ErrorScreen(text = "No videos saved", subtitle = "Import a video by sharing it with the app")
+                        ErrorScreen(
+                            text = stringResource(R.string.no_video_saved_error),
+                            subtitle = stringResource(R.string.no_video_saved_error_subtitle),
+                        )
                     } else {
                         LazyColumn(
                             modifier = Modifier.padding(16.dp),
@@ -102,7 +105,7 @@ private fun ItemCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(128.dp)
-                .padding(16.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
                 .clickable {
                     onSetVideo(item)
                     navController.navigate("video_screen")
@@ -112,12 +115,12 @@ private fun ItemCard(
             border = BorderStroke(0.5.dp, Color.LightGray),
             backgroundColor = Color.White,
         ) {
-            Column() {
+            Column(modifier = Modifier.fillMaxSize()) {
                 // Data Row
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.Start,
                 ) {
                     // Image Section
                     Column(
@@ -127,7 +130,7 @@ private fun ItemCard(
                     ) {
                         Image(
                             modifier = Modifier
-                                .height(128.dp)
+                                .fillMaxHeight()
                                 .width(214.dp),
                             contentScale = ContentScale.FillBounds,
                             painter = rememberImagePainter(item.thumbnailUrl),
@@ -135,39 +138,54 @@ private fun ItemCard(
                         )
                     }
                     // Content section
-                    Column(
+                    Row(
                         modifier = Modifier
-                            .padding(5.dp)
-                            .fillMaxHeight(),
-                        verticalArrangement = Arrangement.SpaceBetween,
+                            .padding(start = 5.dp, top = 5.dp, bottom = 5.dp)
+                            .fillMaxSize(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
-
-                        // Title
-                        Text(
-                            text = item.title ?: "No title provided",
-                            style = MaterialTheme.typography.body2,
-                            maxLines = 3,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        // Buttons Row
-                        Row(
+                        Column(
                             modifier = Modifier
-                                .padding(bottom = 1.dp, end = 1.dp)
-                                .height(20.dp)
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.End,
-                        ) {
-                            IconButton(
-                                onClick = { onRemoveVideo(item.id) }
+                                .fillMaxSize()
+                        ){
+                            // Buttons Row
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(22.dp),
+                                verticalAlignment = Alignment.Top,
+                                horizontalArrangement = Arrangement.End,
                             ) {
-                                Icon(
-                                    modifier = Modifier.size(18.dp),
-                                    imageVector = Icons.Rounded.DeleteOutline,
-                                    contentDescription = "remove",
-                                    tint = Color.LightGray,
-                                )
+                                IconButton(
+                                    onClick = { onRemoveVideo(item.id) }
+                                ) {
+                                    Icon(
+                                        modifier = Modifier.size(18.dp),
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "remove",
+                                        tint = Color.LightGray,
+                                    )
+                                }
                             }
+                            // Title
+                            Text(
+                                modifier = Modifier.padding(horizontal = 5.dp),
+                                text = item.title ?: item.url,
+                                style = MaterialTheme.typography.subtitle2,
+                                maxLines = 3,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            // Domain
+                            Text(
+                                modifier = Modifier.padding(horizontal = 5.dp),
+                                text = "youtube.com",
+                                style = MaterialTheme.typography.body2,
+                                maxLines = 3,
+                                overflow = TextOverflow.Ellipsis,
+                            )
                         }
+
+
                         /*
                         Spacer(Modifier.height(5.dp))
                         // Description
@@ -177,86 +195,9 @@ private fun ItemCard(
                             style = MaterialTheme.typography.body1,
                             maxLines = 3,
                         ) */
-
                     }
                 }
 
             }
         }
-}
-
-@Composable
-private fun SavedVideoItemCard(
-    item: YoutubeVideoModel,
-    onRemoveVideo: (String) -> Unit,
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        elevation = 5.dp,
-        shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(0.5.dp, Color.LightGray),
-        backgroundColor = Color.White,
-    ) {
-        Row (
-            modifier = Modifier
-                .padding(5.dp)
-                .fillMaxSize(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ){
-            // Video Thumbnail Column
-            Column(
-                modifier = Modifier
-                    .width(250.dp)
-                    .fillMaxHeight().background(Color.Blue),
-                verticalArrangement = Arrangement.Top,
-            ) {
-                CustomAvatar(
-                    modifier = Modifier
-                        .size(50.dp),
-                    imageUrl = item.thumbnailUrl,
-                )
-            }
-            // Video Data column
-            Column(
-                modifier = Modifier
-                    .padding(3.dp)
-                    .fillMaxWidth(0.7f).background(Color.Red)
-                    .fillMaxHeight(),
-                horizontalAlignment = Alignment.Start,
-            ) {
-                // Title
-                Text(
-                    text = item.title ?: "No title provided",
-                    style = MaterialTheme.typography.body1,
-                )
-                // Description
-                item.description?.let{
-                    CustomExpandableText(
-                        modifier = Modifier.padding(3.dp),
-                        text = item.description,
-                    )
-                }
-                // Buttons Row
-                Row(
-                    modifier = Modifier.padding(3.dp),
-                    horizontalArrangement = Arrangement.Start,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    // Remove Button
-                    IconButton(
-                        onClick = { onRemoveVideo(item.id) }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Remove,
-                            contentDescription = "remove",
-                            tint = Color.LightGray,
-                        )
-                    }
-                }
-            }
-        }
-    }
 }

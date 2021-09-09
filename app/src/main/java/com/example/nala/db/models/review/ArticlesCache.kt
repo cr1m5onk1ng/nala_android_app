@@ -20,6 +20,9 @@ data class ArticlesCache (
     @ColumnInfo(name="description")
     val description: String? = null,
 
+    @ColumnInfo(name="domain")
+    val domain: String? = null,
+
     @ColumnInfo(name="thumbnail_url")
     val thumbnailUrl: String? = null,
 

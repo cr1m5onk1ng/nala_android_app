@@ -29,6 +29,7 @@ import kotlinx.coroutines.launch
 import com.example.nala.services.background.ArticleService
 import android.provider.Settings
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.example.nala.R
@@ -57,7 +58,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
-import com.google.android.gms.common.api.Scope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 
@@ -152,7 +152,12 @@ class MainActivity : AppCompatActivity() {
                             addToReview =  dictViewModel::addWordToReview,
                             loadWordReviews = reviewViewModel::loadWordReviewItems,
                             scaffoldState = scaffoldState,
-                            showSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
+                            showSnackbar = {
+                                showSnackbar(
+                                    scaffoldState,
+                                    message = getString(R.string.added_to_review),
+                                )
+                            },
                         )
                     }
 
@@ -167,7 +172,12 @@ class MainActivity : AppCompatActivity() {
                             toggleStoryEditForm = dictViewModel::toggleEditStoryForm,
                             navController = navController,
                             scaffoldState = scaffoldState,
-                            showSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
+                            showSnackbar = {
+                                showSnackbar(
+                                    scaffoldState,
+                                    message = getString(R.string.added_to_review)
+                                )
+                            },
                         )
                     }
 
@@ -199,7 +209,7 @@ class MainActivity : AppCompatActivity() {
                             showSnackbar = {
                                 showSnackbar(
                                     scaffoldState,
-                                    message="Review removed",
+                                    message = R.string.review_removed.toString(),
                                     actionLabel="Undo",
                                 )},
                             scaffoldState = scaffoldState,
@@ -221,7 +231,12 @@ class MainActivity : AppCompatActivity() {
                             loadSentenceReviews = reviewViewModel::loadSentenceReviewItems,
                             unsetSelectedWord = studyViewModel::unsetSelectedWord,
                             unsetSharedSentence = dictViewModel::unsetSharedSentence,
-                            showSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
+                            showSnackbar = {
+                                showSnackbar(
+                                    scaffoldState,
+                                    message = getString(R.string.added_to_review)
+                                )
+                            },
                             scaffoldState = scaffoldState,
                             navController = navController,
                         )
@@ -238,12 +253,21 @@ class MainActivity : AppCompatActivity() {
                             setCurrentWord = dictViewModel::setCurrentWordFromStudy,
                             unsetTargetWord = studyViewModel::unsetSelectedWord,
                             addSentenceToReview = dictViewModel::addSentenceToReview,
-                            loadSentenceReviews = reviewViewModel::loadSentenceReviewItems,
                             loadSimilarSentences = studyViewModel::loadSimilarSentences,
                             setIsWordFromForm = dictViewModel::setIsWordFromForm,
                             scaffoldState = scaffoldState,
-                            showReviewSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
-                            showSaveSnackbar = {showSnackbar(scaffoldState, message="Sentence added to corpus")}
+                            showReviewSnackbar = {
+                                showSnackbar(
+                                    scaffoldState,
+                                    message = getString(R.string.added_to_review),
+                                )
+                            },
+                            showSaveSnackbar = {
+                                showSnackbar(
+                                    scaffoldState,
+                                    message = getString(R.string.sentence_added)
+                                )
+                            }
                         )
                     }
 
@@ -256,7 +280,6 @@ class MainActivity : AppCompatActivity() {
                             onSetVideoAsSaved = ytViewModel::setVideoInFavorites,
                             inspectedCaption = ytViewModel.inspectedCaption.value,
                             inspectedComment = ytViewModel.inspectedComment.value,
-                            onLoadCaptions = ytViewModel::loadCaptions,
                             onLoadComments = ytViewModel::loadComments,
                             onUpdateComments = ytViewModel::updateComments,
                             isUpdatingComments = ytViewModel.isUpdatingComments.value,
@@ -276,19 +299,27 @@ class MainActivity : AppCompatActivity() {
                             player = ytViewModel.ytPlayer.value,
                             selectedTab = ytViewModel.selectedTab.value,
                             playerPosition = ytViewModel.currentPlayerPosition.value,
-                            onSaveVideo = {},
                             onInitPlayer = ytViewModel::initPlayer,
                             onPlayerTimeElapsed = ytViewModel::onPlayerTimeElapsed,
-                            onClickCaption = ytViewModel::onSeekTo,
                             onChangeSelectedTab = ytViewModel::setSelectedTab,
                             onShowCaptionsDetails = dictViewModel::setSharedSentence,
                             onShowCommentsDetails = dictViewModel::setSharedSentence,
                             onSearchWord = {
                                 startDictionaryWindowService(ytViewModel.inspectedElementSelectedWord.value)
-                                           },
+                            },
                             onSetPlayerPosition = ytViewModel::setPlayerPosition,
-                            onShowSavedSnackBar = { showSnackbar(scaffoldState, message="Added to favorites") },
-                            onShowRemovedSnackBar = { showSnackbar(scaffoldState, message="Removed from favorites") },
+                            onShowSavedSnackBar = {
+                                showSnackbar(
+                                    scaffoldState,
+                                    message = getString(R.string.added_to_favorites)
+                                )
+                            },
+                            onShowRemovedSnackBar = {
+                                showSnackbar(
+                                    scaffoldState,
+                                    message = getString(R.string.removed_from_favorites)
+                                )
+                            },
                             onRetry = ytViewModel::onRetry,
                             onRequestLogin = googleAuthenticator::signIn,
                             authState = authViewModel.account.value,
@@ -375,11 +406,29 @@ class MainActivity : AppCompatActivity() {
     private fun checkOverlayPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (!Settings.canDrawOverlays(this)) {
-                // send user to the device settings
+                showOverlayPermissionsDialog()
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    private fun showOverlayPermissionsDialog() {
+        val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
+
+        dialogBuilder.apply{
+            setMessage(R.string.dialog_message)
+            setTitle(R.string.dialog_title)
+            setPositiveButton(R.string.ok
+            ) { _, _ ->
                 val permIntent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
                 startActivity(permIntent)
             }
+            setNegativeButton(R.string.cancel
+            ) { dialog, _ ->
+                dialog.dismiss()
+            }
         }
+        dialogBuilder.show()
     }
 
     private fun startDictionaryWindowService(word: String) {
@@ -389,7 +438,6 @@ class MainActivity : AppCompatActivity() {
             // check if the user has already granted
             // the Draw over other apps permission
             if (Settings.canDrawOverlays(this)) {
-                // start the service based on the android version
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     startForegroundService(dictionaryIntent)
                 } else {
@@ -474,7 +522,7 @@ class MainActivity : AppCompatActivity() {
             startDestination = "detail_screen"
             fromLookup = true
             viewModel.setIsWordFromIntent() */
-            checkOverlayPermissions()
+            //checkOverlayPermissions()
             val word = intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT) ?: ""
             startDictionaryWindowService(word)
             finish()

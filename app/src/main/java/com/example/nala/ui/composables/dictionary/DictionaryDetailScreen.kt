@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -20,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
+import com.example.nala.R
 import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.domain.model.dictionary.Sense
 import com.example.nala.domain.model.utils.DataState
@@ -77,14 +79,14 @@ fun DictionaryDetailScreen(
                         when(searchState.type){
                             ErrorType.NETWORK_NOT_AVAILABLE -> {
                                 ErrorScreen(
-                                    text = "Connection not available",
+                                    text = stringResource(R.string.connection_not_available),
                                     subtitle = "¯\\_(ツ)_/¯",
                                     action = onRetry,
                                 )
                             }
                             else -> {
                                 ErrorScreen(
-                                    text = "No result from Jisho dictionary",
+                                    text = stringResource(R.string.no_result_from_jisho),
                                     subtitle = "¯\\_(ツ)_/¯"
                                 )
                             }
@@ -169,16 +171,16 @@ fun DataSection(
         )
         ButtonSection(wordModel, addToReview, loadWordReviews, scaffoldState, onShowSnackbar)
         Spacer(modifier = Modifier.padding(vertical = 5.dp) )
-        val isCommon: Boolean = wordModel?.common ?: false
-        val isCommonTag: String = if(isCommon) "Common" else ""
-        val jlpt = wordModel?.jlpt ?: ""
+        val isCommon: Boolean = wordModel.common ?: false
+        val isCommonTag: String = if(isCommon) stringResource(R.string.common_tag) else ""
+        val jlpt = wordModel.jlpt ?: ""
         val wordTags: MutableList<String> = mutableListOf()
         if (jlpt.isNotEmpty()) wordTags.add(jlpt)
         if(isCommonTag.isNotEmpty()) wordTags.add(isCommonTag)
-        val tags = wordModel?.dataTags ?: listOf()
+        val tags = wordModel.dataTags
         val allTags = tags + wordTags
         TagRow(tags = allTags)
-        SensesSection(wordModel?.senses ?: listOf())
+        SensesSection(wordModel.senses)
     }
 }
 
@@ -288,7 +290,7 @@ fun ButtonSection(
             ) {
                 Icon(Icons.Rounded.Add, contentDescription = "add to review")
                 Spacer(modifier=Modifier.padding(horizontal = 5.dp))
-                Text("Add to review")
+                Text(stringResource(R.string.add_to_review))
             }
         }
     }

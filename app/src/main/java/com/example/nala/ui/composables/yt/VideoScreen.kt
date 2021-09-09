@@ -1,6 +1,5 @@
 package com.example.nala.ui.composables.yt
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,13 +12,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIos
-import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -30,6 +29,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
+import com.example.nala.R
 import com.example.nala.domain.model.auth.UserModel
 import com.example.nala.domain.model.utils.AuthState
 import com.example.nala.domain.model.yt.*
@@ -40,8 +40,6 @@ import com.example.nala.ui.composables.menus.CustomTopBar
 import com.example.nala.ui.theme.Blue500
 import com.example.nala.ui.theme.LightBlue
 import com.example.nala.ui.yt.YoutubePlaybackListener
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerCallback
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
@@ -81,7 +79,6 @@ fun VideoScreen(
     selectedWord: String,
     onSetSelectedWord: (String) -> Unit,
     playerPosition: Float,
-    onLoadCaptions: () -> Unit,
     onLoadComments: (String?) -> Unit,
     onUpdateComments: () -> Unit,
     isUpdatingComments: Boolean,
@@ -90,8 +87,6 @@ fun VideoScreen(
     onRemoveVideoFromFavorites: () -> Unit,
     onInitPlayer: (YouTubePlayer) -> Unit,
     onPlayerTimeElapsed: (Float) -> Unit,
-    onClickCaption: (YouTubePlayer, YoutubeCaptionModel) -> Unit,
-    onSaveVideo: (YoutubeVideoModel) -> Unit,
     onSetPlayerPosition: (Float) -> Unit,
     onChangeSelectedTab: (Int) -> Unit,
     onShowCaptionsDetails: (String) -> Unit,
@@ -112,7 +107,7 @@ fun VideoScreen(
     Scaffold(
         topBar = {
             CustomTopBar(
-                title = "Videos",
+                title = stringResource(R.string.video_screen_header),
                 scope = scope,
                 scaffoldState = scaffoldState,
                 navController = navController,
@@ -174,7 +169,6 @@ fun VideoScreen(
                             tokens = tokens,
                             tokensMap = tokensMap,
                             selectedWord = selectedWord,
-                            onLoadCaptions = onLoadCaptions,
                             onLoadTrack = onLoadTrack,
                             onLoadComments = onLoadComments,
                             onSetSelectedWord = onSetSelectedWord,
@@ -195,7 +189,7 @@ fun VideoScreen(
                     }
                 } else {
                     ErrorScreen(
-                        text = "Connection not available",
+                        text = stringResource(R.string.no_connection_available),
                         subtitle = "¯\\_(ツ)_/¯",
                         action = {
                             onRetry()
@@ -231,7 +225,6 @@ private fun CaptionsSection(
     selectedWord: String,
     onSetSelectedWord: (String) -> Unit,
     player: YouTubePlayer?,
-    onLoadCaptions: () -> Unit,
     onLoadTrack: (String) -> Unit,
     onAddToFavorites: (String) -> Unit,
     onSetPlayerPosition: (Float) -> Unit,
@@ -243,7 +236,7 @@ private fun CaptionsSection(
         is DataState.Initial<*> ->{
             if(availableTracks.isEmpty()) {
                 ErrorScreen(
-                    text = "No captions available for your target language(s)",
+                    text = stringResource(R.string.no_captions_error),
                     subtitle = "¯\\_(ツ)_/¯"
                 )
             } else {
@@ -254,7 +247,10 @@ private fun CaptionsSection(
             LoadingIndicator()
         }
         is DataState.Error -> {
-            ErrorScreen(text = "No captions found for your target language", subtitle = "¯\\_(ツ)_/¯")
+            ErrorScreen(
+                text = stringResource(R.string.no_captions_for_target_lang_error),
+                subtitle = "¯\\_(ツ)_/¯"
+            )
         }
         is DataState.Success<List<YoutubeCaptionModel>> -> {
             val listState = rememberLazyListState()
@@ -382,7 +378,6 @@ private fun CommentsSection(
     tokensMap: Map<Pair<Int, Int>, String>,
     selectedWord: String,
     onSetSelectedWord: (String) -> Unit,
-    player: YouTubePlayer?,
     onSetInspectedComment: (YoutubeCommentModel) -> Unit,
     onSearchWord: () -> Unit,
     scope: CoroutineScope,
@@ -391,14 +386,14 @@ private fun CommentsSection(
     navController: NavController,
 ) {
 
-    val displayedRepliesThread = remember { mutableStateOf<YoutubeCommentModel>(YoutubeCommentModel.Empty()) }
+    val displayedRepliesThread = remember { mutableStateOf(YoutubeCommentModel.Empty()) }
     val displayedRepliesThreadIndex = remember { mutableStateOf(0) }
     val listState = rememberLazyListState()
 
     when(authState) {
         is AuthState.Unauthenticated -> {
             ErrorScreen(
-                text = "Login to your google account to load the comments",
+                text = stringResource(R.string.login_to_view_comments),
                 action = {
                     onRequestLogin()
                 },
@@ -414,7 +409,7 @@ private fun CommentsSection(
                         verticalArrangement = Arrangement.Center,
                     ) {
                         SmallButton(
-                            text = "Load Comments",
+                            text = stringResource(R.string.load_comments_button),
                             textColor = Color.White,
                             backgroundColor = Blue500,
                             onCLick = {
@@ -430,7 +425,14 @@ private fun CommentsSection(
                     LoadingIndicator()
                 }
                 is DataState.Error -> {
-                    ErrorScreen(text = "Couldn't fetch comments", subtitle = "Sorry ¯\\_(ツ)_/¯")
+                    ErrorScreen(
+                        text = stringResource(R.string.fetch_comments_error),
+                        subtitle = "Sorry ¯\\_(ツ)_/¯",
+                        action = {
+                            onLoadComments(authState.data?.token)
+                        },
+                        actionName = stringResource(R.string.retry),
+                    )
                 }
                 is DataState.Success<YoutubeCommentsList> -> {
                     if(displayedRepliesThread.value.isEmpty()) {
@@ -479,7 +481,6 @@ private fun CommentsSection(
                             tokensMap = tokensMap,
                             selectedWord = selectedWord,
                             onSetSelectedWord = onSetSelectedWord,
-                            player = player,
                             onSetInspectedComment = onSetInspectedComment,
                             onSearchWord = onSearchWord,
                             scope = scope,
@@ -490,7 +491,10 @@ private fun CommentsSection(
             }
         }
         is AuthState.AuthError -> {
-            ErrorScreen(text = "An error occured during authentication", action = { onRequestLogin() })
+            ErrorScreen(
+                text = stringResource(R.string.auth_error_message),
+                action = { onRequestLogin() }
+            )
         }
     }
 
@@ -507,7 +511,6 @@ fun ThreadCommentsSection(
     tokensMap: Map<Pair<Int, Int>, String>,
     selectedWord: String,
     onSetSelectedWord: (String) -> Unit,
-    player: YouTubePlayer?,
     onSetInspectedComment: (YoutubeCommentModel) -> Unit,
     onSearchWord: () -> Unit,
     scope: CoroutineScope,
@@ -542,8 +545,8 @@ fun ThreadCommentsSection(
                 )
             }
         }
-        val listState = rememberLazyListState()
-        LazyColumn(state = listState) {
+        val commentsListState = rememberLazyListState()
+        LazyColumn(state = commentsListState) {
             val comments = currentDisplayedThread.value.replies
             items(count = comments.size) { pos ->
                 val isFocused = comments[pos] == inspectedComment
@@ -696,7 +699,7 @@ private fun CommentCard(
                     // Show Replies Button
                     if(comment.replies.isNotEmpty()) {
                         CustomTextButton(
-                            text = "Show replies",
+                            text = stringResource(R.string.comments_show_replies),
                             onClick = {
                                 currentDisplayedThread.value = comment
                                 currentDisplayedThreadIndex.value = commentPos
@@ -742,7 +745,6 @@ private fun SelectionTabSection(
     tokens: List<String>,
     tokensMap: Map<Pair<Int, Int>, String>,
     selectedWord: String,
-    onLoadCaptions: () -> Unit,
     onLoadTrack: (String) -> Unit,
     onLoadComments: (String?) -> Unit,
     onSetSelectedWord: (String) -> Unit,
@@ -767,7 +769,8 @@ private fun SelectionTabSection(
         tabIndex = tabIndex,
         setTabIndex = { onChangeTabIndex(it) },
         tabHeaders = listOf(
-            "SUBTITLES", "COMMENTS"
+            stringResource(R.string.video_subtitles_tab_header),
+            stringResource(R.string.video_comments_tab_header),
         )
     )
     when(tabIndex){
@@ -780,7 +783,6 @@ private fun SelectionTabSection(
                 tokens = tokens,
                 tokensMap = tokensMap,
                 selectedWord = selectedWord,
-                onLoadCaptions = onLoadCaptions,
                 onLoadTrack = onLoadTrack,
                 onSetSelectedWord = onSetSelectedWord,
                 player = player,
@@ -804,7 +806,6 @@ private fun SelectionTabSection(
                 tokensMap = tokensMap,
                 selectedWord = selectedWord,
                 onSetSelectedWord = onSetSelectedWord,
-                player = player,
                 onSetInspectedComment = onSetInspectedComment,
                 onSearchWord = onSearchWord,
                 onRequestLogin = onRequestLogin,
@@ -828,7 +829,7 @@ private fun TracksListSection(
     ) {
         Text(
             modifier = Modifier.padding(vertical=5.dp),
-            text = "Available Tracks",
+            text = stringResource(R.string.available_tracks),
             style = MaterialTheme.typography.h6,
             textAlign = TextAlign.Start,
         )

@@ -12,6 +12,7 @@ import com.example.nala.domain.util.SuperMemo2
 import com.example.nala.services.metadata.AsyncExtractorService
 import com.example.nala.services.metadata.ExtractorService
 import com.example.nala.utils.MetadataExtractionException
+import com.example.nala.utils.Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -387,6 +388,7 @@ class ReviewRepositoryImpl @Inject constructor(
                     url = articleUrl,
                     title = metadata.title,
                     description = metadata.description,
+                    domain = Utils.parseDomainFromUrl(articleUrl),
                     thumbnailUrl = metadata.thumbnailUrl,
                 )
                 reviewDao.addArticleToFavorites(cachedArticle)

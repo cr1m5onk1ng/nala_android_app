@@ -10,7 +10,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.nala.R
 import com.example.nala.ui.theme.Blue700
 
 @Composable
@@ -44,7 +46,7 @@ fun AddToReviewButton(
         ) {
             Icon(Icons.Rounded.Add, contentDescription = "add to review", tint=iconColor ?: Color.White)
             Spacer(modifier= Modifier.padding(horizontal = 5.dp))
-            Text("Add to review", color = textColor ?: Color.White)
+            Text(stringResource(R.string.add_to_review_text), color = textColor ?: Color.White)
         }
     }
 }
