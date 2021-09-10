@@ -1,5 +1,6 @@
 package com.example.nala.ui.composables.dictionary
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -8,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,12 +28,8 @@ import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.domain.model.dictionary.Sense
 import com.example.nala.domain.model.utils.DataState
 import com.example.nala.domain.model.utils.ErrorType
-import com.example.nala.ui.composables.BackButton
-import com.example.nala.ui.composables.DefaultSnackbar
-import com.example.nala.ui.composables.ErrorScreen
-import com.example.nala.ui.composables.LoadingIndicator
+import com.example.nala.ui.composables.*
 import com.example.nala.ui.theme.*
-import kotlin.random.Random
 
 @Composable
 fun DictionaryDetailScreen(
@@ -44,6 +42,7 @@ fun DictionaryDetailScreen(
     addToReview: (DictionaryModel) -> Unit,
     loadWordReviews: () -> Unit,
     scaffoldState: ScaffoldState,
+    onShare: (String?) -> Unit,
     showSnackbar: (ScaffoldState) -> Unit
 ) {
 
@@ -113,6 +112,7 @@ fun DictionaryDetailScreen(
                                         addToReview,
                                         loadWordReviews,
                                         scaffoldState,
+                                        onShare,
                                         showSnackbar
                                     )
                                 }
@@ -150,6 +150,7 @@ fun DataSection(
     addToReview: (DictionaryModel) -> Unit,
     loadWordReviews: () -> Unit,
     scaffoldState: ScaffoldState,
+    onShare: (String?) -> Unit,
     onShowSnackbar: (ScaffoldState) -> Unit
 ) {
     Column(
@@ -165,6 +166,7 @@ fun DataSection(
             navController,
             setCurrentKanji,
             setCurrentStory,
+            onShare = onShare,
         )
         Spacer(
             modifier = Modifier.padding(vertical=5.dp)
@@ -192,7 +194,7 @@ fun WordSection(
     navController: NavController,
     setCurrentKanji: (String) -> Unit,
     setCurrentStory: (String) -> Unit,
-    fromStudy: Boolean = false,
+    onShare: (String?) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -210,13 +212,18 @@ fun WordSection(
         Spacer(
             modifier = Modifier.padding(vertical=2.dp)
         )
-        KanjiRow(
-            word,
-            wordKanjis,
-            navController,
-            setCurrentKanji,
-            setCurrentStory,
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            KanjiRow(
+                word,
+                wordKanjis,
+                navController,
+                setCurrentKanji,
+                setCurrentStory,
+            )
+            ShareButton(onShare = onShare, text = word)
+        }
     }
 }
 

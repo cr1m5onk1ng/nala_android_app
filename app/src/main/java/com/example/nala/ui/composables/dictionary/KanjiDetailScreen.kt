@@ -46,112 +46,116 @@ fun KanjiDetailScreen(
     toggleStoryEditForm: (Boolean) -> Unit,
     navController: NavController,
     scaffoldState: ScaffoldState,
+    onShare: (String?) -> Unit,
     showSnackbar: () -> Unit,
 ) {
 
     Scaffold(){ paddingValue ->
+            Column(modifier = Modifier.padding(paddingValue)) {
+                BackButton(
+                    modifier = Modifier.padding(top = 22.dp, start = 16.dp),
+                    navController = navController,
+                )
+                when(kanjiSearchState){
+                    is DataState.Initial<*>, DataState.Loading -> {
+                        LoadingIndicator()
+                    }
+                    is DataState.Error -> {
+                        ErrorScreen(text = "Couldn't fetch kanji from dictionary", subtitle = "sorry dude")
+                    }
+                    is DataState.Success<KanjiModel> -> {
+                        ConstraintLayout() {
+                            val kanji = kanjiSearchState.data
+                            LazyColumn (
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                            ){
+                                item() {
+                                    Column() {
+                                        val tags: MutableList<String> = mutableListOf()
+                                        var freq = kanji.freq ?: ""
+                                        if(freq.isNotEmpty()) {
+                                            freq = "frequency: $freq"
+                                            tags.add(freq)
+                                        }
 
-            when(kanjiSearchState){
-                is DataState.Initial<*>, DataState.Loading -> {
-                    LoadingIndicator()
-                }
-                is DataState.Error -> {
-                    ErrorScreen(text = "Couldn't fetch kanji from dictionary", subtitle = "sorry dude")
-                }
-                is DataState.Success<KanjiModel> -> {
-                    ConstraintLayout {
-                        val kanji = kanjiSearchState.data
-                        LazyColumn (
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(16.dp),
-                        ){
-                            item() {
-                                Column() {
-                                    var tags: MutableList<String> = mutableListOf()
-                                    var freq = kanji.freq ?: ""
-                                    if(freq.isNotEmpty()) {
-                                        freq = "frequency: $freq"
-                                        tags.add(freq)
-                                    }
+                                        var jlpt = kanji.jlpt ?: ""
+                                        if(jlpt.isNotEmpty()) {
+                                            jlpt = "jlptn-$jlpt"
+                                            tags.add(jlpt)
+                                        }
 
-                                    var jlpt = kanji.jlpt ?: ""
-                                    if(jlpt.isNotEmpty()) {
-                                        jlpt = "jlptn-$jlpt"
-                                        tags.add(jlpt)
-                                    }
+                                        var grade = kanji.grade ?: ""
+                                        if(grade.isNotEmpty()) {
+                                            grade = "grade: $grade"
+                                            tags.add(grade)
+                                        }
 
-                                    var grade = kanji.grade ?: ""
-                                    if(grade.isNotEmpty()) {
-                                        grade = "grade: $grade"
-                                        tags.add(grade)
-                                    }
-
-                                    // SECTIONS
-                                    Spacer(modifier = Modifier.padding(vertical = 16.dp))
-                                    BackButton(navController)
-                                    Spacer(modifier = Modifier.padding(vertical = 16.dp))
-                                    KanjiSection(kanji = kanji.kanji)
-                                    //Spacer(modifier = Modifier.padding(bottom = 8.dp))
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(8.dp),
-                                        horizontalArrangement = Arrangement.Center,
-                                    ){
-                                        AddToReviewButton(
-                                            scaffoldState = scaffoldState,
-                                            addToReview = {
-                                                addKanjiToReview(kanji)
-                                                showSnackbar()
-                                            },
-                                            onShowSnackbar = {showSnackbar()}
-                                        )
-                                    }
-                                    TagRow(tags = tags)
-                                    StorySection(storyState = kanjiStoryState)
-                                    if(storyFormActive){
-                                        StoryEditForm(
-                                            kanji = kanji.kanji,
-                                            onEditStory = updateKanjiStory,
-                                            setCurrentStory = setCurrentStory,
-                                            toggleStoryEditForm = toggleStoryEditForm,
-                                        )
-                                    } else{
+                                        // SECTIONS
+                                        Spacer(modifier = Modifier.padding(vertical = 16.dp))
+                                        KanjiSection(kanji = kanji.kanji, onShare = onShare)
                                         Row(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .padding(end = 16.dp),
-                                            horizontalArrangement = Arrangement.End,
-                                        ) {
-                                            CustomTextButton(
-                                                text = "Edit story",
-                                                textSize = 16.sp,
-                                                onClick = {
-                                                    toggleStoryEditForm(true)
-                                                }
+                                                .padding(8.dp),
+                                            horizontalArrangement = Arrangement.Center,
+                                        ){
+                                            AddToReviewButton(
+                                                scaffoldState = scaffoldState,
+                                                addToReview = {
+                                                    addKanjiToReview(kanji)
+                                                    showSnackbar()
+                                                },
+                                                onShowSnackbar = {showSnackbar()}
                                             )
                                         }
+                                        TagRow(tags = tags)
+                                        StorySection(storyState = kanjiStoryState)
+                                        if(storyFormActive){
+                                            StoryEditForm(
+                                                kanji = kanji.kanji,
+                                                onEditStory = updateKanjiStory,
+                                                setCurrentStory = setCurrentStory,
+                                                toggleStoryEditForm = toggleStoryEditForm,
+                                            )
+                                        } else{
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(end = 16.dp),
+                                                horizontalArrangement = Arrangement.End,
+                                            ) {
+                                                CustomTextButton(
+                                                    text = "Edit story",
+                                                    textSize = 16.sp,
+                                                    onClick = {
+                                                        toggleStoryEditForm(true)
+                                                    }
+                                                )
+                                            }
+                                        }
+                                        DetailsSection(kanji)
                                     }
-                                    DetailsSection(kanji)
                                 }
                             }
+                            val snackbar = createRef()
+                            DefaultSnackbar(
+                                modifier = Modifier
+                                    .constrainAs(snackbar) {
+                                        bottom.linkTo(parent.bottom)
+                                        start.linkTo(parent.start)
+                                        end.linkTo(parent.end)
+                                    }
+                                    .padding(8.dp),
+                                snackbarHostState = scaffoldState.snackbarHostState,
+                                onDismiss = {
+                                    scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                                }
+                            )
                         }
-                        val snackbar = createRef()
-                        DefaultSnackbar(
-                            modifier = Modifier
-                                .constrainAs(snackbar){
-                                    bottom.linkTo(parent.bottom)
-                                    start.linkTo(parent.start)
-                                    end.linkTo(parent.end)
-                                }.padding(8.dp),
-                            snackbarHostState = scaffoldState.snackbarHostState,
-                            onDismiss = {
-                                scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
-                            }
-                        )
-                    }
 
+                    }
                 }
             }
     }
@@ -159,13 +163,15 @@ fun KanjiDetailScreen(
 
 @Composable
 fun KanjiSection(
-    kanji: String
+    kanji: String,
+    onShare: (String?) -> Unit,
 ) {
     Row(
         modifier = Modifier
             .padding(16.dp)
             .fillMaxWidth(),
-        horizontalArrangement = Arrangement.Start
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             kanji,
@@ -175,6 +181,7 @@ fun KanjiSection(
                 fontWeight = FontWeight.Bold
             )
         )
+        ShareButton(onShare = onShare, text = kanji, buttonSize = 28.dp)
     }
 }
 
@@ -183,7 +190,7 @@ fun StorySection(
     storyState: DataState<String>,
 ){
     when(storyState){
-        is DataState.Loading -> {
+        is DataState.Initial, DataState.Loading -> {
             LoadingIndicator()
         }
         is DataState.Error -> {
@@ -192,7 +199,7 @@ fun StorySection(
         is DataState.Success<String> -> {
             Column (
                 modifier = Modifier
-                    .padding(start = 16.dp, top = 16.dp, end = 16.dp)
+                    .padding(start = 16.dp, top = 5.dp, end = 16.dp)
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ){
@@ -277,9 +284,9 @@ fun DetailsSection(
             .padding(16.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        DetailsColumn(details = kanji?.meaning ?: listOf(), title = "Meanings", 20.sp)
-        DetailsColumn(details = kanji?.kunReadings ?: listOf(), title = "Kun", 16.sp)
-        DetailsColumn(details = kanji?.onReadings ?: listOf(), title = "On", 16.sp)
+        DetailsColumn(details = kanji.meaning ?: listOf(), title = "Meanings", 20.sp)
+        DetailsColumn(details = kanji.kunReadings ?: listOf(), title = "Kun", 16.sp)
+        DetailsColumn(details = kanji.onReadings ?: listOf(), title = "On", 16.sp)
     }
 }
 

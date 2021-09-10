@@ -10,16 +10,13 @@ class MetadataExtractorService : ExtractorService<MetadataModel> {
 
         val doc = Jsoup.connect(url).get()
         try{
-            var imageUrl = ""
-            var title = ""
-            var description = ""
             val metaOgImage  = doc.select("meta[property=og:image]").first()?.attr("content")
             val metaOgTile = doc.select("meta[property=og:title]").first()?.attr("content")
             val metaOgDescription = doc.select("meta[property=og:description]").first()?.attr("content")
             val descriptionAlt = doc.select("meta[property=description]").first()?.attr("content")
-            title = metaOgTile ?: doc.title()
-            description = metaOgDescription ?: descriptionAlt ?: ""
-            imageUrl = metaOgImage ?: ""
+            val title = metaOgTile ?: doc.title()
+            val description = metaOgDescription ?: descriptionAlt ?: ""
+            val imageUrl = metaOgImage ?: ""
 
             Log.d("METADATADEBUG", "Title: $title")
             Log.d("METADATADEBUG", "Image: $imageUrl")

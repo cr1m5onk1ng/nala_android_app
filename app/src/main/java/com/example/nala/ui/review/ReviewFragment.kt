@@ -54,6 +54,7 @@ class ReviewFragment : CustomFragment() {
                         updateSentenceReviewItem= reviewViewModel::updateSentenceReviewItem,
                         updateKanjiReviewItem = reviewViewModel::updateKanjiReviewItem,
                         navController = findNavController(),
+                        onShare = {},
                         showSnackbar = {
                             showSnackbar(
                                 scaffoldState,

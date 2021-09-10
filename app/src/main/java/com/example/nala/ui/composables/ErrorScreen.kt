@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.nala.R
 import com.example.nala.ui.theme.Blue700
+import java.time.format.TextStyle
 
 @Composable
 fun ErrorScreen(
@@ -29,12 +30,12 @@ fun ErrorScreen(
     ){
         Text(
             text,
-            style = MaterialTheme.typography.subtitle1
+            style = MaterialTheme.typography.h6
         )
         if(subtitle.isNotEmpty()) {
             Text(
                 subtitle,
-                style = MaterialTheme.typography.body1,
+                style = MaterialTheme.typography.subtitle1,
             )
         }
         action?.let{

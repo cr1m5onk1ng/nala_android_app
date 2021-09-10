@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -71,6 +72,7 @@ fun ReviewListScreen(
     updateWordReviewItem: (quality: Int, reviewItem: WordReviewModel) -> Unit,
     updateSentenceReviewItem: (quality: Int, sentenceReview: SentenceReviewModel) -> Unit,
     updateKanjiReviewItem: (quality: Int, kanjiReview: KanjiReviewModel) -> Unit,
+    onShare: (String?) -> Unit,
     navController: NavController,
     scaffoldState: ScaffoldState,
     showSnackbar: (ScaffoldState) -> Unit
@@ -144,6 +146,7 @@ fun ReviewListScreen(
                                             updateWordReviewItem,
                                             removeWordReview,
                                             dismissWordReview,
+                                            onShare,
                                             navController
                                         )
                                     }
@@ -172,6 +175,7 @@ fun ReviewListScreen(
                                             updateSentenceReviewItem,
                                             removeSentenceReview,
                                             dismissSentenceReview,
+                                            onShare,
                                             navController
                                         )
                                     }
@@ -199,6 +203,7 @@ fun ReviewListScreen(
                                             updateKanjiReviewItem,
                                             removeKanjiReview,
                                             dismissKanjiReview,
+                                            onShare,
                                             navController
                                         )
                                     }
@@ -234,6 +239,7 @@ fun KanjiReviewCard(
     updateKanjiReviewItem: (quality: Int, kanjiReview: KanjiReviewModel) -> Unit,
     removeKanjiReview: (KanjiReviewModel) -> Unit,
     dismissKanjiReview: (String) -> Unit,
+    onShare: (String?) -> Unit,
     navController: NavController,
 ){
     val isEasyChecked = remember { mutableStateOf(false) }
@@ -291,10 +297,12 @@ fun KanjiReviewCard(
             )
             //BUTTONS SECTION
             ButtonsRow(
+                text = item.kanji,
                 removeAction = {
                     removeKanjiReview(item)
                     dismissKanjiReview(item.kanji)
-                }
+                },
+                onShare = onShare,
             )
         }
     }
@@ -308,6 +316,7 @@ fun SentenceReviewCard(
     updateSentenceReviewItem: (quality: Int, sentenceReview: SentenceReviewModel) -> Unit,
     removeSentenceReview: (SentenceReviewModel) -> Unit,
     dismissSentenceReview: (String) -> Unit,
+    onShare: (String?) -> Unit,
     navController: NavController,
 ){
     val isEasyChecked = remember { mutableStateOf(false) }
@@ -369,10 +378,12 @@ fun SentenceReviewCard(
             )
             //BUTTONS SECTION
             ButtonsRow(
+                text = item.sentence,
                 removeAction = {
                     removeSentenceReview(item)
                     dismissSentenceReview(item.sentence)
-                }
+                },
+                onShare = onShare,
             )
         }
     }
@@ -385,6 +396,7 @@ fun WordReviewCard(
     updateWordReviewItem: (quality: Int, reviewItem: WordReviewModel) -> Unit,
     removeWordReview: (WordReviewModel) -> Unit,
     dismissWordReview: (String) -> Unit,
+    onShare: (String?) -> Unit,
     navController: NavController,
     ) {
 
@@ -442,10 +454,12 @@ fun WordReviewCard(
             )
             //BUTTONS SECTION
             ButtonsRow(
+                text = item.word,
                 removeAction = {
                     removeWordReview(item)
                     dismissWordReview(item.word)
-                }
+                },
+                onShare = onShare,
             )
         }
     }
@@ -456,7 +470,7 @@ fun checkBoxLogic(
     isKoChecked: MutableState<Boolean>,
     isEasyChecked: MutableState<Boolean>,
 ) : Int {
-    var quality: Int = 0
+    var quality = 0
     if(isOkChecked.value || isKoChecked.value || isEasyChecked.value) {
         quality = if(isOkChecked.value){
             4
@@ -577,7 +591,9 @@ fun CustomCheckBox(
 
 @Composable
 fun ButtonsRow(
+    text: String,
     removeAction: () -> Unit,
+    onShare: (String?) -> Unit,
 ){
     Row(
         modifier = Modifier
@@ -586,10 +602,25 @@ fun ButtonsRow(
         horizontalArrangement = Arrangement.End,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        IconButton(onClick = removeAction) {
+            Icon(
+                modifier = Modifier.size(20.dp),
+                imageVector = Icons.Outlined.DeleteOutline,
+                contentDescription = "remove",
+                tint = Color.DarkGray,
+            )
+        }
+        ShareButton(
+            onShare = onShare,
+            text = text,
+            buttonSize = 20.dp,
+            buttonColor = Color.DarkGray,
+        )
+        /*
         CustomTextButton(
             text = stringResource(R.string.remove_review_button_text),
             onClick = removeAction,
-        )
+        )*/
     }
 }
 

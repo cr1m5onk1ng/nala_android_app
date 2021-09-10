@@ -152,6 +152,7 @@ class MainActivity : AppCompatActivity() {
                             addToReview =  dictViewModel::addWordToReview,
                             loadWordReviews = reviewViewModel::loadWordReviewItems,
                             scaffoldState = scaffoldState,
+                            onShare = this@MainActivity::shareText,
                             showSnackbar = {
                                 showSnackbar(
                                     scaffoldState,
@@ -172,6 +173,7 @@ class MainActivity : AppCompatActivity() {
                             toggleStoryEditForm = dictViewModel::toggleEditStoryForm,
                             navController = navController,
                             scaffoldState = scaffoldState,
+                            onShare = this@MainActivity::shareText,
                             showSnackbar = {
                                 showSnackbar(
                                     scaffoldState,
@@ -205,6 +207,7 @@ class MainActivity : AppCompatActivity() {
                             updateWordReviewItem = reviewViewModel::updateWordReviewItem,
                             updateSentenceReviewItem= reviewViewModel::updateSentenceReviewItem,
                             updateKanjiReviewItem = reviewViewModel::updateKanjiReviewItem,
+                            onShare = this@MainActivity::shareText,
                             navController = navController,
                             showSnackbar = {
                                 showSnackbar(
@@ -254,6 +257,7 @@ class MainActivity : AppCompatActivity() {
                             unsetTargetWord = studyViewModel::unsetSelectedWord,
                             addSentenceToReview = dictViewModel::addSentenceToReview,
                             loadSimilarSentences = studyViewModel::loadSimilarSentences,
+                            onShare = this@MainActivity::shareText,
                             setIsWordFromForm = dictViewModel::setIsWordFromForm,
                             scaffoldState = scaffoldState,
                             showReviewSnackbar = {
@@ -489,7 +493,7 @@ class MainActivity : AppCompatActivity() {
     @ExperimentalCoroutinesApi
     private fun handleSharedText(intent: Intent?) {
         Log.d("SHARED", "ACTION SEND CALLED!")
-        if ("text/plain" == intent?.type) {
+        if (intent?.type == "text/plain") {
             intent.getStringExtra(Intent.EXTRA_TEXT)?.let { inputString ->
                 Log.d("SHARED", "SHARED TEXT: $inputString")
                 when(Utils.parseInputString(inputString)) {
@@ -526,6 +530,17 @@ class MainActivity : AppCompatActivity() {
             val word = intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT) ?: ""
             startDictionaryWindowService(word)
             finish()
+        }
+    }
+
+    private fun shareText(text: String?) {
+        text?.let{
+            val shareIntent = Intent().apply{
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_TEXT, it)
+                type = "text/plain"
+            }
+            startActivity(Intent.createChooser(shareIntent, "Share word/sentence to...") )
         }
     }
 

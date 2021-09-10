@@ -54,6 +54,7 @@ fun StudyScreen(
     unsetTargetWord: () -> Unit,
     addSentenceToReview: (String, String) -> Unit,
     loadSimilarSentences: () -> Unit,
+    onShare: (String?) -> Unit,
     setIsWordFromForm: () -> Unit,
     scaffoldState: ScaffoldState,
     showReviewSnackbar: () -> Unit,
@@ -118,20 +119,20 @@ fun StudyScreen(
                                         WordRow(
                                             reading = wordModel.reading,
                                             word = wordModel.word,
+                                            sentence = context,
                                             setCurrentWord = setCurrentWord,
                                             setIsWordFromForm = setIsWordFromForm,
+                                            onShare = onShare,
                                             navController = navController,
                                         )
                                         ContextSection( word = word, parts = parts)
-                                        SmallButton(
+                                        MainButton(
                                             backgroundColor = Blue700,
                                             text = stringResource(R.string.add_to_review),
-                                            icon = Icons.Rounded.Add,
                                             onCLick = {
                                                 addSentenceToReview(word, context)
                                                 showReviewSnackbar()
                                             },
-                                            height = 50.dp,
                                         )
                                         Spacer(modifier = Modifier.padding(vertical=5.dp))
                                         when(similarSentencesState) {
@@ -195,7 +196,7 @@ fun StudyScreen(
                             DefaultSnackbar(
                                 modifier = Modifier
                                     .padding(16.dp)
-                                    .constrainAs(snackbar){
+                                    .constrainAs(snackbar) {
                                         bottom.linkTo(parent.bottom)
                                         start.linkTo(parent.start)
                                         end.linkTo(parent.end)
@@ -217,15 +218,17 @@ fun StudyScreen(
 fun WordRow(
     reading: String,
     word: String,
+    sentence: String,
     setCurrentWord: (String) -> Unit,
     setIsWordFromForm: () -> Unit,
+    onShare: (String?) -> Unit,
     navController: NavController,
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 32.dp, top = 32.dp)
-            .clickable{
+            .clickable {
                 setCurrentWord(word)
                 setIsWordFromForm()
                 navController.navigate("detail_screen")
@@ -239,14 +242,18 @@ fun WordRow(
                 fontWeight = FontWeight.W500
             )
         )
-        Text(
-            word,
-            style = TextStyle(
-                fontSize = 46.sp,
-                fontWeight = FontWeight.Bold,
-                textDecoration = TextDecoration.Underline
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                word,
+                style = TextStyle(
+                    fontSize = 46.sp,
+                    fontWeight = FontWeight.Bold,
+                    textDecoration = TextDecoration.Underline
+                )
             )
-        )
+            ShareButton(onShare = onShare, text = sentence, buttonSize = 28.dp)
+        }
+
     }
 }
 

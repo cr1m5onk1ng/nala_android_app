@@ -36,6 +36,7 @@ class KanjiDetailFragment : CustomFragment() {
                     toggleStoryEditForm = viewModel::toggleEditStoryForm,
                     navController = findNavController(),
                     scaffoldState = scaffoldState,
+                    onShare = {},
                     showSnackbar = {showSnackbar(scaffoldState, message="Added to review")},
                 )
             }
