@@ -30,4 +30,12 @@ object Utils {
         Log.d("URLDEBUG", "Domain is: $domain")
         return domain
     }
+
+    fun sanitizeSearchQuery(query: String?): String {
+        if (query == null) {
+            return "";
+        }
+        val queryWithEscapedQuotes = query.replace(Regex.fromLiteral("\""), "\"\"")
+        return "*\"$queryWithEscapedQuotes\"*"
+    }
 }

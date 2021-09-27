@@ -69,4 +69,5 @@
     <string name="similar_sentences_button">Similar sentences</string>
     <string name="save_button">Save</string>
     <string name="article_screen_header">Article</string>
+    <string name="search_in_review">search</string>
 </resources>

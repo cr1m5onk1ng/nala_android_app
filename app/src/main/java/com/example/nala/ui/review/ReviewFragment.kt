@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.material.rememberScaffoldState
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.findNavController
@@ -20,6 +21,7 @@ class ReviewFragment : CustomFragment() {
     private val reviewViewModel: ReviewViewModel by activityViewModels()
     private val studyViewModel: StudyViewModel by activityViewModels()
 
+    @ExperimentalComposeUiApi
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

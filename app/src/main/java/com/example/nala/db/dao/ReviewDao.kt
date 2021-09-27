@@ -100,6 +100,16 @@ interface ReviewDao : DatabaseDao{
     @Query("SELECT * FROM sentence_review ORDER BY interval LIMIT :n")
     fun getNSentenceReviews(n: Int) : Flow<List<SentenceReviewModelDto>>
 
+    @Query(
+        """
+          SELECT * FROM sentence_review
+            JOIN sentence_review_fts
+            ON sentence_review.sentence = sentence_review_fts.sentence
+            WHERE sentence_review_fts MATCH :query
+        """
+    )
+    suspend fun getMatchingSentences(query: String) : List<SentenceReviewModelDto>
+
     @Update
     suspend fun updateSentenceReviewItem(sentenceReview: SentenceReviewModelDto)
 
@@ -141,16 +151,7 @@ interface ReviewDao : DatabaseDao{
 
     @Transaction
     @Query("SELECT * FROM word_review WHERE word=:word")
-    suspend fun getWordSensesWithDefinitions(word: String) : List<WordReviewWithSensesAndDefinitions>
-
-    @Transaction
-    @Query("SELECT * FROM word_review WHERE word=:word")
     suspend fun getWordSensesWithTags(word: String) : List<WordReviewWithSensesAndTags>
-
-
-    @Transaction
-    @Query("SELECT * FROM word_sense WHERE senseId=:senseId")
-    suspend fun getSenseWithDefinitionsAndTags(senseId: String) : List<WordSenseWithTagsAndDefinitions>
 
     @Transaction
     @Query("SELECT * FROM word_review WHERE word=:word")

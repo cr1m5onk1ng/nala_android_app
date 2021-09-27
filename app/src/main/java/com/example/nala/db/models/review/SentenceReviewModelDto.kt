@@ -2,6 +2,7 @@ package com.example.nala.db.models.review
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Fts4
 
 @Entity(tableName = "sentence_review", primaryKeys = ["sentence", "word"])
 data class SentenceReviewModelDto(
@@ -21,3 +22,13 @@ data class SentenceReviewModelDto(
     @ColumnInfo(name="interval")
     val interval: Int = 0,
 ) : ReviewModel()
+
+@Entity(tableName = "sentence_review_fts")
+@Fts4(contentEntity = SentenceReviewModelDto::class)
+data class SentenceReviewModelDtoFts(
+    @ColumnInfo(name="sentence")
+    val sentence: String,
+
+    @ColumnInfo(name="word")
+    val targetWord: String,
+)

@@ -50,7 +50,7 @@ fun KanjiDetailScreen(
     showSnackbar: () -> Unit,
 ) {
 
-    Scaffold(){ paddingValue ->
+    Scaffold { paddingValue ->
             Column(modifier = Modifier.padding(paddingValue)) {
                 BackButton(
                     modifier = Modifier.padding(top = 22.dp, start = 16.dp),
@@ -64,15 +64,15 @@ fun KanjiDetailScreen(
                         ErrorScreen(text = "Couldn't fetch kanji from dictionary", subtitle = "sorry dude")
                     }
                     is DataState.Success<KanjiModel> -> {
-                        ConstraintLayout() {
+                        ConstraintLayout {
                             val kanji = kanjiSearchState.data
                             LazyColumn (
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(16.dp),
                             ){
-                                item() {
-                                    Column() {
+                                item {
+                                    Column {
                                         val tags: MutableList<String> = mutableListOf()
                                         var freq = kanji.freq ?: ""
                                         if(freq.isNotEmpty()) {

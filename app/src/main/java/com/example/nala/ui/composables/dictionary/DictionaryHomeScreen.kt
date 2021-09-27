@@ -30,7 +30,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import com.example.nala.R
 import com.example.nala.db.models.review.WordReviewModel
@@ -39,12 +38,10 @@ import com.example.nala.domain.model.utils.AuthState
 import com.example.nala.domain.model.utils.DataState
 import com.example.nala.ui.composables.BottomBar
 import com.example.nala.ui.composables.LoadingIndicator
-import com.example.nala.ui.composables.SmallButton
 import com.example.nala.ui.composables.menus.CustomDrawer
 import com.example.nala.ui.theme.*
-import com.google.android.gms.common.SignInButton
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import kotlin.random.Random
 
 
 @ExperimentalComposeUiApi
@@ -79,6 +76,7 @@ fun HomeScreen(
     }
 
     Scaffold(
+        scaffoldState = scaffoldState,
         bottomBar = {
             BottomBar(
                 navController,
@@ -112,48 +110,7 @@ fun HomeScreen(
             verticalArrangement = Arrangement.Top,
         ) {
             // TOP BAR
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start,
-            ){
-                // OPEN DRAWER BUTTON
-                Row(
-                    modifier = Modifier.fillMaxWidth(0.4f),
-                    horizontalArrangement = Arrangement.Start,
-                ){
-                    IconButton(
-                        onClick = {
-                            scope.launch {
-                                scaffoldState.drawerState.open()
-                            }
-                        }) {
-                        Icon(
-                            imageVector = Icons.Filled.Menu,
-                            contentDescription="drawer",
-                            tint = Color.White,
-                        )
-                    }
-                }
-                // LOGO SECTION
-                Row(
-                    modifier = Modifier.fillMaxWidth(0.6f),
-                    horizontalArrangement = Arrangement.Start,
-                ){
-                    Text(
-                        text = "NaLa",
-                        textAlign = TextAlign.Start,
-                        style = TextStyle(
-                            fontFamily = Quicksand,
-                            fontSize = 36.sp,
-                            color = LightYellow,
-                            fontWeight = FontWeight.Bold
-                        ),
-                    )
-                }
-            }
+            TopBar(scope, scaffoldState)
             //BODY
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -265,6 +222,56 @@ fun HomeScreen(
                     )
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun TopBar(
+    scope: CoroutineScope,
+    scaffoldState: ScaffoldState,
+) {
+    // TOP BAR
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start,
+    ){
+        // OPEN DRAWER BUTTON
+        Row(
+            modifier = Modifier.fillMaxWidth(0.4f),
+            horizontalArrangement = Arrangement.Start,
+        ){
+            IconButton(
+                onClick = {
+                    scope.launch {
+                        scaffoldState.drawerState.open()
+                    }
+                }) {
+                Icon(
+                    imageVector = Icons.Filled.Menu,
+                    contentDescription="drawer",
+                    tint = Color.White,
+                )
+            }
+        }
+        // LOGO SECTION
+        Row(
+            modifier = Modifier.fillMaxWidth(0.6f),
+            horizontalArrangement = Arrangement.Start,
+        ){
+            Text(
+                text = "NaLa",
+                textAlign = TextAlign.Start,
+                style = TextStyle(
+                    fontFamily = Quicksand,
+                    fontSize = 36.sp,
+                    color = LightYellow,
+                    fontWeight = FontWeight.Bold
+                ),
+            )
         }
     }
 }

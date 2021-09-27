@@ -49,8 +49,6 @@ class ReviewViewModel @Inject constructor(
 
     init {
         loadWordReviewItems()
-        loadSentenceReviewItems()
-        loadKanjiReviewItems()
     }
 
     val selectedCategory: MutableState<ReviewCategory> = mutableStateOf(ReviewCategory.Word)
@@ -146,11 +144,23 @@ class ReviewViewModel @Inject constructor(
                 }
             }
         }
-
     }
+
+
 
     fun setCategory (category: ReviewCategory) {
         selectedCategory.value = category
+        when(selectedCategory.value) {
+            ReviewCategory.Word -> {
+                loadWordReviewItems()
+            }
+            ReviewCategory.Sentence -> {
+                loadSentenceReviewItems()
+            }
+            ReviewCategory.Kanji -> {
+                loadKanjiReviewItems()
+            }
+        }
     }
 
     fun setIsArticleInFavorites(value : Boolean) {

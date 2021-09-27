@@ -20,7 +20,7 @@ fun DictionaryWindowScreen(
     searchState: DataState<DictionaryModel>,
     onClose: () -> Unit,
 ){
-    Scaffold(){ paddingValues ->
+    Scaffold { paddingValues ->
         when(searchState) {
             is DataState.Initial<*>, DataState.Loading -> {
                 LoadingIndicator()

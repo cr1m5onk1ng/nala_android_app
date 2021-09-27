@@ -58,6 +58,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.Scope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 
@@ -548,7 +549,7 @@ class MainActivity : AppCompatActivity() {
         val gso =
             GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestServerAuthCode(BuildConfig.OAUTH_ID)
-                //.requestScopes(Scope("https://www.googleapis.com/auth/youtube.force-ssl"))
+                .requestScopes(Scope("https://www.googleapis.com/auth/youtube.force-ssl"))
                 .requestEmail()
                 .build()
         googleSignInClient = GoogleSignIn.getClient(this, gso)

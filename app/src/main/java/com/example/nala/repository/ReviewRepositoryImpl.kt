@@ -9,11 +9,10 @@ import com.example.nala.domain.model.kanji.KanjiModel
 import com.example.nala.domain.model.metadata.MetadataModel
 import com.example.nala.domain.model.review.SentenceReviewModel
 import com.example.nala.domain.util.SuperMemo2
-import com.example.nala.services.metadata.AsyncExtractorService
 import com.example.nala.services.metadata.ExtractorService
-import com.example.nala.utils.MetadataExtractionException
 import com.example.nala.utils.Utils
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -362,6 +361,7 @@ class ReviewRepositoryImpl @Inject constructor(
         reviewDao.updateWordReviewItem(updatedWordReview)
     }
 
+    @ExperimentalCoroutinesApi
     override fun getSavedArticle(url: String): Flow<ArticlesCache> {
         return reviewDao.getSavedArticleDistinctUntilChanged(url).mapLatest{
             if(it.isEmpty()) {
@@ -369,6 +369,17 @@ class ReviewRepositoryImpl @Inject constructor(
             } else {
                 it.first()
             }
+        }
+    }
+
+    override suspend fun getMatchingSentences(sentence: String): List<SentenceReviewModel> {
+        val sanitizedQuery = Utils.sanitizeSearchQuery(sentence)
+        val matches = reviewDao.getMatchingSentences(sanitizedQuery)
+        return matches.map {
+            SentenceReviewModel(
+                sentence = it.sentence,
+                targetWord = it.targetWord,
+            )
         }
     }
 

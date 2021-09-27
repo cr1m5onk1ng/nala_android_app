@@ -24,6 +24,8 @@ interface ReviewRepository {
 
     suspend fun updateSentenceReviewParameters(quality: Int, sentenceReview: SentenceReviewModel)
 
+    suspend fun getMatchingSentences(sentence: String) : List<SentenceReviewModel>
+
     // KANJI REVIEWS SECTION
     suspend fun getKanjiReviewItem(kanji: String) : KanjiReviewModel
 

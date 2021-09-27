@@ -5,12 +5,17 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -18,11 +23,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.example.nala.R
@@ -48,6 +54,7 @@ val normalReviewStyle = SpanStyle(
     color = Color.Black,
 )
 
+@ExperimentalComposeUiApi
 @Composable
 fun ReviewListScreen(
     selectedCategory: ReviewCategory,
@@ -77,10 +84,40 @@ fun ReviewListScreen(
     scaffoldState: ScaffoldState,
     showSnackbar: (ScaffoldState) -> Unit
 ) {
-    // the default reviews displayed are word reviews
 
+    val searchOpen = remember { mutableStateOf(false) }
+    val searchQuery = remember { mutableStateOf("") }
 
     Scaffold(
+        topBar = {
+                 TopAppBar(
+                     title = {
+                         Text(
+                             text = "Reviews",
+                             style = MaterialTheme.typography.h6
+                         )
+                     },
+                     backgroundColor = Color.Transparent,
+                     navigationIcon = {
+                         BackButton(navController = navController)
+                     },
+                     actions = {
+                         if(!searchOpen.value)
+                             IconButton(onClick = { searchOpen.value = true }) {
+                                 Icon(
+                                     imageVector = Icons.Rounded.Search,
+                                     contentDescription = null,
+                                 )
+                            } else
+                             SearchField(
+                                 searchQuery = searchQuery,
+                                 searchOpen = searchOpen,
+                                 onSearch = {},
+                                 navController = navController,
+                             )
+                     }
+                 )
+        },
         bottomBar = {
             BottomBar(
                 navController,
@@ -99,22 +136,6 @@ fun ReviewListScreen(
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp, start = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        stringResource(R.string.reviews_header),
-                        style = TextStyle(
-                            fontFamily = Quicksand,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.W500,
-                            color = Color.DarkGray,
-                        )
-                    )
-                }
                 FilterButtonsRow(
                     setCategory = setCategory,
                     selectedCategory,
@@ -673,5 +694,69 @@ fun FilterButtonsRow(
             }
         )
     }
+}
+
+@ExperimentalComposeUiApi
+@Composable
+private fun SearchField(
+    searchQuery: MutableState<String>,
+    searchOpen: MutableState<Boolean>,
+    onSearch: (String) -> Unit,
+    navController: NavController,
+) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    TextField(
+        value = searchQuery.value,
+        modifier = Modifier
+            .fillMaxWidth(0.6f)
+            .fillMaxHeight(0.8f)
+            .padding(5.dp)
+            .alpha(0.6f),
+        onValueChange =  { searchQuery.value = it },
+        textStyle = TextStyle(color = MaterialTheme.colors.onSurface, fontSize = 12.sp),
+        colors = TextFieldDefaults.textFieldColors(
+            backgroundColor = MaterialTheme.colors.surface,
+            focusedIndicatorColor =  Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent),
+        shape = RoundedCornerShape(32.dp),
+        placeholder = {
+           Text(
+               text = stringResource(R.string.search_in_review),
+               style = TextStyle(color = MaterialTheme.colors.onSurface, fontSize = 12.sp),
+        )
+                      },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Rounded.Search,
+                contentDescription = "search",
+                tint = Color.White
+            )
+        },
+        trailingIcon = {
+            IconButton(
+                onClick = {
+                    searchQuery.value = ""
+                    searchOpen.value = false
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Close,
+                    contentDescription = "reset",
+                    tint = MaterialTheme.colors.onSurface
+                )
+            }
+        },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Text,
+            imeAction = ImeAction.Search,
+        ),
+        keyboardActions = KeyboardActions (
+            onSearch = {
+                onSearch(searchQuery.value)
+                keyboardController?.hide()
+            }
+        )
+    )
 }
 

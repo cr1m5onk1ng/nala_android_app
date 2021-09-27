@@ -11,7 +11,7 @@ package com.example.nala.services.classifier
  import org.pytorch.Tensor
  import java.lang.Double.MAX_VALUE
 
- internal class QAException(override var message: String) : Exception()
+ internal class ClassifException(override var message: String) : Exception()
 
 class BertClassifierVocabulary (
     @ApplicationContext val appContext: Context,
@@ -29,19 +29,21 @@ class BertClassifierVocabulary (
 
     fun predict(sentence: String) : String?{
         loadModel()
-        val category: String? = null
+        var category: String? = null
         try {
+            // TOKENIZATION //
             val tokenIds = tokenize(sentence)
             val inTensorBuffer = Tensor.allocateLongBuffer(MODEL_INPUT_LENGTH)
-            for (n in tokenIds) inTensorBuffer.put(n.toLong())
+            for (n in tokenIds) inTensorBuffer.put(n)
+            // padding
             for (i in 0 until MODEL_INPUT_LENGTH - tokenIds.size) tokenToIdMap!![PAD]?.let { inTensorBuffer.put(it) }
+            // loading tensor from long buffer
             val inTensor = Tensor.fromBlob(inTensorBuffer, longArrayOf(1, MODEL_INPUT_LENGTH.toLong()))
             val outTensors: Map<String, IValue> = model!!.forward(IValue.from(inTensor)).toDictStringKey()
-            val _logits = outTensors!!["0"]!!
-            val logits = _logits.toTensor().dataAsIntArray
+            val logits = outTensors["0"]!!.toTensor().dataAsFloatArray
             val predictedClass = argmax(logits)
-            val category = IDS_TO_LABELS[predictedClass]
-        } catch (e: QAException) {
+            category = IDS_TO_LABELS[predictedClass]
+        } catch (e: ClassifException) {
             e.printStackTrace()
         }
         return category
@@ -49,9 +51,9 @@ class BertClassifierVocabulary (
 
     fun tokenize(text: String): LongArray {
         val tokenIds = wordPieceTokenizer(text)
-        if (tokenIds.size >= MODEL_INPUT_LENGTH) throw QAException("Sentence too long")
+        if (tokenIds.size >= MODEL_INPUT_LENGTH) throw ClassifException("Sentence too long")
         val inputLength = tokenIds.size + EXTRA_ID_NUM
-        val ids = LongArray(Math.min(MODEL_INPUT_LENGTH, inputLength))
+        val ids = LongArray(MODEL_INPUT_LENGTH.coerceAtMost(inputLength))
         ids[0] = tokenToIdMap!![CLS]!!
 
         for (i in tokenIds.indices) ids[i + 1] = tokenIds[i]!!.toLong()
@@ -77,8 +79,8 @@ class BertClassifierVocabulary (
             while (true) {
                 val line = vocabLines.readLine()
                 if (line != null) {
-                    tokenToIdMap!![line] = count
-                    idToTokenMap!![count] = line
+                    tokenToIdMap[line] = count
+                    idToTokenMap[count] = line
                     count++
                 }
                 else break
@@ -97,7 +99,7 @@ class BertClassifierVocabulary (
         val p = Pattern.compile("\\w+|\\S")
         val m = p.matcher(text)
         while (m.find()) {
-            val token = m.group().toLowerCase()
+            val token = m.group().lowercase()
             if (tokenToIdMap!!.containsKey(token)) tokenIds.add(tokenToIdMap!![token]) else {
                 for (i in 0 until token.length) {
                     if (tokenToIdMap!!.containsKey(token.substring(0, token.length - i - 1))) {
@@ -123,7 +125,7 @@ class BertClassifierVocabulary (
         return tokenIds
     }
 
-    private fun argmax(array: IntArray): Int {
+    private fun argmax(array: FloatArray): Int {
         var maxIdx = 0
         var maxVal: Double = -MAX_VALUE
         for (j in array.indices) {

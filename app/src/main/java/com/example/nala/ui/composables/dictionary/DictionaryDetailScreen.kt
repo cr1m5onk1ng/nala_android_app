@@ -50,7 +50,7 @@ fun DictionaryDetailScreen(
         scaffoldState = scaffoldState,
         snackbarHost =  {
             scaffoldState.snackbarHostState
-        }
+        },
     ) { paddingValue ->
 
         Column(modifier = Modifier.padding(paddingValue)) {
@@ -235,7 +235,7 @@ fun KanjiRow(
     setCurrentKanji: (String) -> Unit,
     setCurrentStory: (String) -> Unit,
 ) {
-    Row() {
+    Row {
         for (kanji in kanjis) {
             val kanjiString = kanji.toString()
             val isKanji: Boolean = wordKanjis.contains(kanjiString)
