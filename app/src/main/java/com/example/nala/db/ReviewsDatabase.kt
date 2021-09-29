@@ -9,19 +9,20 @@ import com.example.nala.db.models.review.*
 
 @Database(entities = [
     WordReviewModel::class,
+    WordReviewModelFts::class,
     WordDefinition::class,
     WordTag::class,
     WordSenseDb::class,
     WordSenseTagDb::class,
     WordSenseDefinitionDb::class,
-    SentenceReviewModelDto::class,
-    SentenceReviewModelDtoFts::class,
+    SentenceReviewModel::class,
+    SentenceReviewModelFts::class,
     KanjiReviewModel::class,
     KanjiMeanings::class,
     KanjiOn::class,
     KanjiKun::class,
     ArticlesCache::class],
-    version=5)
+    version=6)
 @TypeConverters(TimeConverter::class)
 abstract class ReviewDatabase : RoomDatabase() {
     abstract  fun reviewDao() : ReviewDao

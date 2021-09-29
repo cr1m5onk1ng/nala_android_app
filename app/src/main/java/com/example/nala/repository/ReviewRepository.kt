@@ -80,6 +80,8 @@ interface ReviewRepository {
 
     suspend fun isWordInReview(word: DictionaryModel) : Boolean
 
+    suspend fun getMatchingWords(word: String) : List<WordReviewModel>
+
     // ARTICLES
 
     suspend fun addArticleToFavorites(articleUrl: String)

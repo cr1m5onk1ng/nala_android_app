@@ -209,6 +209,8 @@ class MainActivity : AppCompatActivity() {
                             updateSentenceReviewItem= reviewViewModel::updateSentenceReviewItem,
                             updateKanjiReviewItem = reviewViewModel::updateKanjiReviewItem,
                             onShare = this@MainActivity::shareText,
+                            onSearch = reviewViewModel::search,
+                            onRestore = reviewViewModel::restore,
                             navController = navController,
                             showSnackbar = {
                                 showSnackbar(

@@ -86,19 +86,19 @@ interface ReviewDao : DatabaseDao{
 
     // SENTENCE REVIEW SECTION
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertSentenceReview(sentenceReview: SentenceReviewModelDto)
+    suspend fun insertSentenceReview(sentenceReview: SentenceReviewModel)
 
     @Delete
-    suspend fun deleteSentenceReview(sentenceReview: SentenceReviewModelDto)
+    suspend fun deleteSentenceReview(sentenceReview: SentenceReviewModel)
 
     @Query("SELECT * FROM sentence_review WHERE sentence=:sentence AND word=:word")
-    fun getSentenceReview(sentence: String, word: String) : Flow<List<SentenceReviewModelDto>>
+    fun getSentenceReview(sentence: String, word: String) : Flow<List<SentenceReviewModel>>
 
     @Query("SELECT * FROM sentence_review")
-    fun getAllSentenceReviews() : Flow<List<SentenceReviewModelDto>>
+    fun getAllSentenceReviews() : Flow<List<SentenceReviewModel>>
 
     @Query("SELECT * FROM sentence_review ORDER BY interval LIMIT :n")
-    fun getNSentenceReviews(n: Int) : Flow<List<SentenceReviewModelDto>>
+    fun getNSentenceReviews(n: Int) : Flow<List<SentenceReviewModel>>
 
     @Query(
         """
@@ -108,10 +108,10 @@ interface ReviewDao : DatabaseDao{
             WHERE sentence_review_fts MATCH :query
         """
     )
-    suspend fun getMatchingSentences(query: String) : List<SentenceReviewModelDto>
+    suspend fun getMatchingSentences(query: String) : List<SentenceReviewModel>
 
     @Update
-    suspend fun updateSentenceReviewItem(sentenceReview: SentenceReviewModelDto)
+    suspend fun updateSentenceReviewItem(sentenceReview: SentenceReviewModel)
 
     // WORD REVIEW SECTION
 
@@ -174,6 +174,16 @@ interface ReviewDao : DatabaseDao{
 
     @Query("DELETE FROM word_review WHERE word=:word")
     suspend fun removeWordReviewFromId(word: String)
+
+    @Query(
+        """
+        SELECT * FROM word_review 
+        JOIN word_review_fts
+        ON word_review.word = word_review_fts.word
+        WHERE word_review_fts MATCH :query
+        """
+    )
+    suspend fun getMatchingWords(query: String) : List<WordReviewModel>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addWordReview(word: WordReviewModel)

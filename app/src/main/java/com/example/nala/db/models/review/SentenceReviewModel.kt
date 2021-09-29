@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.Fts4
 
 @Entity(tableName = "sentence_review", primaryKeys = ["sentence", "word"])
-data class SentenceReviewModelDto(
+data class SentenceReviewModel(
 
     @ColumnInfo(name="sentence")
     val sentence: String,
@@ -24,8 +24,8 @@ data class SentenceReviewModelDto(
 ) : ReviewModel()
 
 @Entity(tableName = "sentence_review_fts")
-@Fts4(contentEntity = SentenceReviewModelDto::class)
-data class SentenceReviewModelDtoFts(
+@Fts4(contentEntity = SentenceReviewModel::class)
+data class SentenceReviewModelFts(
     @ColumnInfo(name="sentence")
     val sentence: String,
 

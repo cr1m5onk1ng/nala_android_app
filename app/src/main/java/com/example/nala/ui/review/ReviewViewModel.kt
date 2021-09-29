@@ -24,14 +24,19 @@ class ReviewViewModel @Inject constructor(
     private val reviewRepository: ReviewRepository,
 ) : ViewModel() {
 
-    val reviewsLoading: MutableState<Boolean> = mutableStateOf(false)
     val addedToReview: MutableState<Boolean> = mutableStateOf(false)
+
     val wordReviewItems: MutableState<DataState<List<WordReviewModel>>> =
         mutableStateOf(DataState.Initial(listOf()))
+    private val wordReviewItemsCache: MutableState<List<WordReviewModel>> = mutableStateOf(listOf())
+
     val sentenceReviewItems: MutableState<DataState<List<SentenceReviewModel>>> =
         mutableStateOf(DataState.Initial(listOf()))
+    private val sentenceReviewItemsCache: MutableState<List<SentenceReviewModel>> = mutableStateOf(listOf())
+
     val kanjiReviewItems: MutableState<DataState<List<KanjiReviewModel>>> =
         mutableStateOf(DataState.Initial(listOf()))
+    private val kanjiReviewItemsCache: MutableState<List<KanjiReviewModel>> = mutableStateOf(listOf())
 
     val isArticleLoaded = mutableStateOf(false)
 
@@ -114,6 +119,7 @@ class ReviewViewModel @Inject constructor(
                     wordReviewItems.value = DataState.Error(ErrorType.DATA_NOT_AVAILABLE)
                 } else {
                     wordReviewItems.value = DataState.Success(it)
+                    wordReviewItemsCache.value = it
                 }
             }
         }
@@ -127,6 +133,7 @@ class ReviewViewModel @Inject constructor(
                     sentenceReviewItems.value = DataState.Error(ErrorType.DATA_NOT_AVAILABLE)
                 } else {
                     sentenceReviewItems.value = DataState.Success(it)
+                    sentenceReviewItemsCache.value = it
                 }
             }
         }
@@ -135,18 +142,16 @@ class ReviewViewModel @Inject constructor(
     fun loadKanjiReviewItems() {
         viewModelScope.launch {
             kanjiReviewItems.value = DataState.Loading
-            reviewsLoading.value = true
             reviewRepository.getNKanjiReviewItems(30).collect {
                 if(it.isEmpty()) {
                     kanjiReviewItems.value = DataState.Error(ErrorType.DATA_NOT_AVAILABLE)
                 } else {
                     kanjiReviewItems.value = DataState.Success(it)
+                    kanjiReviewItemsCache.value = it
                 }
             }
         }
     }
-
-
 
     fun setCategory (category: ReviewCategory) {
         selectedCategory.value = category
@@ -159,6 +164,68 @@ class ReviewViewModel @Inject constructor(
             }
             ReviewCategory.Kanji -> {
                 loadKanjiReviewItems()
+            }
+        }
+    }
+
+    fun search(query: String) {
+        viewModelScope.launch{
+            when(selectedCategory.value) {
+                ReviewCategory.Word -> {
+                    wordReviewItems.value = DataState.Loading
+                    val result = reviewRepository.getMatchingWords(query)
+                    if(result.isEmpty()) {
+                        wordReviewItems.value = DataState.Error(ErrorType.NO_SEARCH_RESULTS)
+                    } else {
+                        wordReviewItems.value = DataState.Success(result)
+                    }
+                }
+                ReviewCategory.Sentence -> {
+                    sentenceReviewItems.value = DataState.Loading
+                    val matches = reviewRepository.getMatchingSentences(query)
+                    if(matches.isEmpty()) {
+                        sentenceReviewItems.value = DataState.Error(ErrorType.NO_SEARCH_RESULTS)
+                    } else {
+                        sentenceReviewItems.value =
+                            DataState.Success(matches)
+                    }
+                }
+                ReviewCategory.Kanji -> {
+                    kanjiReviewItems.value = DataState.Loading
+                    val matches = reviewRepository.getKanjiReviewItem(query)
+                    if(matches.kanji == "") {
+                        kanjiReviewItems.value = DataState.Error(ErrorType.NO_SEARCH_RESULTS)
+                    } else {
+                        kanjiReviewItems.value =
+                            DataState.Success(listOf(matches))
+                    }
+                }
+            }
+        }
+    }
+
+    private fun restoreWordItems() {
+        wordReviewItems.value = DataState.Success(wordReviewItemsCache.value)
+    }
+
+    private fun restoreSentenceItems() {
+        sentenceReviewItems.value = DataState.Success(sentenceReviewItemsCache.value)
+    }
+
+    private fun restoreKanjiItems() {
+        kanjiReviewItems.value = DataState.Success(kanjiReviewItemsCache.value)
+    }
+
+    fun restore() {
+        when(selectedCategory.value) {
+            ReviewCategory.Word -> {
+                restoreWordItems()
+            }
+            ReviewCategory.Sentence -> {
+                restoreSentenceItems()
+            }
+            ReviewCategory.Kanji -> {
+                restoreKanjiItems()
             }
         }
     }

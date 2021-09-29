@@ -79,6 +79,8 @@ fun ReviewListScreen(
     updateWordReviewItem: (quality: Int, reviewItem: WordReviewModel) -> Unit,
     updateSentenceReviewItem: (quality: Int, sentenceReview: SentenceReviewModel) -> Unit,
     updateKanjiReviewItem: (quality: Int, kanjiReview: KanjiReviewModel) -> Unit,
+    onSearch: (String) -> Unit,
+    onRestore: () -> Unit,
     onShare: (String?) -> Unit,
     navController: NavController,
     scaffoldState: ScaffoldState,
@@ -112,7 +114,8 @@ fun ReviewListScreen(
                              SearchField(
                                  searchQuery = searchQuery,
                                  searchOpen = searchOpen,
-                                 onSearch = {},
+                                 onSearch = onSearch,
+                                 onRestore = onRestore,
                                  navController = navController,
                              )
                      }
@@ -233,7 +236,6 @@ fun ReviewListScreen(
                         }
                     }
                 }
-
             }
             val snackbar = createRef()
             DefaultSnackbar(
@@ -702,61 +704,64 @@ private fun SearchField(
     searchQuery: MutableState<String>,
     searchOpen: MutableState<Boolean>,
     onSearch: (String) -> Unit,
+    onRestore: () -> Unit,
     navController: NavController,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
-
-    TextField(
-        value = searchQuery.value,
-        modifier = Modifier
-            .fillMaxWidth(0.6f)
-            .fillMaxHeight(0.8f)
-            .padding(5.dp)
-            .alpha(0.6f),
-        onValueChange =  { searchQuery.value = it },
-        textStyle = TextStyle(color = MaterialTheme.colors.onSurface, fontSize = 12.sp),
-        colors = TextFieldDefaults.textFieldColors(
-            backgroundColor = MaterialTheme.colors.surface,
-            focusedIndicatorColor =  Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent),
-        shape = RoundedCornerShape(32.dp),
-        placeholder = {
-           Text(
-               text = stringResource(R.string.search_in_review),
-               style = TextStyle(color = MaterialTheme.colors.onSurface, fontSize = 12.sp),
-        )
-                      },
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Rounded.Search,
-                contentDescription = "search",
-                tint = Color.White
-            )
-        },
-        trailingIcon = {
-            IconButton(
-                onClick = {
-                    searchQuery.value = ""
-                    searchOpen.value = false
-                }
-            ) {
+    Row(modifier = Modifier
+        .padding(horizontal = 3.dp)
+        .fillMaxWidth(0.6f)
+        .fillMaxHeight(0.8f)
+    ) {
+        TextField(
+            value = searchQuery.value,
+            onValueChange =  { searchQuery.value = it },
+            textStyle = TextStyle(color = MaterialTheme.colors.onSurface, fontSize = 10.sp),
+            colors = TextFieldDefaults.textFieldColors(
+                backgroundColor = MaterialTheme.colors.surface,
+                focusedIndicatorColor =  Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent),
+            shape = RoundedCornerShape(32.dp),
+            placeholder = {
+                Text(
+                    text = stringResource(R.string.search_in_review),
+                    style = TextStyle(color = MaterialTheme.colors.onSurface, fontSize = 10.sp),
+                )
+            },
+            leadingIcon = {
                 Icon(
-                    imageVector = Icons.Rounded.Close,
-                    contentDescription = "reset",
+                    imageVector = Icons.Rounded.Search,
+                    contentDescription = "search",
                     tint = MaterialTheme.colors.onSurface
                 )
-            }
-        },
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Text,
-            imeAction = ImeAction.Search,
-        ),
-        keyboardActions = KeyboardActions (
-            onSearch = {
-                onSearch(searchQuery.value)
-                keyboardController?.hide()
-            }
+            },
+            trailingIcon = {
+                IconButton(
+                    onClick = {
+                        onRestore()
+                        searchQuery.value = ""
+                        searchOpen.value = false
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Close,
+                        contentDescription = "reset",
+                        tint = MaterialTheme.colors.onSurface
+                    )
+                }
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Search,
+            ),
+            keyboardActions = KeyboardActions (
+                onSearch = {
+                    onSearch(searchQuery.value)
+                    keyboardController?.hide()
+                }
+            )
         )
-    )
+    }
+
 }
 

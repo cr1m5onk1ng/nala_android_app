@@ -57,6 +57,8 @@ class ReviewFragment : CustomFragment() {
                         updateKanjiReviewItem = reviewViewModel::updateKanjiReviewItem,
                         navController = findNavController(),
                         onShare = {},
+                        onSearch = reviewViewModel::search,
+                        onRestore = reviewViewModel::restore,
                         showSnackbar = {
                             showSnackbar(
                                 scaffoldState,

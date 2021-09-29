@@ -14,3 +14,5 @@ dependencyResolutionManagement {
 }
 rootProject.name = "Nala"
 include ':app'
+include ':kNN'
+include ':speech2text'

@@ -61,7 +61,7 @@ class ReviewRepositoryImpl @Inject constructor(
     }
 
     override suspend fun addSentenceToReview(sentenceReview: SentenceReviewModel) {
-        val reviewDto = SentenceReviewModelDto(
+        val reviewDto = com.example.nala.db.models.review.SentenceReviewModel(
             sentence = sentenceReview.sentence,
             targetWord = sentenceReview.targetWord
         )
@@ -69,7 +69,7 @@ class ReviewRepositoryImpl @Inject constructor(
     }
 
     override suspend fun removeSentenceReview(sentenceReview: SentenceReviewModel) {
-        val reviewDto = SentenceReviewModelDto(
+        val reviewDto = com.example.nala.db.models.review.SentenceReviewModel(
             sentence = sentenceReview.sentence,
             targetWord = sentenceReview.targetWord
         )
@@ -80,7 +80,7 @@ class ReviewRepositoryImpl @Inject constructor(
         quality: Int,
         sentenceModel: SentenceReviewModel
     ) {
-        val sentenceReview = SentenceReviewModelDto(
+        val sentenceReview = com.example.nala.db.models.review.SentenceReviewModel(
             sentence = sentenceModel.sentence,
             targetWord = sentenceModel.targetWord
         )
@@ -91,7 +91,7 @@ class ReviewRepositoryImpl @Inject constructor(
             previousInterval = sentenceReview.interval,
         )
 
-        val updatedSentenceReview = SentenceReviewModelDto(
+        val updatedSentenceReview = SentenceReviewModel(
             sentence = sentenceReview.sentence,
             targetWord = sentenceReview.targetWord,
             repetitions = updatedParams.repetitions,
@@ -173,6 +173,10 @@ class ReviewRepositoryImpl @Inject constructor(
             //reviewDao.insertKanjiOnReading(onDao)
         }
         reviewDao.insertKanjiOnReadings(*readingsList.toTypedArray())
+    }
+
+    override suspend fun getMatchingWords(word: String): List<WordReviewModel> {
+        return reviewDao.getMatchingWords(word)
     }
 
     override suspend fun removeKanjiReviewItem(kanjiModel: KanjiReviewModel) {
