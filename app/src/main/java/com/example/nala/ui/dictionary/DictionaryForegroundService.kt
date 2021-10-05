@@ -1,9 +1,6 @@
 package com.example.nala.ui.dictionary
 
-import android.app.NotificationManager
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.PendingIntent
+import android.app.*
 import android.content.Context
 import android.os.Build
 import android.content.Intent
@@ -50,7 +47,6 @@ class DictionaryForegroundService : LifecycleService() {
             }
         }
         val word = intent?.getStringExtra("word") ?: ""
-        Log.d("DICTIONARYWINDOW", "Inside Service!")
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
             startCustomForeground()
         else
@@ -58,43 +54,48 @@ class DictionaryForegroundService : LifecycleService() {
         lifecycleScope.launch{
             dictionaryWindow.setLoadingScreen()
             val wordData = dictRepository.search(word)
-            val kanjis = kanjiRepository.getWordKanjis(wordData.word)
-            val stories = mutableListOf<KanjiStories>()
-            var wordReviews = reviewRepository.getWordReviewsAsString() as MutableList<String>
-            var kanjiReviews = reviewRepository.getKanjiReviewsAsString() as MutableList<String>
-            kanjis.forEach {
-                val story = kanjiRepository.getKanjiStory(it.kanji)
-                stories.add(KanjiStories(kanji=it.kanji, story=story))
+            if(wordData.isEmpty()) {
+                dictionaryWindow.setErrorScreen()
+            } else {
+                val kanjis = kanjiRepository.getWordKanjis(wordData.word)
+                val stories = mutableListOf<KanjiStories>()
+                val wordReviews = reviewRepository.getWordReviewsAsString() as MutableList<String>
+                val kanjiReviews = reviewRepository.getKanjiReviewsAsString() as MutableList<String>
+                kanjis.forEach {
+                    val story = kanjiRepository.getKanjiStory(it.kanji)
+                    stories.add(KanjiStories(kanji=it.kanji, story=story))
+                }
+                dictionaryWindow.setWordData(wordData, kanjis, stories, wordReviews, kanjiReviews)
+                dictionaryWindow.openWordDict()
             }
-            dictionaryWindow.setWordData(wordData, kanjis, stories, wordReviews, kanjiReviews)
-            dictionaryWindow.openWordDict()
         }
         return START_STICKY
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        dictionaryWindow.close()
+        dictionaryWindow.closeDictionaryView()
     }
 
     private fun startCustomForeground() {
         Log.d("DICTIONARYWINDOW", "Custom Foreground STARTED!")
-        val stopDictServiceIntent = Intent(applicationContext, DictionaryForegroundService::class.java).apply{
-            action = Constants.ACTION_STOP_DICTIONARY
-        }
-        val stopPendingIntent = PendingIntent.getService(
-            this,
-            1,
-            stopDictServiceIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT,
-        )
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val stopDictServiceIntent = Intent(applicationContext, DictionaryForegroundService::class.java).apply{
+                action = Constants.ACTION_STOP_DICTIONARY
+            }
+            val stopPendingIntent = PendingIntent.getService(
+                this,
+                1,
+                stopDictServiceIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT,
+            )
             val NOTIFICATION_CHANNEL_ID = "com.example.nala"
             val channelName = "dictionaryService"
             val chan = NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_MIN)
             chan.lightColor = Color.BLUE
             chan.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
-            val manager = (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)!!
+            val manager = (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
             manager.createNotificationChannel(chan)
             val notificationBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
             val notification = notificationBuilder.setOngoing(true)

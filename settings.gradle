@@ -3,6 +3,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven { url 'https://jitpack.io' }
         //noinspection JcenterRepositoryObsolete
         jcenter()
         jcenter {
@@ -15,4 +16,3 @@ dependencyResolutionManagement {
 rootProject.name = "Nala"
 include ':app'
 include ':kNN'
-include ':speech2text'

@@ -70,4 +70,6 @@
     <string name="save_button">Save</string>
     <string name="article_screen_header">Article</string>
     <string name="search_in_review">search</string>
+    <string name="ocr_fab">ocr fab</string>
+    <string name="tvNoWordFound">No word found in Jiisho</string>
 </resources>

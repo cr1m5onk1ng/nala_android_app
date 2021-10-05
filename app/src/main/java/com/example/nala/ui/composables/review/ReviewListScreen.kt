@@ -99,7 +99,7 @@ fun ReviewListScreen(
                              style = MaterialTheme.typography.h6
                          )
                      },
-                     backgroundColor = Color.Transparent,
+                     backgroundColor = MaterialTheme.colors.primary,
                      navigationIcon = {
                          BackButton(navController = navController)
                      },

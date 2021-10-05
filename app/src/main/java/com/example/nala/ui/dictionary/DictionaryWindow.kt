@@ -64,6 +64,7 @@ class DictionaryWindow (
     private var windowDictionaryView: View = layoutInflater.inflate(R.layout.dictionary_popup, null)
     private var loadingScreenView: View = layoutInflater.inflate(R.layout.data_loading_screen, null)
     private var kanjiScreenView: View = layoutInflater.inflate(R.layout.kanji_screen, null)
+    private var errorScreenView: View = layoutInflater.inflate(R.layout.word_not_found_screen, null)
 
 
     init {
@@ -91,8 +92,10 @@ class DictionaryWindow (
     }
 
     fun openKanjiDict() {
-        bindKanjiData()
         removeView(windowDictionaryView)
+        addView(loadingScreenView, mParams)
+        bindKanjiData()
+        removeView(loadingScreenView)
         addView(kanjiScreenView, mParams)
     }
 
@@ -100,30 +103,80 @@ class DictionaryWindow (
         addView(loadingScreenView, mParams)
     }
 
-    fun addView(view: View, params: WindowManager.LayoutParams) {
+    fun setErrorScreen() {
+        addView(errorScreenView, mParams)
+    }
+
+    private fun addView(view: View, params: WindowManager.LayoutParams) {
         try {
-            // check if the view is already
-            // inflated or present in the window
-                /*
-            if (windowDictionaryView.windowToken == null) {
-                if (windowDictionaryView.parent == null) {
-                    overlayWindowManager.addView(view, params)
-                }
-            } */
             overlayWindowManager.addView(view, params)
         } catch (e: Exception) {
             Log.d("DICTWINDOWDEBUG", "Error while opening window: $e")
         }
     }
 
-    fun removeView(view: View) {
+    private fun removeView(view: View) {
         try {
             // remove the view from the window
             (context.getSystemService(WINDOW_SERVICE) as WindowManager).removeView(view)
             // invalidate the view
             view.invalidate()
+        } catch (e: Exception) {
+            Log.d("DICTWINDOWDEBUG", "Error while closing window: $e")
+        }
+    }
+
+    private fun setWindowListeners() {
+        /*
+        windowDictionaryView.setOnTouchListener { _, event ->
+            var downX = 0
+            var downY = 0
+            var touchDownX = 0f
+            var touchDownY = 0f
+
+            when(event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    downX = mParams.x
+                    downY = mParams.y
+                    touchDownX = event.rawX
+                    touchDownY = event.rawY
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    mParams.x = (downX + event.rawX - touchDownX).toInt()
+                    mParams.y = (downY + event.rawY - touchDownY).toInt()
+                    overlayWindowManager.updateViewLayout(windowDictionaryView, mParams)
+                }
+                else -> {
+
+                }
+            }
+            true
+        } */
+        windowDictionaryView.findViewById<ImageView>(R.id.window_close).apply{
+            setOnClickListener{
+                closeDictionaryView()
+            }
+        }
+        kanjiScreenView.findViewById<ImageView>(R.id.kanjiClose).setOnClickListener{
+            closeKanjiView()
+        }
+        errorScreenView.findViewById<ImageView>(R.id.errorClose).setOnClickListener{
+            closeErrorView()
+        }
+        // TODO Add draggable listener
+        mParams.gravity = Gravity.CENTER
+        mParams.x = 0
+        mParams.y = 0
+    }
+
+    fun closeDictionaryView() {
+        try {
+            // remove the view from the window
+            (context.getSystemService(WINDOW_SERVICE) as WindowManager).removeView(windowDictionaryView)
+            // invalidate the view
+            windowDictionaryView.invalidate()
             // remove all views
-            (view.parent as ViewGroup).removeAllViews()
+            //(windowDictionaryView.parent as ViewGroup).removeAllViews()
 
             // the above steps are necessary when you are adding and removing
             // the view simultaneously, it might give some exceptions
@@ -132,56 +185,30 @@ class DictionaryWindow (
         }
     }
 
-    fun setWindowListeners() {
-        // Here go the button listeners
-        //  this function will be called in the service onCreate
-        // to set up all the needed listeners
-        windowDictionaryView.findViewById<ImageView>(R.id.window_close).setOnClickListener{
-            close()
-        }
-        // TODO Add draggable listener
-        /*
-        windowDictionaryView.setOnTouchListener{ view, event ->
-            val updatedParams = mParams
-            var initialX: Int = 0
-            var initialY: Int = 0
-            var initialTouchX: Float = 0f
-            var initialTouchY: Float = 0f
-            when(event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    initialX = updatedParams.x
-                    initialY = updatedParams.y
-                    initialTouchX = event.rawX
-                    initialTouchY = event.rawY
-                    view.performClick()
-                }
-                MotionEvent.ACTION_UP -> {
-
-                }
-                MotionEvent.ACTION_MOVE -> {
-                    updatedParams.x = initialX + (event.rawX - initialTouchX).toInt()
-                    updatedParams.y = initialY + (event.rawY - initialTouchY).toInt()
-                    overlayWindowManager.updateViewLayout(windowDictionaryView, updatedParams)
-                    view.performClick()
-                }
-            }
-            view.performClick()
-        } */
-        mParams.gravity = Gravity.CENTER
-        mParams.x = 0
-        mParams.y = 0
-
-    }
-
-
-    fun close() {
+    fun closeKanjiView() {
         try {
             // remove the view from the window
-            (context.getSystemService(WINDOW_SERVICE) as WindowManager).removeView(windowDictionaryView)
+            (context.getSystemService(WINDOW_SERVICE) as WindowManager).removeView(kanjiScreenView)
             // invalidate the view
-            windowDictionaryView.invalidate()
+            kanjiScreenView.invalidate()
             // remove all views
-            (windowDictionaryView.parent as ViewGroup).removeAllViews()
+            //(kanjiScreenView.parent as ViewGroup).removeAllViews()
+
+            // the above steps are necessary when you are adding and removing
+            // the view simultaneously, it might give some exceptions
+        } catch (e: Exception) {
+            Log.d("DICTWINDOWDEBUG", "Error while closing window: $e")
+        }
+    }
+
+    fun closeErrorView() {
+        try {
+            // remove the view from the window
+            (context.getSystemService(WINDOW_SERVICE) as WindowManager).removeView(errorScreenView)
+            // invalidate the view
+            errorScreenView.invalidate()
+            // remove all views
+            //(errorScreenView.parent as ViewGroup).removeAllViews()
 
             // the above steps are necessary when you are adding and removing
             // the view simultaneously, it might give some exceptions
@@ -194,8 +221,8 @@ class DictionaryWindow (
     private fun bindWordData() {
         if (!currentWord.isEmpty()) {
 
-            val definitions: List<String> = currentWord?.senses?.map {
-                val definitions = it?.englishDefinitions ?: listOf()
+            val definitions: List<String> = currentWord.senses.map {
+                val definitions = it.englishDefinitions ?: listOf()
                 val defString = definitions.joinToString(separator=", ")
                 defString
             }
@@ -252,7 +279,7 @@ class DictionaryWindow (
             } else {
                 favoritesButtons.setImageResource(R.drawable.favorites_button_inactive)
             }
-            favoritesButtons.setOnClickListener{ btn ->
+            favoritesButtons.setOnClickListener{
                 if(isInReview) {
                     favoritesButtons.setImageResource(R.drawable.favorites_button_inactive)
                     scope.launch{

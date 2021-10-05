@@ -3,6 +3,7 @@ package com.example.nala.db.models.review
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Fts4
 import androidx.room.PrimaryKey
 import com.example.nala.db.models.DatabaseModel
 
@@ -33,3 +34,10 @@ data class WordReviewModel (
     @ColumnInfo(name="interval")
     val interval: Int = 0,
 ) : ReviewModel()
+
+@Entity(tableName = "word_review_fts")
+@Fts4(contentEntity = WordReviewModel::class)
+data class WordReviewModelFts(
+    @ColumnInfo(name="word")
+    val word: String,
+)

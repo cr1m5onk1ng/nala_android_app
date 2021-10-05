@@ -1,5 +1,6 @@
 package com.example.nala.ui.composables.yt
 
+import android.view.View
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -9,9 +10,11 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIos
+import androidx.compose.material.icons.filled.Screenshot
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -99,6 +102,8 @@ fun VideoScreen(
     onRetry: () -> Unit,
     authState: AuthState<UserModel?>,
     onRequestLogin: () -> Unit,
+    onTakeScreenshot: () -> Unit,
+    onSetView: (View) -> Unit,
     activeCaption: Int,
     scaffoldState: ScaffoldState,
     navController: NavController
@@ -130,6 +135,15 @@ fun VideoScreen(
                 )
             )
         },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { onTakeScreenshot() },
+                shape = RoundedCornerShape(50),
+                backgroundColor = Blue500,
+            ) {
+                Icon(Icons.Filled.Screenshot,"")
+            }
+        },
     ) { paddingValues ->
         ConstraintLayout(modifier = Modifier.padding(paddingValues)) {
             Column() {
@@ -144,6 +158,7 @@ fun VideoScreen(
                             factory = { context ->
                                 // Creates custom view
                                 YouTubePlayerView(context).apply {
+                                    onSetView(this)
                                     // Sets up listeners for View -> Compose communication
                                     getYouTubePlayerWhenReady(object: YouTubePlayerCallback{
                                         override fun onYouTubePlayer(youTubePlayer: YouTubePlayer) {

@@ -1,10 +1,11 @@
 package com.example.nala.ui
 
+import android.Manifest
 import android.app.Activity
-import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.VectorDrawable
-import android.net.Uri
+import android.content.pm.PackageManager
+import android.media.projection.MediaProjectionManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -12,7 +13,6 @@ import android.util.Log
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
@@ -26,15 +26,14 @@ import com.example.nala.ui.review.ReviewViewModel
 import com.example.nala.ui.study.StudyViewModel
 import com.example.nala.ui.theme.AppTheme
 import kotlinx.coroutines.launch
-import com.example.nala.services.background.ArticleService
 import android.provider.Settings
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
-import androidx.core.content.res.ResourcesCompat
-import androidx.core.graphics.drawable.toBitmap
 import com.example.nala.R
 import com.example.nala.ui.dictionary.DictionaryForegroundService
 import androidx.compose.material.*
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.example.nala.BuildConfig
 import com.example.nala.services.auth.GoogleAuthenticator
 import com.example.nala.ui.auth.AuthViewModel
@@ -60,10 +59,19 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.Scope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-
+import android.widget.Toast
+import androidx.compose.runtime.mutableStateOf
+import com.example.nala.services.audio.MediaCaptureService
+import com.example.nala.services.ocr.FallbackScreenshotService
+import com.example.nala.ui.ocr.OCRViewModel
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+
+    companion object {
+        private const val MEDIA_PROJECTION_REQUEST_CODE = 13
+        private const val RECORD_AUDIO_PERMISSION_REQUEST_CODE = 42
+    }
 
     @Inject
     lateinit var app: BaseApplication
@@ -76,10 +84,19 @@ class MainActivity : AppCompatActivity() {
     private val favoritesViewModel: FavoritesViewModel by viewModels()
     private val settingsViewModel: SettingsViewModel by viewModels()
     private val authViewModel: AuthViewModel by viewModels()
+    private val ocrViewModel: OCRViewModel by viewModels()
 
-    // GOOGLE AUTH
+    //private lateinit var ocrService: FallbackScreenshotService
+
+    // GOOGLE AUTH SERVICE
     private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var googleAuthenticator: GoogleAuthenticator
+
+    // AUDIO RECORDING SERVICE
+    private lateinit var mediaProjectionManager: MediaProjectionManager
+
+    // OCR STATE
+    private val ocrLoading = mutableStateOf(false)
 
     // ROUTING VARIABLES
     var startDestination = "home_screen"
@@ -99,7 +116,11 @@ class MainActivity : AppCompatActivity() {
         settingsViewModel.loadSharedPreferences()
         favoritesViewModel.loadSavedVideos()
         favoritesViewModel.loadSavedArticles()
-
+        //ocrService = FallbackScreenshotService(this)
+        val targetLangs =
+            getSharedPreferences("langs", Context.MODE_PRIVATE)
+                .getStringSet("target_langs", setOf())?.toSet() ?: setOf()
+        ytViewModel.setTargetLangs(targetLangs)
         // INTENT MATCHING
         when (intent?.action) {
             Intent.ACTION_PROCESS_TEXT -> {
@@ -329,6 +350,8 @@ class MainActivity : AppCompatActivity() {
                             },
                             onRetry = ytViewModel::onRetry,
                             onRequestLogin = googleAuthenticator::signIn,
+                            onTakeScreenshot = ocrViewModel::getTextFromView,
+                            onSetView = ocrViewModel::setView,
                             authState = authViewModel.account.value,
                             activeCaption = ytViewModel.activeCaption.value,
                             scaffoldState = scaffoldState,
@@ -340,10 +363,12 @@ class MainActivity : AppCompatActivity() {
                         ArticleScreen(
                             article = reviewViewModel.currentArticleUrl.value,
                             articleLoaded = reviewViewModel.isArticleLoaded.value,
+                            ocrLoading = ocrViewModel.ocrLoading.value,
                             isSaved = reviewViewModel.isArticleSaved.value,
                             onSaveArticle = reviewViewModel::addArticleToFavorites,
                             onRemoveArticle = reviewViewModel::removeArticleFromFavorites,
                             onSetIsArticleSaved = reviewViewModel::setIsArticleInFavorites,
+                            takeScreenshot = ocrViewModel::getTextFromView,
                             scaffoldState = scaffoldState,
                             navController = navController,
                         )
@@ -392,6 +417,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        // AUTH ACTIVITY RESULT
         if (requestCode == GoogleAuthenticator.RC_SIGN_IN) {
             if (resultCode == Activity.RESULT_OK) {
                 val task = GoogleSignIn.getSignedInAccountFromIntent(data)
@@ -407,8 +433,46 @@ class MainActivity : AppCompatActivity() {
                     authViewModel.setAuthError()
                 }
             }
+            // AUDIO RECORDING ACTIVITY RESULT
+        } else if (requestCode == MEDIA_PROJECTION_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                Toast.makeText(
+                    this,
+                    "MediaProjection permission obtained. Foreground service will be started to capture audio.",
+                    Toast.LENGTH_LONG
+                ).show()
+
+                val audioCaptureIntent = Intent(this, MediaCaptureService::class.java).apply {
+                    action = MediaCaptureService.ACTION_START
+                    putExtra(MediaCaptureService.EXTRA_RESULT_DATA, data!!)
+                }
+                ContextCompat.startForegroundService(this, audioCaptureIntent)
+
+                //setButtonsEnabled(isCapturingAudio = true)
+            }
+        } else {
+            Toast.makeText(
+               this, "Request to obtain MediaProjection denied.",
+                Toast.LENGTH_LONG
+            ).show()
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        //ocrService.dispose()
+    }
+
+    // OCR
+    /*
+    private fun recognizeText( ){
+        ocrLoading.value = true
+        ocrService.recognize()
+        Log.d("OCR_DEBUG", "RETURNED TEXT: ${ocrService.getResult()}")
+        ocrLoading.value = false
+    } */
+
+    // PERMISSIONS
 
     private fun checkOverlayPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -417,6 +481,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
 
     @RequiresApi(Build.VERSION_CODES.M)
     private fun showOverlayPermissionsDialog() {
@@ -438,9 +503,103 @@ class MainActivity : AppCompatActivity() {
         dialogBuilder.show()
     }
 
+    // AUDIO RECORDING FUNCTIONS
+
+    private fun checkRecordingPermissions() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.RECORD_AUDIO
+            ) != PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) != PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            ) != PackageManager.PERMISSION_GRANTED) {
+
+            val permissions = arrayOf(
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            )
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(permissions,0)
+            }
+        }
+    }
+
+    private fun startCapturing() {
+        Toast.makeText(this, "start recording", Toast.LENGTH_LONG).show()
+        if (!isRecordAudioPermissionGranted()) {
+            requestRecordAudioPermission()
+        } else {
+            startMediaProjectionRequest()
+        }
+    }
+
+    private fun stopCapturing() {
+        Toast.makeText(this, "stop recording", Toast.LENGTH_LONG).show()
+        //setButtonsEnabled(isCapturingAudio = false)
+        val captureIntent = Intent(this, MediaCaptureService::class.java).apply {
+            action = MediaCaptureService.ACTION_STOP
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(captureIntent)
+        } else {
+            startService(captureIntent)
+        }
+    }
+
+
+    private fun isRecordAudioPermissionGranted(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.RECORD_AUDIO
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun requestRecordAudioPermission() {
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(Manifest.permission.RECORD_AUDIO),
+            RECORD_AUDIO_PERMISSION_REQUEST_CODE
+        )
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == RECORD_AUDIO_PERMISSION_REQUEST_CODE) {
+            if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(
+                    this,
+                    "Permissions to capture audio granted.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                Toast.makeText(
+                    this, "Permissions to capture audio denied.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
+    private fun startMediaProjectionRequest() {
+        mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+        startActivityForResult(mediaProjectionManager.createScreenCaptureIntent(), MEDIA_PROJECTION_REQUEST_CODE)
+    }
+
+    // DICTIONARY POP UP
     private fun startDictionaryWindowService(word: String) {
-        val dictionaryIntent = Intent(this, DictionaryForegroundService::class.java)
-        dictionaryIntent.putExtra("word", word)
+        val dictionaryIntent = Intent(this, DictionaryForegroundService::class.java).apply{
+            putExtra("word", word)
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             // check if the user has already granted
             // the Draw over other apps permission
@@ -450,33 +609,12 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     startService(dictionaryIntent)
                 }
-                startService(dictionaryIntent)
             }
         } else {
             startService(dictionaryIntent)
         }
     }
 
-    private fun startCustomTabIntent(url: String) {
-        // Create intent
-        val addToFavoritesIntent = Intent(this, ArticleService::class.java)
-        addToFavoritesIntent.putExtra("url", url)
-        val pendingAddToFavorites = PendingIntent.getActivity(
-            this,0 ,addToFavoritesIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-        // Set the action button
-        val builder = CustomTabsIntent.Builder()
-        val bitmap = (ResourcesCompat.getDrawable(
-             this.resources,
-             R.drawable.save_to_favorites_icon,
-             null) as VectorDrawable).toBitmap()
-         builder.setActionButton(
-             bitmap,
-             "add to favorites",
-             pendingAddToFavorites,
-             true)
-        val customTabsIntent = builder.build()
-        customTabsIntent.launchUrl(this, Uri.parse(url))
-    }
 
     private fun showSnackbar(
         scaffoldState: ScaffoldState,
@@ -532,7 +670,7 @@ class MainActivity : AppCompatActivity() {
             //checkOverlayPermissions()
             val word = intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT) ?: ""
             startDictionaryWindowService(word)
-            finish()
+            this.finish()
         }
     }
 
@@ -567,5 +705,26 @@ class MainActivity : AppCompatActivity() {
         authViewModel.invalidateAccount()
     }
 
+    /*
+   private fun startCustomTabIntent(url: String) {
+       // Create intent
+       val addToFavoritesIntent = Intent(this, ArticleService::class.java)
+       addToFavoritesIntent.putExtra("url", url)
+       val pendingAddToFavorites = PendingIntent.getActivity(
+           this,0 ,addToFavoritesIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+       // Set the action button
+       val builder = CustomTabsIntent.Builder()
+       val bitmap = (ResourcesCompat.getDrawable(
+            this.resources,
+            R.drawable.save_to_favorites_icon,
+            null) as VectorDrawable).toBitmap()
+        builder.setActionButton(
+            bitmap,
+            "add to favorites",
+            pendingAddToFavorites,
+            true)
+       val customTabsIntent = builder.build()
+       customTabsIntent.launchUrl(this, Uri.parse(url))
+   } */
 
 }

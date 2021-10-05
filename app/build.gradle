@@ -91,6 +91,8 @@ dependencies {
     // Integration with observables
     implementation("androidx.compose.runtime:runtime-livedata:$compose_version")
     implementation("androidx.compose.runtime:runtime-rxjava2:$compose_version")
+    
+    // SPEECH TO TEXT MODULE
 
     // UI Tests
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:$compose_version")
@@ -188,5 +190,12 @@ dependencies {
 
     //SKRAPEIT
     implementation 'it.skrape:skrapeit:1.1.5'
+
+    //TESSERACT
+    implementation 'cz.adaptech:tesseract4android:3.0.0'
+
+    // SCREENSHOTTY
+    implementation 'eu.bolt:screenshotty:1.0.4'
+    implementation 'eu.bolt:screenshotty-coroutines:1.0.4'
 
 }

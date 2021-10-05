@@ -1,6 +1,5 @@
 package com.example.nala.ui.yt
 
-import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.MutableState
@@ -17,7 +16,6 @@ import com.example.nala.utils.ConnectionChecker
 import com.example.nala.utils.Utils
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -25,13 +23,14 @@ import javax.inject.Inject
 
 @HiltViewModel
 class YoutubeViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
     private val youtubeRepository: YouTubeRepository,
     private val dictRepository: DictionaryRepository,
     private val networkChecker: ConnectionChecker,
 ) : ViewModel() {
 
     val ytPlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
+
+    private var targetLangs = setOf<String>()
 
     private val _currentVideoId = MutableStateFlow("")
 
@@ -197,10 +196,10 @@ class YoutubeViewModel @Inject constructor(
                 videoCaptionsStateFlow.collect {
                     captionsState.value = DataState.Success(it)
                     captionsMap.value = buildCaptionsMap(it)
-                    Log.d("YOUTUBEDEBUG", "Current captions: $it")
+                    //Log.d("YOUTUBEDEBUG", "Current captions: $it")
                 }
             } catch(e: Exception){
-                Log.d("YOUTUBEDEBUG", "SOMETHING WENT WRONG: $e")
+                //Log.d("YOUTUBEDEBUG", "SOMETHING WENT WRONG: $e")
                 captionsState.value = DataState.Error(ErrorType.ERROR_FETCHING_DATA)
             }
         }
@@ -260,11 +259,12 @@ class YoutubeViewModel @Inject constructor(
         }
     }
 
+    /*
     fun onSeekTo(youTubePlayer: YouTubePlayer, caption: YoutubeCaptionModel) {
         caption.start?.let{
             youTubePlayer.seekTo(it)
         }
-    }
+    } */
 
     @ExperimentalCoroutinesApi
     fun setIsVideoSaved()  {
@@ -296,6 +296,10 @@ class YoutubeViewModel @Inject constructor(
         ytPlayer.value?.loadVideo(currentVideoId.value, 0f)
     }
 
+    fun setTargetLangs(langs: Set<String>) {
+        targetLangs = langs
+    }
+
     private fun setAccessToken(token: String?) {
         authToken = token
     }
@@ -305,11 +309,11 @@ class YoutubeViewModel @Inject constructor(
         viewModelScope.launch{
             videoDataLoading.value = true
             _currentVideoId.value = videoId
-            Log.d("YOUTUBEDEBUG", "Current Video Model: ${_currentVideoId.value}")
+            //Log.d("YOUTUBEDEBUG", "Current Video Model: ${_currentVideoId.value}")
             val tracks = youtubeRepository.getVideoCaptionsTracks(videoId)
-            val targetLangs =
+            /*val targetLangs =
                 context.getSharedPreferences("langs", Context.MODE_PRIVATE)
-                    .getStringSet("target_langs", setOf())?.toSet() ?: setOf()
+                    .getStringSet("target_langs", setOf())?.toSet() ?: setOf() */
             val filteredTracks = tracks.filter{
                 targetLangs.contains(it.langCode)
             }
@@ -343,10 +347,10 @@ class YoutubeViewModel @Inject constructor(
     ) : CaptionsMapEntry?
     {
         val index = currentPlayerPosition.toInt()
-        Log.d("YOUTUBEDEBUG", "Current player position: $currentPlayerPosition")
-        Log.d("YOUTUBEDEBUG", "Current map index: $index")
+        //Log.d("YOUTUBEDEBUG", "Current player position: $currentPlayerPosition")
+        //Log.d("YOUTUBEDEBUG", "Current map index: $index")
         val bucket = captionsMap.value[index]
-        Log.d("YOUTUBEDEBUG", "Current bucket: $bucket")
+        //Log.d("YOUTUBEDEBUG", "Current bucket: $bucket")
         bucket?.forEach {
             if(
                 currentPlayerPosition >= it.captionData.start!! &&

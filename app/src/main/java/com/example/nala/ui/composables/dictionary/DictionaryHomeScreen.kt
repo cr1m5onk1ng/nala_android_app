@@ -1,5 +1,6 @@
 package com.example.nala.ui.composables.dictionary
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -38,6 +39,8 @@ import com.example.nala.domain.model.utils.AuthState
 import com.example.nala.domain.model.utils.DataState
 import com.example.nala.ui.composables.BottomBar
 import com.example.nala.ui.composables.LoadingIndicator
+import com.example.nala.ui.composables.MainButton
+import com.example.nala.ui.composables.SmallButton
 import com.example.nala.ui.composables.menus.CustomDrawer
 import com.example.nala.ui.theme.*
 import kotlinx.coroutines.CoroutineScope

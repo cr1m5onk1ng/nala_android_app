@@ -44,5 +44,4 @@ object AppModule {
         return AsyncMetadataExtractorService()
     }
 
-
 }
