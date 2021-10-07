@@ -2,7 +2,6 @@ package com.example.nala.utils
 
 import android.util.Log
 import android.webkit.URLUtil
-import com.gargoylesoftware.htmlunit.util.UrlUtils
 
 object Utils {
 
@@ -37,5 +36,9 @@ object Utils {
         }
         val queryWithEscapedQuotes = query.replace(Regex.fromLiteral("\""), "\"\"")
         return "*\"$queryWithEscapedQuotes\"*"
+    }
+
+    fun cleanRecognizedTextForJapanese(text: String): String {
+        return text.replace(" ", "").replace("\n", "")
     }
 }

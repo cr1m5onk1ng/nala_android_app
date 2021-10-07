@@ -5,8 +5,11 @@ import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -52,16 +55,18 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun loadSharedPreferences() {
-        //val langsSet = mutableSetOf<String>()
-        isJapaneseSelected.value = preferences.getBoolean("ja", false)
-        //if(isJapaneseSelected.value) langsSet.add("ja")
-        isEnglishSelected.value = preferences.getBoolean("en", false)
-        //if(isEnglishSelected.value) langsSet.add("en")
-        isFrenchSelected.value = preferences.getBoolean("fr", false)
-        //if(isFrenchSelected.value) langsSet.add("fr")
-        isSpanishSelected.value = preferences.getBoolean("es", false)
-        //if(isSpanishSelected.value) langsSet.add("es")
-        targetLangs.value = preferences.getStringSet("target_langs", setOf())?.toSet() ?: setOf()
+        viewModelScope.launch(Dispatchers.IO) {
+            //val langsSet = mutableSetOf<String>()
+            isJapaneseSelected.value = preferences.getBoolean("ja", false)
+            //if(isJapaneseSelected.value) langsSet.add("ja")
+            isEnglishSelected.value = preferences.getBoolean("en", false)
+            //if(isEnglishSelected.value) langsSet.add("en")
+            isFrenchSelected.value = preferences.getBoolean("fr", false)
+            //if(isFrenchSelected.value) langsSet.add("fr")
+            isSpanishSelected.value = preferences.getBoolean("es", false)
+            //if(isSpanishSelected.value) langsSet.add("es")
+            targetLangs.value = preferences.getStringSet("target_langs", setOf())?.toSet() ?: setOf()
+        }
     }
 
     fun setLangSelected(lang: String, value: Boolean) {

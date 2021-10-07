@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
@@ -35,6 +36,7 @@ fun CustomClickableText(
     selectedColor: Color? = null,
     fontSize: TextUnit? = null,
     fontWeight: FontWeight? = null,
+    textDecoration: TextDecoration? = null,
     onSelectWord: (String) -> Unit,
     onClick: (() -> Unit)? = null,
     ){
@@ -47,7 +49,8 @@ fun CustomClickableText(
                 style = SpanStyle(
                     color = if(t == selectedToken) activeColor else normalColor,
                     fontSize = fontSize ?: 14.sp,
-                    fontWeight = if(t == selectedToken) FontWeight.Bold else fw
+                    fontWeight = if(t == selectedToken) FontWeight.Bold else fw,
+                    textDecoration = textDecoration,
                 )
             ) {
                 append(t)

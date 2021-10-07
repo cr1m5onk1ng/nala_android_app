@@ -28,7 +28,7 @@ class YoutubeViewModel @Inject constructor(
     private val networkChecker: ConnectionChecker,
 ) : ViewModel() {
 
-    val ytPlayer: MutableState<YouTubePlayer?> = mutableStateOf(null)
+    private var ytPlayer: YouTubePlayer? = null
 
     private var targetLangs = setOf<String>()
 
@@ -38,7 +38,7 @@ class YoutubeViewModel @Inject constructor(
 
     val videoDataLoading = mutableStateOf(false)
 
-    val currentVideoUrl = mutableStateOf("")
+    private val currentVideoUrl = mutableStateOf("")
 
     val currentVideoId: StateFlow<String> = _currentVideoId
 
@@ -69,7 +69,7 @@ class YoutubeViewModel @Inject constructor(
 
     val captionsMap: MutableState<Map<Int, List<CaptionsMapEntry>>> = mutableStateOf(mapOf())
 
-    var currentPlayerPosition: MutableState<Float> = mutableStateOf(0f)
+    var currentPlayerPosition: Float = 0f
 
     val listState: MutableState<LazyListState> =
         mutableStateOf(LazyListState( firstVisibleItemIndex = 0, firstVisibleItemScrollOffset = 0))
@@ -161,7 +161,7 @@ class YoutubeViewModel @Inject constructor(
     }
 
     fun initPlayer(player: YouTubePlayer) {
-        ytPlayer.value = player
+        ytPlayer = player
     }
 
     fun setSelectedTab(index: Int) {
@@ -183,7 +183,8 @@ class YoutubeViewModel @Inject constructor(
     }
 
     fun setPlayerPosition(position: Float) {
-        currentPlayerPosition.value = position
+        ytPlayer!!.seekTo(position)
+        ytPlayer!!.play()
     }
 
     @ExperimentalCoroutinesApi
@@ -253,6 +254,7 @@ class YoutubeViewModel @Inject constructor(
     }
 
     fun onPlayerTimeElapsed(secondsElapsed: Float){
+        currentPlayerPosition = secondsElapsed
         val currentCaption = bucketSearch(secondsElapsed)
         currentCaption?.let{
             activeCaption.value = it.index
@@ -293,11 +295,20 @@ class YoutubeViewModel @Inject constructor(
     fun checkNetworkAvailable() = networkChecker.isNetworkAvailable()
 
     fun onRetry() {
-        ytPlayer.value?.loadVideo(currentVideoId.value, 0f)
+        ytPlayer?.loadVideo(currentVideoId.value, 0f)
     }
 
     fun setTargetLangs(langs: Set<String>) {
         targetLangs = langs
+    }
+
+    fun setPause() {
+        ytPlayer?.pause()
+    }
+
+    fun seekTo(value: Float) {
+        ytPlayer?.seekTo(value)
+        ytPlayer?.play()
     }
 
     private fun setAccessToken(token: String?) {

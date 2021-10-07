@@ -10,11 +10,9 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIos
-import androidx.compose.material.icons.filled.Screenshot
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -39,9 +38,10 @@ import com.example.nala.domain.model.yt.*
 import com.example.nala.network.model.menus.ActionModel
 import com.example.nala.domain.model.utils.DataState
 import com.example.nala.ui.composables.*
+import com.example.nala.ui.composables.dialogs.LoadingDialog
+import com.example.nala.ui.composables.dialogs.SentenceLookupDialog
 import com.example.nala.ui.composables.menus.CustomTopBar
 import com.example.nala.ui.theme.Blue500
-import com.example.nala.ui.theme.LightBlue
 import com.example.nala.ui.yt.YoutubePlaybackListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerCallback
@@ -71,7 +71,8 @@ fun VideoScreen(
     onSetVideoAsSaved: (Boolean) -> Unit,
     checkNetworkAvailable: () -> Boolean,
     videoLoading: Boolean,
-    player: YouTubePlayer?,
+    onPause: () -> Unit,
+    onSeekTo: (Float) -> Unit,
     selectedTab: Int,
     captionsState: DataState<List<YoutubeCaptionModel>>,
     commentsState: DataState<YoutubeCommentsList>,
@@ -79,6 +80,9 @@ fun VideoScreen(
     inspectedComment: YoutubeCommentModel?,
     tokens: List<String>,
     tokensMap: Map<Pair<Int, Int>, String>,
+    ocrTokens: List<String>,
+    ocrTokensMap: Map<Pair<Int, Int>, String>,
+    recognizedSentence: String,
     selectedWord: String,
     onSetSelectedWord: (String) -> Unit,
     playerPosition: Float,
@@ -105,6 +109,12 @@ fun VideoScreen(
     onTakeScreenshot: () -> Unit,
     onSetView: (View) -> Unit,
     activeCaption: Int,
+    loadingDialogOpen: Boolean,
+    setLoadingDialogOpen: (Boolean) -> Unit,
+    setSentenceDialogOpen: (Boolean) -> Unit,
+    sentenceDialogOpen: Boolean,
+    onSaveSentence: (String, String) -> Unit,
+    onShowAddedSentenceSnackbar: () -> Unit,
     scaffoldState: ScaffoldState,
     navController: NavController
 ){
@@ -131,21 +141,24 @@ fun VideoScreen(
                             }
                         },
                         isActive = isVideoSaved,
-                    )
+                    ),
+                    ActionModel(
+                        icon = Icons.Rounded.Screenshot,
+                        action = {
+                            onTakeScreenshot()
+                            onPause()
+                        },
+                        isActive = false,
+                    ),
                 )
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { onTakeScreenshot() },
-                shape = RoundedCornerShape(50),
-                backgroundColor = Blue500,
-            ) {
-                Icon(Icons.Filled.Screenshot,"")
-            }
-        },
     ) { paddingValues ->
-        ConstraintLayout(modifier = Modifier.padding(paddingValues)) {
+        ConstraintLayout(
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize()
+        ) {
             Column() {
                 if(checkNetworkAvailable()) {
                     if(videoLoading) {
@@ -193,12 +206,12 @@ fun VideoScreen(
                             onSearchWord = onSearchWord,
                             onSetInspectedCaption = onSetInspectedCaption,
                             onSetInspectedComment = onSetInspectedComment,
-                            player = player,
                             onSetPlayerPosition = onSetPlayerPosition,
                             activeCaption = activeCaption,
                             scope = scope,
                             authState = authState,
                             onRequestLogin = onRequestLogin,
+                            onSeekTo = onSeekTo,
                             navController = navController,
                         )
                     }
@@ -209,6 +222,25 @@ fun VideoScreen(
                         action = {
                             onRetry()
                         }
+                    )
+                }
+                if(loadingDialogOpen) {
+                    LoadingDialog(
+                        text = "Capturing text...",
+                        setLoadingDialogOpen = setLoadingDialogOpen,
+                    )
+                }
+                if(sentenceDialogOpen) {
+                    SentenceLookupDialog(
+                        sentence = recognizedSentence,
+                        tokensMap = ocrTokensMap,
+                        tokens = ocrTokens,
+                        selectedWord = selectedWord,
+                        onSetSelectedWord = onSetSelectedWord,
+                        onSearchWord = onSearchWord,
+                        onSetDialogOpen = setSentenceDialogOpen,
+                        onSaveSentence = onSaveSentence,
+                        onShowAddedSentenceSnackbar = onShowAddedSentenceSnackbar,
                     )
                 }
             }
@@ -239,12 +271,12 @@ private fun CaptionsSection(
     tokensMap: Map<Pair<Int, Int>, String>,
     selectedWord: String,
     onSetSelectedWord: (String) -> Unit,
-    player: YouTubePlayer?,
     onLoadTrack: (String) -> Unit,
     onAddToFavorites: (String) -> Unit,
     onSetPlayerPosition: (Float) -> Unit,
     onSetInspectedCaption: (YoutubeCaptionModel) -> Unit,
     onSearchWord: () -> Unit,
+    onSeekTo: (Float) -> Unit,
     navController: NavController,
 ) {
     when(captionsState) {
@@ -289,11 +321,11 @@ private fun CaptionsSection(
                         onSetSelectedWord = onSetSelectedWord,
                         isActive = isActive,
                         isFocused = isFocused,
-                        player = player,
                         onAddToFavorites = onAddToFavorites,
                         onSetPlayerPosition = onSetPlayerPosition,
                         onSearchWord = onSearchWord,
                         onSetInspectedCaption = onSetInspectedCaption,
+                        onSeekTo = onSeekTo,
                         navController = navController,
                     )
                 }
@@ -312,24 +344,26 @@ private fun CaptionsCard(
     onSetSelectedWord: (String) -> Unit,
     isActive: Boolean,
     isFocused: Boolean,
-    player: YouTubePlayer?,
     onAddToFavorites: (String) -> Unit,
     onSetPlayerPosition: (Float) -> Unit,
     onSetInspectedCaption: (YoutubeCaptionModel) -> Unit,
     onSearchWord: () -> Unit,
+    onSeekTo: (Float) -> Unit,
     navController: NavController,
 ) {
 
     Card(modifier = Modifier
         .fillMaxWidth()
-        .padding(8.dp)
+        .padding(bottom = 3.dp)
         .clickable {
             caption.start?.let {
-                player?.seekTo(it)
+               onSeekTo(it)
             }
         },
-        shape = MaterialTheme.shapes.large,
-        backgroundColor = if(isFocused) LightBlue else if(isActive) Color.LightGray else Color.White
+        //shape = MaterialTheme.shapes.large,
+        backgroundColor =
+            if(isActive) Color.LightGray else Color.White,
+        border = if(isFocused) BorderStroke(Dp.Hairline, Blue500) else null,
     ) {
         Row(
             modifier = Modifier
@@ -337,46 +371,58 @@ private fun CaptionsCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if(inspectedCaption == caption) {
-               CustomClickableText(
-                   modifier = Modifier.padding(horizontal = 5.dp),
-                   tokensMap = tokensMap,
-                   tokens = tokens,
-                   fontSize = 16.sp,
-                   fontWeight = FontWeight.Light,
-                   selectedToken = selectedWord,
-                   onSelectWord = onSetSelectedWord,
-                   onClick = { onSearchWord() }
-               )
-            } else {
-                Text(
+                Column(
+                    modifier = Modifier.fillMaxWidth(0.80f)
+                ) {
+                    if(inspectedCaption == caption) {
+                        Text(
+                            modifier = Modifier.padding(horizontal = 5.dp),
+                            text = stringResource(R.string.select_a_word),
+                            style = MaterialTheme.typography.body2,
+                            color = Color.LightGray,
+                        )
+                        CustomClickableText(
+                            modifier = Modifier.padding(5.dp),
+                            textDecoration = TextDecoration.Underline,
+                            tokensMap = tokensMap,
+                            tokens = tokens,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Light,
+                            selectedToken = selectedWord,
+                            onSelectWord = onSetSelectedWord,
+                            onClick = { onSearchWord() }
+                        )
+                    } else {
+                        Text(
+                            modifier = Modifier
+                                .padding(start = 8.dp, top = 5.dp, bottom = 5.dp, end = 5.dp)
+                                .clickable {
+                                    onSetInspectedCaption(caption)
+                                },
+                            text = caption.caption,
+                            style = MaterialTheme.typography.body1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
+                IconButton(
                     modifier = Modifier
-                        .fillMaxWidth(0.7f)
-                        .padding(5.dp)
-                        .clickable {
-                            onSetInspectedCaption(caption)
-                        },
-                    text = caption.caption,
-                    style = MaterialTheme.typography.body1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-            IconButton(
-                modifier = Modifier.fillMaxWidth(0.3f),
-                onClick = {
-                    onAddToFavorites(caption.caption)
-                    onSetPlayerPosition(caption.start ?: 0f)
-                    navController.navigate("sentence_form_screen")
-                }) {
-                Icon(
-                    modifier = Modifier
-                        .height(16.dp)
-                        .width(16.dp),
-                    imageVector = Icons.Rounded.Add,
-                    tint = Color.DarkGray,
-                    contentDescription = "search"
-                )
-            }
+                        .padding(end = 5.dp)
+                        .size(24.dp),
+                    onClick = {
+                        onAddToFavorites(caption.caption)
+                        onSetPlayerPosition(caption.start ?: 0f)
+                        navController.navigate("sentence_form_screen")
+                    }) {
+                    Icon(
+                        modifier = Modifier
+                            .height(20.dp)
+                            .width(20.dp),
+                        imageVector = Icons.Rounded.Add,
+                        tint = Color.DarkGray,
+                        contentDescription = "search"
+                    )
+                }
         }
     }
 }
@@ -772,12 +818,12 @@ private fun SelectionTabSection(
     onSearchWord: () -> Unit,
     onSetInspectedCaption: (YoutubeCaptionModel) -> Unit,
     onSetInspectedComment: (YoutubeCommentModel) -> Unit,
-    player: YouTubePlayer?,
     onSetPlayerPosition: (Float) -> Unit,
     activeCaption: Int,
     scope: CoroutineScope,
     onRequestLogin: () -> Unit,
     authState: AuthState<UserModel?>,
+    onSeekTo: (Float) -> Unit,
     navController: NavController
 ) {
     CustomTabMenu(
@@ -800,11 +846,11 @@ private fun SelectionTabSection(
                 selectedWord = selectedWord,
                 onLoadTrack = onLoadTrack,
                 onSetSelectedWord = onSetSelectedWord,
-                player = player,
                 onAddToFavorites = onAddCaptionToFavorites,
                 onSetPlayerPosition = onSetPlayerPosition,
                 onSearchWord = onSearchWord,
                 onSetInspectedCaption = onSetInspectedCaption,
+                onSeekTo = onSeekTo,
                 navController = navController,
             )
         }

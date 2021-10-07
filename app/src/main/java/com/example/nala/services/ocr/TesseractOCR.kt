@@ -4,15 +4,12 @@ import android.content.Context
 import android.content.res.AssetManager
 import android.graphics.Bitmap
 import android.util.Log
-import android.widget.Toast
 import com.googlecode.tesseract.android.TessBaseAPI
-import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.lang.Exception
-import javax.inject.Inject
 
 
 class TesseractOCR(
@@ -33,8 +30,8 @@ class TesseractOCR(
     }
 
     fun recognize(bitmap: Bitmap) : String {
-        tessModel!!.setImage(bitmap);
-        return tessModel!!.utF8Text;
+        tessModel!!.setImage(bitmap)
+        return tessModel!!.utF8Text
     }
 
     fun isInitialized() : Boolean {
@@ -45,8 +42,8 @@ class TesseractOCR(
         tessModel?.recycle()
     }
 
-    private fun loadModelFromInternalStorage(dataPath: String = "/tesseract/tessdata/") {
-        val dstInitPathDir: String = context.filesDir.toString() + "/tesseract"
+    private fun loadModelFromInternalStorage(dataPath: String = "/tesseract/tessdata/", fileName: String = "jpn.traineddata") {
+        val dstInitPathDir: String = context.filesDir.toString() + dataPath + fileName
         val success = tessModel!!.init(dstInitPathDir, language)
         if(!success) {
             throw IOException("Couldn't initialize tesseract model")
@@ -69,18 +66,22 @@ class TesseractOCR(
         val dstPathDir = context.filesDir.toString() + dataPath
         val tessPathDir: String = context.filesDir.toString() + "/tesseract"
         val langDataPath = dstPathDir + srcFile
-
         var inFile: InputStream? = null
         var outFile: FileOutputStream? = null
 
         try {
+            val langFileInTessFolder = File(langDataPath)
+            if(langFileInTessFolder.exists()) {
+                tessModel!!.init(tessPathDir, language)
+                return
+            }
             inFile = assetManager.open(srcFile)
             val f = File(dstPathDir)
             if (!f.exists()) {
                 if (!f.mkdirs()) {
-                    Toast.makeText(context, "$srcFile can't be created.", Toast.LENGTH_SHORT).show()
+                    Log.d(TAG,"$srcFile can't be created.")
                 }
-                outFile = FileOutputStream(File(langDataPath))
+                outFile = FileOutputStream(langFileInTessFolder)
             } else {
                 fileExists = true
             }
@@ -110,7 +111,7 @@ class TesseractOCR(
                     Log.e(TAG, ex.message!!)
                 }
             } else {
-                Log.d( "OCR_DEBUG", "$srcFile can't be read.")
+                Log.d( TAG, "$srcFile can't be read.")
             }
         }
     }

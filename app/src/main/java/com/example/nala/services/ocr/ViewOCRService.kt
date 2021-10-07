@@ -41,4 +41,8 @@ class ViewOCRService @Inject constructor(
         this.currentView = view
     }
 
+    fun initOcrModel() {
+        tesseractOcr!!.init()
+    }
+
 }

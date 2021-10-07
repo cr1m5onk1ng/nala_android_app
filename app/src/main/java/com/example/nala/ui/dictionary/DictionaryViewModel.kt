@@ -109,14 +109,6 @@ class DictionaryViewModel @Inject constructor(
         editStoryFormActive.value = value
     }
 
-    fun setSharedText(text: String?) {
-        textReceived.value = true
-        query.value = text ?: ""
-        viewModelScope.launch {
-            searchWord()
-        }
-    }
-
     fun setSharedSentence(text: String?) {
         viewModelScope.launch {
             sentenceReceived.value = true
@@ -135,11 +127,6 @@ class DictionaryViewModel @Inject constructor(
         }
     }
 
-    fun unsetSharedText() {
-        textReceived.value = false
-        query.value = ""
-    }
-
     fun unsetSharedSentence() {
         sentenceReceived.value = false
     }
@@ -147,11 +134,6 @@ class DictionaryViewModel @Inject constructor(
     fun setIsWordFromForm(){
         isWordFromIntent.value = false
         isWordFromForm.value = true
-    }
-
-    fun setIsWordFromIntent(){
-        isWordFromForm.value = false
-        isWordFromIntent.value = true
     }
 
     fun setCurrentKanji(kanji: String)  {

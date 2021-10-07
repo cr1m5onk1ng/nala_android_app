@@ -6,8 +6,6 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,6 +22,7 @@ import com.example.nala.ui.theme.Quicksand
 @Composable
 fun SmallerButton(
     text: String,
+    textColor: Color? = null,
     backgroundColor: Color,
     onCLick: () -> Unit,
     height: Dp,
@@ -59,7 +58,8 @@ fun SmallerButton(
                         fontFamily = Quicksand,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.W400
-                    )
+                    ),
+                    color = textColor ?: Color.White,
                 )
                 Spacer(modifier= Modifier.padding(horizontal = 3.dp))
                 Icon(

@@ -198,4 +198,7 @@ dependencies {
     implementation 'eu.bolt:screenshotty:1.0.4'
     implementation 'eu.bolt:screenshotty-coroutines:1.0.4'
 
+    // TIMEAGO
+    implementation 'com.github.marlonlom:timeago:4.0.3'
+
 }

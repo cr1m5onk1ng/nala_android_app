@@ -101,7 +101,7 @@ fun ReviewListScreen(
                      },
                      backgroundColor = MaterialTheme.colors.primary,
                      navigationIcon = {
-                         BackButton(navController = navController)
+                         BackButton(iconColor = Color.White, navController = navController)
                      },
                      actions = {
                          if(!searchOpen.value)

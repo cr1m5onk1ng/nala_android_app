@@ -17,6 +17,7 @@ import androidx.navigation.NavController
 fun BackButton(
     navController: NavController,
     modifier: Modifier = Modifier,
+    iconColor: Color? = null,
     cleanupFunction: (() -> Unit?)? = null,
 ) {
     val activity = (LocalContext.current as? Activity)

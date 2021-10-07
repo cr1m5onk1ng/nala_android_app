@@ -32,12 +32,10 @@ import com.example.nala.ui.composables.menus.CustomTopBar
 fun ArticleScreen(
     article: String,
     articleLoaded: Boolean,
-    ocrLoading: Boolean,
     isSaved: Boolean,
     onSaveArticle: () -> Unit,
     onRemoveArticle: () -> Unit,
     onSetIsArticleSaved: (Boolean) -> Unit,
-    takeScreenshot: () -> Unit,
     scaffoldState: ScaffoldState,
     navController: NavController,
     ) {
@@ -66,20 +64,11 @@ fun ArticleScreen(
                     )
                 )
             },
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = { takeScreenshot() },
-                    shape = RoundedCornerShape(50),
-                    backgroundColor = Color(0xFFFF8C00)
-                ) {
-                    Icon(Icons.Filled.Screenshot,"")
-                }
-            },
         ) { paddingValues ->
             Column(
                 modifier = Modifier.padding(paddingValues)
             ) {
-                if(!articleLoaded || ocrLoading) {
+                if(!articleLoaded) {
                     LoadingIndicator()
                 } else {
                     AndroidView(

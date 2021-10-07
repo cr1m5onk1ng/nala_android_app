@@ -60,9 +60,7 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.Scope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import android.widget.Toast
-import androidx.compose.runtime.mutableStateOf
 import com.example.nala.services.audio.MediaCaptureService
-import com.example.nala.services.ocr.FallbackScreenshotService
 import com.example.nala.ui.ocr.OCRViewModel
 
 @AndroidEntryPoint
@@ -95,9 +93,6 @@ class MainActivity : AppCompatActivity() {
     // AUDIO RECORDING SERVICE
     private lateinit var mediaProjectionManager: MediaProjectionManager
 
-    // OCR STATE
-    private val ocrLoading = mutableStateOf(false)
-
     // ROUTING VARIABLES
     var startDestination = "home_screen"
     // flag that checks if the dictionary was called from an article
@@ -116,6 +111,7 @@ class MainActivity : AppCompatActivity() {
         settingsViewModel.loadSharedPreferences()
         favoritesViewModel.loadSavedVideos()
         favoritesViewModel.loadSavedArticles()
+        ocrViewModel.initModel()
         //ocrService = FallbackScreenshotService(this)
         val targetLangs =
             getSharedPreferences("langs", Context.MODE_PRIVATE)
@@ -321,12 +317,16 @@ class MainActivity : AppCompatActivity() {
                             selectedWord = ytViewModel.inspectedElementSelectedWord.value,
                             tokens = ytViewModel.inspectedElementTokens.value,
                             tokensMap = ytViewModel.inspectedElementTokensMap.value,
+                            ocrTokens = ocrViewModel.inspectedElementTokens.value,
+                            ocrTokensMap = ocrViewModel.inspectedElementTokensMap.value,
+                            recognizedSentence = ocrViewModel.recognizedText.value,
                             commentsState = ytViewModel.commentsState.value,
                             videoId = ytViewModel.currentVideoId.value,
                             videoLoading = ytViewModel.videoDataLoading.value,
-                            player = ytViewModel.ytPlayer.value,
+                            onPause = ytViewModel::setPause,
+                            onSeekTo = ytViewModel::seekTo,
                             selectedTab = ytViewModel.selectedTab.value,
-                            playerPosition = ytViewModel.currentPlayerPosition.value,
+                            playerPosition = ytViewModel.currentPlayerPosition,
                             onInitPlayer = ytViewModel::initPlayer,
                             onPlayerTimeElapsed = ytViewModel::onPlayerTimeElapsed,
                             onChangeSelectedTab = ytViewModel::setSelectedTab,
@@ -354,6 +354,17 @@ class MainActivity : AppCompatActivity() {
                             onSetView = ocrViewModel::setView,
                             authState = authViewModel.account.value,
                             activeCaption = ytViewModel.activeCaption.value,
+                            loadingDialogOpen = ocrViewModel.loadingDialogOpen.value,
+                            setLoadingDialogOpen = ocrViewModel::setLoadingDialogOpen,
+                            sentenceDialogOpen = ocrViewModel.sentenceDialogOpen.value,
+                            setSentenceDialogOpen = ocrViewModel::setSentenceDialogOpen,
+                            onSaveSentence = dictViewModel::addSentenceToReview,
+                            onShowAddedSentenceSnackbar = {
+                                showSnackbar(
+                                    scaffoldState,
+                                    message = getString(R.string.sentence_added)
+                                )
+                            },
                             scaffoldState = scaffoldState,
                             navController = navController,
                         )
@@ -363,12 +374,10 @@ class MainActivity : AppCompatActivity() {
                         ArticleScreen(
                             article = reviewViewModel.currentArticleUrl.value,
                             articleLoaded = reviewViewModel.isArticleLoaded.value,
-                            ocrLoading = ocrViewModel.ocrLoading.value,
                             isSaved = reviewViewModel.isArticleSaved.value,
                             onSaveArticle = reviewViewModel::addArticleToFavorites,
                             onRemoveArticle = reviewViewModel::removeArticleFromFavorites,
                             onSetIsArticleSaved = reviewViewModel::setIsArticleInFavorites,
-                            takeScreenshot = ocrViewModel::getTextFromView,
                             scaffoldState = scaffoldState,
                             navController = navController,
                         )

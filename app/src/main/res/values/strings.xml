@@ -72,4 +72,5 @@
     <string name="search_in_review">search</string>
     <string name="ocr_fab">ocr fab</string>
     <string name="tvNoWordFound">No word found in Jiisho</string>
+    <string name="select_a_word">Select a word</string>
 </resources>
