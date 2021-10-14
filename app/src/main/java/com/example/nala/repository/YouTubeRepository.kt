@@ -17,7 +17,7 @@ interface YouTubeRepository {
 
     suspend fun addVideoToFavorites(videoId: String, videoUrl: String)
 
-    suspend fun removeVideoFromFavorites(videoId: String)
+    suspend fun removeVideoFromFavorites(videoUrl: String)
 
     fun getSavedVideo(videoId: String) : Flow<YoutubeVideoModel>
 

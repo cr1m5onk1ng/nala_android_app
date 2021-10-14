@@ -20,8 +20,9 @@ import com.example.nala.domain.model.utils.AuthState
 import com.example.nala.ui.composables.CustomAvatar
 import com.example.nala.ui.composables.CustomTextButton
 import com.example.nala.ui.menus.DrawerItem
-import com.example.nala.ui.theme.Blue500
+import com.example.nala.ui.theme.Blue400
 import com.example.nala.ui.theme.GreyBackground
+import com.example.nala.ui.theme.GreyHighlight
 import com.google.android.gms.common.SignInButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -42,6 +43,7 @@ fun CustomDrawer(
     ) {
        val elements = listOf(
            //DrawerItem.Chronology,
+           DrawerItem.Home,
            DrawerItem.Articles,
            DrawerItem.Videos,
            DrawerItem.Settings,
@@ -119,10 +121,10 @@ fun DrawerElement(
 ) {
     Row(
         modifier = Modifier
-            .padding(start = 10.dp)
+            .padding(horizontal = 16.dp)
             .fillMaxWidth()
             .height(45.dp)
-            .background(color = if (isSelected) Color.LightGray else Color.White)
+            .background(color = if (isSelected) GreyHighlight else Color.White)
             .clickable {
                 onSelectItem(element)
                 onClick?.let {

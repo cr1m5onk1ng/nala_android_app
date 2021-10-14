@@ -3,6 +3,7 @@ package com.example.nala.ui.composables.articles
 import android.view.View
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -24,8 +25,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import com.example.nala.R
+import com.example.nala.domain.model.auth.UserModel
+import com.example.nala.domain.model.utils.AuthState
 import com.example.nala.network.model.menus.ActionModel
 import com.example.nala.ui.composables.LoadingIndicator
+import com.example.nala.ui.composables.menus.CustomDrawer
 import com.example.nala.ui.composables.menus.CustomTopBar
 
 @Composable
@@ -36,11 +40,15 @@ fun ArticleScreen(
     onSaveArticle: () -> Unit,
     onRemoveArticle: () -> Unit,
     onSetIsArticleSaved: (Boolean) -> Unit,
+    authState: AuthState<UserModel?>,
+    onSignIn: () -> Unit,
+    onSignOut: () -> Unit,
     scaffoldState: ScaffoldState,
     navController: NavController,
     ) {
         val scope = rememberCoroutineScope()
         Scaffold(
+            scaffoldState = scaffoldState,
             topBar = {
                 CustomTopBar(
                     title = stringResource(R.string.article_screen_header),
@@ -62,6 +70,17 @@ fun ArticleScreen(
                             isActive = isSaved,
                         )
                     )
+                )
+            },
+            drawerContent = {
+                CustomDrawer(
+                    modifier = Modifier.background(color = Color.White),
+                    scope = scope,
+                    authState = authState,
+                    onSignIn = onSignIn,
+                    onSignOut = onSignOut,
+                    scaffoldState = scaffoldState,
+                    navController = navController,
                 )
             },
         ) { paddingValues ->

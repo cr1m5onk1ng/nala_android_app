@@ -19,6 +19,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
+import java.util.*
 import javax.inject.Inject
 
 class YoutubeRepositoryImpl @Inject constructor(
@@ -153,6 +154,7 @@ class YoutubeRepositoryImpl @Inject constructor(
                 videoUrl = videoUrl,
                 title = metadata.title,
                 thumbnailUrl = metadata.thumbnailUrl,
+                timeAdded = Date()
             )
             videoDao.addVideoToFavorites(mappedVideo)
         }
@@ -170,6 +172,7 @@ class YoutubeRepositoryImpl @Inject constructor(
                     publishedAt = it.first().publishedAt,
                     title = it.first().title,
                     thumbnailUrl = it.first().thumbnailUrl,
+                    addedAt = it.first().timeAdded.time,
                 )
             }
         }
@@ -235,8 +238,8 @@ class YoutubeRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun removeVideoFromFavorites(videoId: String) {
-        videoDao.removeVideoFromFavorites(videoId)
+    override suspend fun removeVideoFromFavorites(videoUrl: String) {
+        videoDao.removeVideoFromFavorites(videoUrl)
     }
 
     private suspend fun cacheVideoComments(comments: List<YoutubeCommentModel>) {

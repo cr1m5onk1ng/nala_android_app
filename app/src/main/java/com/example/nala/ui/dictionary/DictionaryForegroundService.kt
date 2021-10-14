@@ -55,6 +55,7 @@ class DictionaryForegroundService : LifecycleService() {
             dictionaryWindow.setLoadingScreen()
             val wordData = dictRepository.search(word)
             if(wordData.isEmpty()) {
+                dictionaryWindow.setWordData(wordData, listOf(), listOf(), mutableListOf(), mutableListOf())
                 dictionaryWindow.setErrorScreen()
             } else {
                 val kanjis = kanjiRepository.getWordKanjis(wordData.word)
@@ -105,7 +106,7 @@ class DictionaryForegroundService : LifecycleService() {
                 .setCategory(Notification.CATEGORY_SERVICE)
                 .setDeleteIntent(stopPendingIntent)
                 .addAction(R.drawable.ic_baseline_close_24, "close dictionary", stopPendingIntent)
-                .build();
+                .build()
             startForeground(2, notification)
         }
     }

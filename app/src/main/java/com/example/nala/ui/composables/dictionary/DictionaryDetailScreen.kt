@@ -61,6 +61,7 @@ fun DictionaryDetailScreen(
             ) {
                 BackButton(
                     navController = navController,
+                    iconColor = Color.Black,
                 )
             }
             when(searchState) {

@@ -1,6 +1,5 @@
 package com.example.nala.ui.composables.dictionary
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -39,8 +38,6 @@ import com.example.nala.domain.model.utils.AuthState
 import com.example.nala.domain.model.utils.DataState
 import com.example.nala.ui.composables.BottomBar
 import com.example.nala.ui.composables.LoadingIndicator
-import com.example.nala.ui.composables.MainButton
-import com.example.nala.ui.composables.SmallButton
 import com.example.nala.ui.composables.menus.CustomDrawer
 import com.example.nala.ui.theme.*
 import kotlinx.coroutines.CoroutineScope
@@ -57,12 +54,14 @@ fun HomeScreen(
     onClick: () -> Unit,
     onSignIn: () -> Unit,
     onSignOut: () -> Unit,
+    onSetMFI: (WordReviewModel?) -> Unit,
     textReceived: Boolean,
     sentenceReceived: Boolean,
     isHomeSelected: Boolean,
     isReviewsSelected: Boolean,
     toggleHome: (Boolean) -> Unit,
     toggleReviews: (Boolean) -> Unit,
+    onHandleQueryTextType: (String, NavController) -> Unit,
     scaffoldState: ScaffoldState,
     navController: NavController
 ) {
@@ -146,13 +145,13 @@ fun HomeScreen(
                         ){
                             items(mightForgetItemsState.data.size) { index ->
                                 val word = mightForgetItemsState.data[index].word
+                                val item = mightForgetItemsState.data[index]
                                 Card(
                                     modifier = Modifier
                                         .padding(8.dp)
                                         .alpha(0.9F)
                                         .clickable {
-                                            onQueryChange(word)
-                                            onClick()
+                                            onSetMFI(item)
                                             navController.navigate("detail_screen")
                                         },
                                     backgroundColor = Blue400,
@@ -214,13 +213,12 @@ fun HomeScreen(
                     },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Search,
+                        imeAction = ImeAction.Done,
                     ),
                     keyboardActions = KeyboardActions (
-                        onSearch = {
-                            onClick()
+                        onDone = {
                             keyboardController?.hide()
-                            navController.navigate("detail_screen")
+                            onHandleQueryTextType(query, navController)
                         }
                     )
                 )
@@ -235,16 +233,14 @@ private fun TopBar(
     scaffoldState: ScaffoldState,
 ) {
     // TOP BAR
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Start,
+            .padding(bottom = 8.dp),
     ){
         // OPEN DRAWER BUTTON
         Row(
-            modifier = Modifier.fillMaxWidth(0.4f),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Start,
         ){
             IconButton(
@@ -262,8 +258,8 @@ private fun TopBar(
         }
         // LOGO SECTION
         Row(
-            modifier = Modifier.fillMaxWidth(0.6f),
-            horizontalArrangement = Arrangement.Start,
+            modifier = Modifier.fillMaxWidth().height(50.dp),
+            horizontalArrangement = Arrangement.Center,
         ){
             Text(
                 text = "NaLa",

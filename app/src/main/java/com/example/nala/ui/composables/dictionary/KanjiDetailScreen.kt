@@ -1,7 +1,6 @@
 package com.example.nala.ui.composables.dictionary
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
@@ -24,6 +23,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -54,6 +54,7 @@ fun KanjiDetailScreen(
             Column(modifier = Modifier.padding(paddingValue)) {
                 BackButton(
                     modifier = Modifier.padding(top = 22.dp, start = 16.dp),
+                    iconColor = Color.Black,
                     navController = navController,
                 )
                 when(kanjiSearchState){
@@ -111,6 +112,7 @@ fun KanjiDetailScreen(
                                             )
                                         }
                                         TagRow(tags = tags)
+                                        DetailsSection(kanji)
                                         StorySection(storyState = kanjiStoryState)
                                         if(storyFormActive){
                                             StoryEditForm(
@@ -135,7 +137,7 @@ fun KanjiDetailScreen(
                                                 )
                                             }
                                         }
-                                        DetailsSection(kanji)
+
                                     }
                                 }
                             }
@@ -199,39 +201,43 @@ fun StorySection(
         is DataState.Success<String> -> {
             Column (
                 modifier = Modifier
-                    .padding(start = 16.dp, top = 5.dp, end = 16.dp)
+                    .padding(horizontal = 16.dp)
                     .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
             ){
-                Spacer(
-                    modifier = Modifier
-                        .border(
-                            border = BorderStroke(
-                                3.dp,
-                                color = Color.LightGray
+                Spacer(modifier = Modifier
+                    .height(1.dp)
+                    .background(Color.LightGray)
+                    .fillMaxWidth())
+                Column(
+                    modifier = Modifier.padding(8.dp)
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.Start
+                    ) {
+                        Text(
+                            modifier = Modifier.padding(bottom = 3.dp),
+                            text = "Story",
+                            style = MaterialTheme.typography.h6,
+                        )
+                    }
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            storyState.data,
+                            style = TextStyle(
+                                fontFamily = Quicksand,
+                                fontWeight = FontWeight.W500,
+                                fontSize = 16.sp,
+                                color = Color.Black
                             )
                         )
-                        .padding(vertical = 8.dp)
-                )
-                Text(
-                    storyState.data,
-                    style = TextStyle(
-                        fontFamily = Quicksand,
-                        fontWeight = FontWeight.W500,
-                        fontSize = 16.sp,
-                        color = Color.Black
-                    )
-                )
-                Spacer(
-                    modifier = Modifier
-                        .border(
-                            border = BorderStroke(
-                                3.dp,
-                                color = Color.LightGray
-                            )
-                        )
-                        .padding(vertical = 8.dp)
-                )
+                    }
+                }
+                Spacer(modifier = Modifier
+                    .height(1.dp)
+                    .background(Color.LightGray)
+                    .fillMaxWidth())
             }
         }
     }

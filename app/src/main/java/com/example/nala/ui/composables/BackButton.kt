@@ -43,7 +43,7 @@ fun BackButton(
                 modifier = Modifier
                     .size(26.dp),
                 contentDescription = "arrow_back",
-                tint = Color.Black
+                tint = iconColor ?: Color.White,
             )
         }
     }

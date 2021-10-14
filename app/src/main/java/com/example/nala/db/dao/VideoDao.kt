@@ -44,8 +44,8 @@ interface VideoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addVideoToFavorites(video: YoutubeDataCache)
 
-    @Query("DELETE FROM videos_cache WHERE video_id=:videoId")
-    suspend fun removeVideoFromFavorites(videoId: String)
+    @Query("DELETE FROM videos_cache WHERE video_url=:videoUrl")
+    suspend fun removeVideoFromFavorites(videoUrl: String)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun cacheVideoCaptions(vararg captions: YoutubeCaptionsCache)

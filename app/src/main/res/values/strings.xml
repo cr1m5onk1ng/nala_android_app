@@ -4,7 +4,7 @@
     <string name="dialog_title">App Overlay Permissions</string>
     <string name="cancel">Cancel</string>
     <string name="might_forget">Words you might forget</string>
-    <string name="search_in_dictionary">Search in dictionary</string>
+    <string name="search_in_dictionary">Search a word or paste a url</string>
     <string name="connection_not_available">Connection not available</string>
     <string name="no_result_from_jisho">No result from Jisho dictionary</string>
     <string name="common_tag">Common</string>
@@ -73,4 +73,5 @@
     <string name="ocr_fab">ocr fab</string>
     <string name="tvNoWordFound">No word found in Jiisho</string>
     <string name="select_a_word">Select a word</string>
+    <string name="reviews_screen_title">Reviews</string>
 </resources>

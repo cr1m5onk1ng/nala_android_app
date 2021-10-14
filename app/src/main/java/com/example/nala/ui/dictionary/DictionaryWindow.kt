@@ -3,6 +3,8 @@ package com.example.nala.ui.dictionary
 import android.annotation.SuppressLint
 import android.content.Context.WINDOW_SERVICE
 import android.content.Context
+import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.util.Log
@@ -16,6 +18,7 @@ import android.view.WindowManager
 import android.view.Gravity
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.nala.db.models.kanji.KanjiStories
@@ -35,11 +38,11 @@ class DictionaryWindow (
     private val scope: CoroutineScope,
 ) {
 
-    private lateinit var currentWord: DictionaryModel
-    private lateinit var wordKanjis: List<KanjiModel>
-    private lateinit var kanjiStories: List<KanjiStories>
-    private lateinit var wordReviews: MutableList<String>
-    private lateinit var kanjiReviews: MutableList<String>
+    private var currentWord: DictionaryModel = DictionaryModel.Empty()
+    private var wordKanjis: List<KanjiModel> = listOf()
+    private var kanjiStories: List<KanjiStories> = listOf()
+    private var wordReviews: MutableList<String> = mutableListOf()
+    private var kanjiReviews: MutableList<String> = mutableListOf()
 
     val metrics: DisplayMetrics = context.applicationContext.resources.displayMetrics
     val width = metrics.widthPixels
@@ -107,6 +110,54 @@ class DictionaryWindow (
         addView(errorScreenView, mParams)
     }
 
+    fun closeKanjiView() {
+        try {
+            // remove the view from the window
+            (context.getSystemService(WINDOW_SERVICE) as WindowManager).removeView(kanjiScreenView)
+            // invalidate the view
+            kanjiScreenView.invalidate()
+            // remove all views
+            //(kanjiScreenView.parent as ViewGroup).removeAllViews()
+
+            // the above steps are necessary when you are adding and removing
+            // the view simultaneously, it might give some exceptions
+        } catch (e: Exception) {
+            Log.d("DICTWINDOWDEBUG", "Error while closing window: $e")
+        }
+    }
+
+    fun closeErrorView() {
+        try {
+            // remove the view from the window
+            (context.getSystemService(WINDOW_SERVICE) as WindowManager).removeView(errorScreenView)
+            // invalidate the view
+            errorScreenView.invalidate()
+            // remove all views
+            //(errorScreenView.parent as ViewGroup).removeAllViews()
+
+            // the above steps are necessary when you are adding and removing
+            // the view simultaneously, it might give some exceptions
+        } catch (e: Exception) {
+            Log.d("DICTWINDOWDEBUG", "Error while closing window: $e")
+        }
+    }
+
+    fun closeDictionaryView() {
+        try {
+            // remove the view from the window
+            (context.getSystemService(WINDOW_SERVICE) as WindowManager).removeView(windowDictionaryView)
+            // invalidate the view
+            windowDictionaryView.invalidate()
+            // remove all views
+            //(windowDictionaryView.parent as ViewGroup).removeAllViews()
+
+            // the above steps are necessary when you are adding and removing
+            // the view simultaneously, it might give some exceptions
+        } catch (e: Exception) {
+            Log.d("DICTWINDOWDEBUG", "Error while closing window: $e")
+        }
+    }
+
     private fun addView(view: View, params: WindowManager.LayoutParams) {
         try {
             overlayWindowManager.addView(view, params)
@@ -157,6 +208,9 @@ class DictionaryWindow (
                 closeDictionaryView()
             }
         }
+        windowDictionaryView.findViewById<ImageView>(R.id.share_word).apply{
+            //startShareIntent(currentWord.word)
+        }
         kanjiScreenView.findViewById<ImageView>(R.id.kanjiClose).setOnClickListener{
             closeKanjiView()
         }
@@ -169,53 +223,6 @@ class DictionaryWindow (
         mParams.y = 0
     }
 
-    fun closeDictionaryView() {
-        try {
-            // remove the view from the window
-            (context.getSystemService(WINDOW_SERVICE) as WindowManager).removeView(windowDictionaryView)
-            // invalidate the view
-            windowDictionaryView.invalidate()
-            // remove all views
-            //(windowDictionaryView.parent as ViewGroup).removeAllViews()
-
-            // the above steps are necessary when you are adding and removing
-            // the view simultaneously, it might give some exceptions
-        } catch (e: Exception) {
-            Log.d("DICTWINDOWDEBUG", "Error while closing window: $e")
-        }
-    }
-
-    fun closeKanjiView() {
-        try {
-            // remove the view from the window
-            (context.getSystemService(WINDOW_SERVICE) as WindowManager).removeView(kanjiScreenView)
-            // invalidate the view
-            kanjiScreenView.invalidate()
-            // remove all views
-            //(kanjiScreenView.parent as ViewGroup).removeAllViews()
-
-            // the above steps are necessary when you are adding and removing
-            // the view simultaneously, it might give some exceptions
-        } catch (e: Exception) {
-            Log.d("DICTWINDOWDEBUG", "Error while closing window: $e")
-        }
-    }
-
-    fun closeErrorView() {
-        try {
-            // remove the view from the window
-            (context.getSystemService(WINDOW_SERVICE) as WindowManager).removeView(errorScreenView)
-            // invalidate the view
-            errorScreenView.invalidate()
-            // remove all views
-            //(errorScreenView.parent as ViewGroup).removeAllViews()
-
-            // the above steps are necessary when you are adding and removing
-            // the view simultaneously, it might give some exceptions
-        } catch (e: Exception) {
-            Log.d("DICTWINDOWDEBUG", "Error while closing window: $e")
-        }
-    }
 
     @SuppressLint("ResourceAsColor")
     private fun bindWordData() {
@@ -313,7 +320,20 @@ class DictionaryWindow (
         }
     }
 
-    private fun updateView(view: View, params: WindowManager.LayoutParams) {
-        overlayWindowManager.updateViewLayout(view, params)
+    private fun startShareIntent(text: String?) {
+        text?.let{
+            val shareIntent = Intent().apply{
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_TEXT, it)
+                type = "text/plain"
+            }
+            startActivity(
+                context,
+                Intent.createChooser(shareIntent,
+                    "Share word/sentence to..."
+                ),
+                null,
+            )
+        }
     }
 }

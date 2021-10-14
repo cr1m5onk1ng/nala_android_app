@@ -5,8 +5,10 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import com.example.nala.db.models.review.*
 import com.example.nala.domain.model.dictionary.DictionaryModel
+import com.example.nala.domain.model.dictionary.Japanese
 import com.example.nala.domain.model.kanji.KanjiModel
 import com.example.nala.domain.model.review.SentenceReviewModel
 import com.example.nala.repository.DictionaryRepository
@@ -14,8 +16,12 @@ import com.example.nala.repository.KanjiRepository
 import com.example.nala.repository.ReviewRepository
 import com.example.nala.domain.model.utils.DataState
 import com.example.nala.domain.model.utils.ErrorType
+import com.example.nala.services.tokenization.JapaneseTokenizerService
+import com.example.nala.services.tokenization.TokenizerService
 import com.example.nala.utils.ConnectionChecker
 import com.example.nala.utils.Constants.TAG
+import com.example.nala.utils.InputStringType
+import com.example.nala.utils.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +34,7 @@ class DictionaryViewModel @Inject constructor(
     private val kanjiRepository: KanjiRepository,
     private val reviewRepository: ReviewRepository,
     private val networkChecker: ConnectionChecker,
+    private val tokenizer: JapaneseTokenizerService,
 ) : ViewModel() {
 
     // SHARED TEXT AND SENTENCES STATE
@@ -72,6 +79,9 @@ class DictionaryViewModel @Inject constructor(
 
     val currentWordKanjis: MutableState<List<String>> = mutableStateOf(listOf())
 
+    //QUERY STATE
+    val isQueryAWord: MutableState<Boolean> = mutableStateOf(true)
+
 
     private suspend fun searchWord() {
         if(!networkChecker.isNetworkAvailable()) {
@@ -79,13 +89,20 @@ class DictionaryViewModel @Inject constructor(
             wordSearchState.value = DataState.Error(ErrorType.NETWORK_NOT_AVAILABLE)
         } else {
             Log.d("DICTDEBUG","Current Query: ${query.value}")
-            wordSearchState.value = DataState.Loading
-            val dictModel = dictRepository.search(query.value.lowercase())
-            if (dictModel.isEmpty()) {
-                wordSearchState.value = DataState.Error(ErrorType.DATA_NOT_AVAILABLE)
+            val isWord = isTextWord(query.value)
+            Log.d("SHAREDEBUG", "Is query a word?: $isWord")
+            if(isWord) {
+                //isQueryAWord.value = true
+                wordSearchState.value = DataState.Loading
+                val dictModel = dictRepository.search(query.value.lowercase())
+                if (dictModel.isEmpty()) {
+                    wordSearchState.value = DataState.Error(ErrorType.DATA_NOT_AVAILABLE)
+                } else {
+                    setCurrentWordKanjis(dictModel.word)
+                    wordSearchState.value = DataState.Success(dictModel)
+                }
             } else {
-                setCurrentWordKanjis(dictModel.word)
-                wordSearchState.value = DataState.Success(dictModel)
+                //isQueryAWord.value = false
             }
         }
     }
@@ -286,5 +303,12 @@ class DictionaryViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    suspend fun isTextWord(text: String) : Boolean {
+        if(Utils.isUrl(text)) return false
+        val tokens = tokenizer.tokenize(text)
+        if((tokens.size) > 3) return false
+        return true
     }
 }

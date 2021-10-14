@@ -1,6 +1,8 @@
 package com.example.nala.ui.composables.settings
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -15,6 +17,9 @@ import androidx.compose.ui.unit.Dp.Companion.Hairline
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.nala.R
+import com.example.nala.domain.model.auth.UserModel
+import com.example.nala.domain.model.utils.AuthState
+import com.example.nala.ui.composables.menus.CustomDrawer
 import com.example.nala.ui.composables.menus.CustomTopBar
 
 @Composable
@@ -25,20 +30,32 @@ fun SettingsScreen(
     isSpanishSelected: Boolean,
     setLangSelected: (String, Boolean) -> Unit,
     scaffoldState: ScaffoldState,
+    authState: AuthState<UserModel?>,
+    onSignIn: () -> Unit,
+    onSignOut: () -> Unit,
     navController: NavController,
 ) {
     val scope = rememberCoroutineScope()
     Scaffold(
+        scaffoldState = scaffoldState,
         topBar = {
             CustomTopBar(
                 title = stringResource(R.string.settings_header),
+                backgroundColor = MaterialTheme.colors.primary,
                 scope = scope,
-                navIcon = Icons.Rounded.ArrowBack,
-                navIconAction = {
-                    navController.popBackStack()
-                },
                 scaffoldState = scaffoldState,
                 navController = navController
+            )
+        },
+        drawerContent = {
+            CustomDrawer(
+                modifier = Modifier.background(color = Color.White),
+                scope = scope,
+                authState = authState,
+                onSignIn = onSignIn,
+                onSignOut = onSignOut,
+                scaffoldState = scaffoldState,
+                navController = navController,
             )
         },
         backgroundColor = Color.White,

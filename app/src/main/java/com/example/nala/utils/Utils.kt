@@ -5,14 +5,19 @@ import android.webkit.URLUtil
 
 object Utils {
 
+    fun isUrl(text: String) : Boolean {
+        return URLUtil.isValidUrl(text)
+    }
+
     fun parseInputString(input: String) : InputStringType {
-        if((input.startsWith("https://youtu.be/") || input.startsWith("https://www.youtube.com/"))) {
-            return InputStringType.YoutubeUrl
+        return if((input.startsWith("https://youtu.be/") ||
+                    input.startsWith("https://www.youtube.com/"))
+        ) {
+            InputStringType.YoutubeUrl
         } else if(URLUtil.isValidUrl(input)) {
-            return InputStringType.ArticleUrl
-        }
-        else {
-            return InputStringType.Sentence
+            InputStringType.ArticleUrl
+        } else {
+            InputStringType.Sentence
         }
     }
 

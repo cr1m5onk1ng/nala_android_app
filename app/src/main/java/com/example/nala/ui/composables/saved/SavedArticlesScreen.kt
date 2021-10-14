@@ -1,48 +1,63 @@
 package com.example.nala.ui.composables.saved
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.nala.R
 import com.example.nala.db.models.review.ArticlesCache
+import com.example.nala.domain.model.auth.UserModel
+import com.example.nala.domain.model.utils.AuthState
 import com.example.nala.domain.model.utils.DataState
 import com.example.nala.ui.composables.ErrorScreen
 import com.example.nala.ui.composables.LoadingIndicator
+import com.example.nala.ui.composables.menus.CustomDrawer
 import com.example.nala.ui.composables.menus.CustomTopBar
 import com.example.nala.ui.theme.Blue500
+import com.example.nala.ui.theme.GreyBackground
+import com.example.nala.ui.theme.GreyBackgroundVariant
 
 @Composable
 fun SavedArticlesScreen(
     articles: DataState<List<ArticlesCache>>,
     onRemoveArticle: (String) -> Unit,
     onSetArticle: (ArticlesCache) -> Unit,
+    authState: AuthState<UserModel?>,
+    onSignIn: () -> Unit,
+    onSignOut: () -> Unit,
     scaffoldState: ScaffoldState,
     navController: NavController,
 ) {
     val scope = rememberCoroutineScope()
     Scaffold(
         backgroundColor = Color.White,
+        scaffoldState = scaffoldState,
         topBar = {
             CustomTopBar(
                 title = stringResource(R.string.saved_articles_header),
-                backgroundColor = Blue500,
-                contentColor = Color.White,
-                navIcon = Icons.Rounded.ArrowBack,
-                navIconAction = {
-                     navController.popBackStack()
-                },
+                backgroundColor = MaterialTheme.colors.primary,
                 scope = scope,
                 scaffoldState = scaffoldState,
                 navController = navController
+            )
+        },
+        drawerContent = {
+            CustomDrawer(
+                modifier = Modifier.background(color = Color.White),
+                scope = scope,
+                authState = authState,
+                onSignIn = onSignIn,
+                onSignOut = onSignOut,
+                scaffoldState = scaffoldState,
+                navController = navController,
             )
         },
     ) { paddingValues ->
@@ -71,8 +86,8 @@ fun SavedArticlesScreen(
                         ) {
                             items(articlesData.size) { index ->
                                 SavedArticleCard(
-                                    articlesData[index],
-                                    onRemoveArticle,
+                                    article = articlesData[index],
+                                    onRemove = onRemoveArticle,
                                     onSetArticle = onSetArticle,
                                     navController = navController,
                                 )

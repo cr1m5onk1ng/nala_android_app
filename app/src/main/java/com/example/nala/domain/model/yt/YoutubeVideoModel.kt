@@ -6,7 +6,7 @@ data class YoutubeVideoModel(
     val title: String? = null,
     val description: String? = null,
     val publishedAt: String? = null,
-    val addedAt: String? = null,
+    val addedAt: Long? = null,
     val thumbnailUrl: String? = null,
     val channelTitle: String? = null,
     val tags: List<String>? = null,

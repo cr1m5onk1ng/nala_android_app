@@ -10,9 +10,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DeleteOutline
-import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -23,7 +21,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -92,34 +89,34 @@ fun ReviewListScreen(
 
     Scaffold(
         topBar = {
-                 TopAppBar(
-                     title = {
-                         Text(
-                             text = "Reviews",
-                             style = MaterialTheme.typography.h6
-                         )
-                     },
-                     backgroundColor = MaterialTheme.colors.primary,
-                     navigationIcon = {
-                         BackButton(iconColor = Color.White, navController = navController)
-                     },
-                     actions = {
-                         if(!searchOpen.value)
-                             IconButton(onClick = { searchOpen.value = true }) {
-                                 Icon(
-                                     imageVector = Icons.Rounded.Search,
-                                     contentDescription = null,
-                                 )
-                            } else
-                             SearchField(
-                                 searchQuery = searchQuery,
-                                 searchOpen = searchOpen,
-                                 onSearch = onSearch,
-                                 onRestore = onRestore,
-                                 navController = navController,
+             TopAppBar(
+                 elevation = 0.dp,
+                 title = {
+                     Text(
+                         text = stringResource(R.string.reviews_screen_title),
+                         style = MaterialTheme.typography.h6
+                     )
+                 },
+                 backgroundColor = MaterialTheme.colors.primary,
+                 navigationIcon = {
+                     BackButton(iconColor = Color.White, navController = navController)
+                 },
+                 actions = {
+                     if(!searchOpen.value)
+                         IconButton(onClick = { searchOpen.value = true }) {
+                             Icon(
+                                 imageVector = Icons.Rounded.Search,
+                                 contentDescription = null,
                              )
-                     }
-                 )
+                        } else
+                         SearchField(
+                             searchQuery = searchQuery,
+                             searchOpen = searchOpen,
+                             onSearch = onSearch,
+                             onRestore = onRestore,
+                         )
+                 }
+             )
         },
         bottomBar = {
             BottomBar(
@@ -143,7 +140,7 @@ fun ReviewListScreen(
                     setCategory = setCategory,
                     selectedCategory,
                 )
-                LazyColumn(
+                Column(
                     modifier = Modifier
                         .padding(8.dp)
                         .fillMaxHeight()
@@ -152,27 +149,27 @@ fun ReviewListScreen(
                         ReviewCategory.Word -> {
                             when(wordReviewItems){
                                 is DataState.Initial<*>, DataState.Loading  -> {
-                                    item {CircularProgressIndicator()}
+                                    LoadingIndicator()
                                 }
                                 is DataState.Error -> {
-                                    item {
-                                        ErrorScreen(
-                                            text = stringResource(R.string.no_words_in_review),
-                                            subtitle = ""
-                                        )
-                                    }
+                                    ErrorScreen(
+                                        text = stringResource(R.string.no_words_in_review),
+                                        subtitle = ""
+                                    )
                                 }
                                 is DataState.Success<List<WordReviewModel>>  -> {
-                                    items(count = wordReviewItems.data.size) { index ->
-                                        WordReviewCard(
-                                            wordReviewItems.data[index],
-                                            setWordItem,
-                                            updateWordReviewItem,
-                                            removeWordReview,
-                                            dismissWordReview,
-                                            onShare,
-                                            navController
-                                        )
+                                    LazyColumn() {
+                                        items(count = wordReviewItems.data.size) { index ->
+                                            WordReviewCard(
+                                                wordReviewItems.data[index],
+                                                setWordItem,
+                                                updateWordReviewItem,
+                                                removeWordReview,
+                                                dismissWordReview,
+                                                onShare,
+                                                navController
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -180,28 +177,28 @@ fun ReviewListScreen(
                         ReviewCategory.Sentence -> {
                             when(sentenceReviewItems){
                                 is DataState.Initial<*>, DataState.Loading -> {
-                                    item {CircularProgressIndicator()}
+                                    LoadingIndicator()
                                 }
                                 is DataState.Error -> {
-                                    item {
-                                        ErrorScreen(
-                                            text = stringResource(R.string.no_sentence_in_review),
-                                            subtitle = ""
-                                        )
-                                    }
+                                    ErrorScreen(
+                                        text = stringResource(R.string.no_sentence_in_review),
+                                        subtitle = ""
+                                    )
                                 }
                                 is DataState.Success<List<SentenceReviewModel>>  -> {
-                                    items(count = sentenceReviewItems.data.size) { index ->
-                                        SentenceReviewCard(
-                                            sentenceReviewItems.data[index],
-                                            setSentenceItem,
-                                            setTargetWordItem,
-                                            updateSentenceReviewItem,
-                                            removeSentenceReview,
-                                            dismissSentenceReview,
-                                            onShare,
-                                            navController
-                                        )
+                                    LazyColumn() {
+                                        items(count = sentenceReviewItems.data.size) { index ->
+                                            SentenceReviewCard(
+                                                sentenceReviewItems.data[index],
+                                                setSentenceItem,
+                                                setTargetWordItem,
+                                                updateSentenceReviewItem,
+                                                removeSentenceReview,
+                                                dismissSentenceReview,
+                                                onShare,
+                                                navController
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -209,27 +206,27 @@ fun ReviewListScreen(
                         ReviewCategory.Kanji -> {
                             when(kanjiReviewItems){
                                 is DataState.Initial<*>, DataState.Loading -> {
-                                    item {CircularProgressIndicator()}
+                                    LoadingIndicator()
                                 }
                                 is DataState.Error -> {
-                                    item {
-                                        ErrorScreen(
-                                            text = stringResource(R.string.no_kanjis_in_review),
-                                            subtitle = ""
-                                        )
-                                    }
+                                    ErrorScreen(
+                                        text = stringResource(R.string.no_kanjis_in_review),
+                                        subtitle = ""
+                                    )
                                 }
                                 is DataState.Success<List<KanjiReviewModel>>  -> {
-                                    items(count = kanjiReviewItems.data.size) { index ->
-                                        KanjiReviewCard(
-                                            kanjiReviewItems.data[index],
-                                            setKanjiItem,
-                                            updateKanjiReviewItem,
-                                            removeKanjiReview,
-                                            dismissKanjiReview,
-                                            onShare,
-                                            navController
-                                        )
+                                    LazyColumn() {
+                                        items(count = kanjiReviewItems.data.size) { index ->
+                                            KanjiReviewCard(
+                                                kanjiReviewItems.data[index],
+                                                setKanjiItem,
+                                                updateKanjiReviewItem,
+                                                removeKanjiReview,
+                                                dismissKanjiReview,
+                                                onShare,
+                                                navController
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -705,7 +702,6 @@ private fun SearchField(
     searchOpen: MutableState<Boolean>,
     onSearch: (String) -> Unit,
     onRestore: () -> Unit,
-    navController: NavController,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     Row(modifier = Modifier

@@ -95,87 +95,94 @@ fun OneTargetForm(
 
                             //Body
                             val listState = rememberLazyListState()
-                            LazyColumn(
-                                state = listState,
+                            Column(
                                 modifier = Modifier
                                     .padding(16.dp),
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                item{
-                                    Column() {
-                                        Text(
-                                            text = stringResource(R.string.target_form_select_word),
-                                            modifier = Modifier.padding(5.dp),
-                                            style = TextStyle(
-                                                fontFamily = Quicksand,
-                                                fontWeight = FontWeight.Light,
-                                                fontSize = 20.sp
-                                            ),
-                                        )
-                                        CustomClickableText(
-                                            modifier = Modifier
-                                                .padding(8.dp),
-                                            tokens = tokens,
-                                            tokensMap = tokensIndexMap,
-                                            selectedToken = selectedWord,
-                                            onSelectWord = onWordSelect,
-                                            fontSize = 24.sp,
-                                        )
-                                        Spacer(modifier = Modifier.padding(vertical=8.dp))
-                                        // SELECTED WORD
-                                        Text(
-                                            if(selectedWord.isNotEmpty()) selectedWord else stringResource(R.string.target_form_no_word_selected),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(8.dp),
-                                            textAlign = TextAlign.Center,
-                                            style = TextStyle(
-                                                fontFamily = Quicksand,
-                                                fontSize = if(selectedWord.isNotEmpty()) 42.sp else 18.sp,
-                                                fontWeight = if(selectedWord.isNotEmpty()) FontWeight.Bold else FontWeight.Light,
-                                                color = Color.Black,
-                                            ),
-                                        )
-                                        Spacer(modifier = Modifier.padding(vertical=16.dp))
-                                        // Buttons row
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(8.dp),
-                                            horizontalArrangement = Arrangement.SpaceEvenly
-                                        ) {
-                                            SmallerButton(
-                                                backgroundColor = LightGreen,
-                                                text = stringResource(R.string.study_button),
-                                                icon = Icons.Rounded.ArrowForward,
-                                                onCLick = {
-                                                    if(selectedWord.isNotEmpty()) {
-                                                        onWordAdd(selectedWord)
-                                                        setKanjis(selectedWord)
-                                                        onSentenceAdd(sentence)
-                                                        navController.navigate("study_screen")
-                                                    }
-                                                },
-                                                height = 50.dp,
+                                LazyColumn(
+                                    state = listState,
+
+                                    ) {
+                                    item{
+                                        Column() {
+                                            Text(
+                                                text = stringResource(R.string.target_form_select_word),
+                                                modifier = Modifier.padding(5.dp),
+                                                style = TextStyle(
+                                                    fontFamily = Quicksand,
+                                                    fontWeight = FontWeight.Light,
+                                                    fontSize = 20.sp
+                                                ),
                                             )
-                                            SmallerButton(
-                                                backgroundColor = LightBlue,
-                                                text = "Review",
-                                                icon = Icons.Rounded.Add,
-                                                onCLick = {
-                                                    if (selectedWord.isNotEmpty()) {
-                                                        addSentenceToReview(selectedWord, sentence)
-                                                        showSnackbar(scaffoldState)
-                                                        loadSentenceReviews()
-                                                    }
-                                                },
-                                                height = 50.dp,
+                                            CustomClickableText(
+                                                modifier = Modifier
+                                                    .padding(8.dp),
+                                                tokens = tokens,
+                                                tokensMap = tokensIndexMap,
+                                                selectedToken = selectedWord,
+                                                onSelectWord = onWordSelect,
+                                                fontSize = 24.sp,
+                                            )
+                                            Spacer(modifier = Modifier.padding(vertical=8.dp))
+                                            // SELECTED WORD
+                                            Text(
+                                                if(selectedWord.isNotEmpty()) selectedWord else stringResource(R.string.target_form_no_word_selected),
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(8.dp),
+                                                textAlign = TextAlign.Center,
+                                                style = TextStyle(
+                                                    fontFamily = Quicksand,
+                                                    fontSize = if(selectedWord.isNotEmpty()) 42.sp else 18.sp,
+                                                    fontWeight = if(selectedWord.isNotEmpty()) FontWeight.Bold else FontWeight.Light,
+                                                    color = Color.Black,
+                                                ),
                                             )
                                         }
                                     }
                                 }
+                                // Buttons row
+                                Spacer(modifier = Modifier.padding(vertical=16.dp))
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(8.dp),
+                                    horizontalArrangement = Arrangement.SpaceEvenly
+                                ) {
+                                    SmallerButton(
+                                        backgroundColor = LightGreen,
+                                        text = stringResource(R.string.study_button),
+                                        textColor = Color.Black,
+                                        icon = Icons.Rounded.ArrowForward,
+                                        onCLick = {
+                                            if(selectedWord.isNotEmpty()) {
+                                                onWordAdd(selectedWord)
+                                                setKanjis(selectedWord)
+                                                onSentenceAdd(sentence)
+                                                navController.navigate("study_screen")
+                                            }
+                                        },
+                                        height = 50.dp,
+                                    )
+                                    SmallerButton(
+                                        backgroundColor = LightBlue,
+                                        text = "Review",
+                                        textColor = Color.Black,
+                                        icon = Icons.Rounded.Add,
+                                        onCLick = {
+                                            if (selectedWord.isNotEmpty()) {
+                                                addSentenceToReview(selectedWord, sentence)
+                                                showSnackbar(scaffoldState)
+                                                loadSentenceReviews()
+                                            }
+                                        },
+                                        height = 50.dp,
+                                    )
+                                }
                             }
+
                         }
                     }
                 }

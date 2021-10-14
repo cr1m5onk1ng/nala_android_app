@@ -17,7 +17,7 @@ import com.example.nala.db.models.yt.YoutubeDataCache
         YoutubeCommentsCache::class,
         YoutubeCaptionTracksCache::class,
     ],
-    version = 7,
+    version = 8,
 )
 @TypeConverters(TimeConverter::class)
 abstract class VideoDatabase : RoomDatabase() {

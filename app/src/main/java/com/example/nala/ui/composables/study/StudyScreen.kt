@@ -105,6 +105,7 @@ fun StudyScreen(
                                 ){
                                     BackButton(
                                         navController = navController,
+                                        iconColor = Color.Black,
                                         cleanupFunction = {
                                             unsetTargetWord()
                                         }
@@ -126,13 +127,10 @@ fun StudyScreen(
                                             navController = navController,
                                         )
                                         ContextSection( word = word, parts = parts)
-                                        MainButton(
-                                            backgroundColor = Blue700,
-                                            text = stringResource(R.string.add_to_review),
-                                            onCLick = {
-                                                addSentenceToReview(word, context)
-                                                showReviewSnackbar()
-                                            },
+                                        AddToReviewButton(
+                                            scaffoldState = scaffoldState,
+                                            addToReview = { addSentenceToReview(word, context) },
+                                            onShowSnackbar = { showReviewSnackbar() }
                                         )
                                         Spacer(modifier = Modifier.padding(vertical=5.dp))
                                         when(similarSentencesState) {
@@ -333,6 +331,7 @@ fun SentenceCard(
             ) {
                 SmallerButton(
                     text = stringResource(R.string.save_button),
+                    textColor = Color.Black,
                     backgroundColor = LightGreen,
                     onCLick = {
                               //TODO(ADD TO CORPUS FUNCTIONALITY)
@@ -343,6 +342,7 @@ fun SentenceCard(
                 )
                 SmallerButton(
                     text = "Study",
+                    textColor = Color.Black,
                     backgroundColor = LightBlue,
                     onCLick = {
                         //addSentenceToReview(targetWord ?: "", sentence)

@@ -1,5 +1,6 @@
 package com.example.nala.ui.composables.saved
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -40,10 +41,17 @@ fun SavedVideoCard(
             SavedItemImage(imageUrl = video.thumbnailUrl ?: "", Modifier.padding(end = 16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 SavedItemTitle(video.title ?: "No title provided")
-                DomainAndAddTime("youtube.com", video.addedAt ?: "")
+                DomainAndAddTime(
+                    "youtube.com",
+                    if(video.addedAt != null) TimeAgo.using(video.addedAt) else ""
+                )
             }
             IconButton(
-                onClick = { onRemove(video.url) }
+                onClick = {
+                    Log.d("VIDEODEBUG", "CLICKED")
+                    Log.d("VIDEODEBUG", "URL: ${video.url}")
+                    onRemove(video.url)
+                }
             ) {
                 Icon(
                     modifier = Modifier.size(18.dp),

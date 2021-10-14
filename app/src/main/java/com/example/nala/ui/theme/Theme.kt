@@ -30,10 +30,22 @@ private val LightColorPalette = lightColors(
     */
 )
 
+private val CustomLightColorPalette = lightColors(
+    primary = Primary,
+    onPrimary = OnPrimary,
+    primaryVariant = PrimaryVariant,
+    secondary = Secondary,
+    onSecondary = OnSecondary,
+    secondaryVariant = SecondaryVariant,
+    background = GreyBackground,
+    surface = OnPrimary,
+    onSurface = OnSurface,
+)
+
 @Composable
 fun AppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable() () -> Unit
+    content: @Composable () -> Unit
 ) {
     val colors = if (darkTheme) {
         DarkColorPalette

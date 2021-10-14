@@ -9,7 +9,6 @@ import androidx.compose.material.icons.rounded.List
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.nala.R
 
 
 @Composable
@@ -29,7 +28,18 @@ fun BottomBar(
                 if (!isHomeSelected) {
                     toggleHome(true)
                     toggleReviews(false)
-                    navController.navigate("home_screen")
+                    navController.navigate("home_screen") {
+                        navController.graph.startDestinationRoute?.let { route ->
+                            popUpTo(route) {
+                                saveState = true
+                            }
+                        }
+                        // Avoid multiple copies of the same destination when
+                        // reselecting the same item
+                        launchSingleTop = true
+                        // Restore state when reselecting a previously selected item
+                        restoreState = true
+                    }
                 }},
             icon = {Icon(
                 Icons.Rounded.Home,
@@ -43,7 +53,18 @@ fun BottomBar(
                     toggleHome(false)
                     toggleReviews(true)
 
-                    navController.navigate("review_screen")
+                    navController.navigate("review_screen") {
+                        navController.graph.startDestinationRoute?.let { route ->
+                            popUpTo(route) {
+                                saveState = true
+                            }
+                        }
+                        // Avoid multiple copies of the same destination when
+                        // reselecting the same item
+                        launchSingleTop = true
+                        // Restore state when reselecting a previously selected item
+                        restoreState = true
+                    }
                 } },
             icon = {Icon(
                 Icons.Rounded.List,

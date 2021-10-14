@@ -60,6 +60,7 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.Scope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import android.widget.Toast
+import androidx.navigation.NavController
 import com.example.nala.services.audio.MediaCaptureService
 import com.example.nala.ui.ocr.OCRViewModel
 
@@ -120,13 +121,18 @@ class MainActivity : AppCompatActivity() {
         // INTENT MATCHING
         when (intent?.action) {
             Intent.ACTION_PROCESS_TEXT -> {
+                println("ACTION PROCESS TEXT")
                 handleSharedWord()
             }
             Intent.ACTION_SEND -> {
+                println("ACTION SEND")
                 handleSharedText(intent)
             }
             else -> {
                 Log.d("INTENTDEBUG", "Action triggered: ${intent?.action}")
+                Log.d("INTENTDEBUG", "CATEGORIES: ${intent.categories}")
+                Log.d("INTENTDEBUG", "DATA: ${intent.data}")
+                Log.d("INTENTDEBUG", "DATA STRING: ${intent.dataString}")
                 // DONT BOTHER
             }
         }
@@ -148,12 +154,14 @@ class MainActivity : AppCompatActivity() {
                             onClick = {dictViewModel.onTriggerEvent(DictionaryEvent.SearchWordEvent)},
                             onSignIn = googleAuthenticator::signIn,
                             onSignOut = { onLogOut() },
+                            onSetMFI = dictViewModel::setCurrentWordFromReview,
                             textReceived = dictViewModel.textReceived.value,
                             sentenceReceived = dictViewModel.sentenceReceived.value,
                             isHomeSelected = dictViewModel.isHomeSelected.value,
                             isReviewsSelected = dictViewModel.isReviewSelected.value,
                             toggleHome = dictViewModel::toggleHome,
                             toggleReviews = dictViewModel::toggleReviews,
+                            onHandleQueryTextType = this@MainActivity::onHandleQueryTextTypes,
                             scaffoldState = scaffoldState,
                             navController = navController
                         )
@@ -353,6 +361,8 @@ class MainActivity : AppCompatActivity() {
                             onTakeScreenshot = ocrViewModel::getTextFromView,
                             onSetView = ocrViewModel::setView,
                             authState = authViewModel.account.value,
+                            onSignIn = googleAuthenticator::signIn,
+                            onSignOut = { onLogOut() },
                             activeCaption = ytViewModel.activeCaption.value,
                             loadingDialogOpen = ocrViewModel.loadingDialogOpen.value,
                             setLoadingDialogOpen = ocrViewModel::setLoadingDialogOpen,
@@ -378,6 +388,9 @@ class MainActivity : AppCompatActivity() {
                             onSaveArticle = reviewViewModel::addArticleToFavorites,
                             onRemoveArticle = reviewViewModel::removeArticleFromFavorites,
                             onSetIsArticleSaved = reviewViewModel::setIsArticleInFavorites,
+                            authState = authViewModel.account.value,
+                            onSignIn = googleAuthenticator::signIn,
+                            onSignOut = { onLogOut() },
                             scaffoldState = scaffoldState,
                             navController = navController,
                         )
@@ -388,6 +401,9 @@ class MainActivity : AppCompatActivity() {
                             videos = favoritesViewModel.savedVideosState.value,
                             onRemoveVideo = favoritesViewModel::removeVideoFromFavorites,
                             onSetVideo = ytViewModel::setVideoModelFromCache,
+                            authState = authViewModel.account.value,
+                            onSignIn = googleAuthenticator::signIn,
+                            onSignOut = { onLogOut() },
                             scaffoldState = scaffoldState,
                             navController = navController,
                         )
@@ -398,6 +414,9 @@ class MainActivity : AppCompatActivity() {
                             articles = favoritesViewModel.savedArticlesState.value,
                             onRemoveArticle = favoritesViewModel::removeArticleFromFavorites,
                             onSetArticle = reviewViewModel::setArticleFromCache,
+                            authState = authViewModel.account.value,
+                            onSignIn = googleAuthenticator::signIn,
+                            onSignOut = { onLogOut() },
                             scaffoldState = scaffoldState,
                             navController = navController,
                         )
@@ -410,6 +429,9 @@ class MainActivity : AppCompatActivity() {
                             isFrenchSelected = settingsViewModel.isFrenchSelected.value,
                             isSpanishSelected = settingsViewModel.isSpanishSelected.value,
                             setLangSelected = settingsViewModel::setLangSelected,
+                            authState = authViewModel.account.value,
+                            onSignIn = googleAuthenticator::signIn,
+                            onSignOut = { onLogOut() },
                             scaffoldState = scaffoldState,
                             navController = navController,
                         )
@@ -513,7 +535,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     // AUDIO RECORDING FUNCTIONS
-
+    /*
     private fun checkRecordingPermissions() {
         if (ContextCompat.checkSelfPermission(
                 this,
@@ -559,7 +581,7 @@ class MainActivity : AppCompatActivity() {
         } else {
             startService(captureIntent)
         }
-    }
+    } */
 
 
     private fun isRecordAudioPermissionGranted(): Boolean {
@@ -642,29 +664,62 @@ class MainActivity : AppCompatActivity() {
 
     @ExperimentalCoroutinesApi
     private fun handleSharedText(intent: Intent?) {
-        Log.d("SHARED", "ACTION SEND CALLED!")
-        if (intent?.type == "text/plain") {
-            intent.getStringExtra(Intent.EXTRA_TEXT)?.let { inputString ->
-                Log.d("SHARED", "SHARED TEXT: $inputString")
+        Log.d("INTENTDEBUG", "ACTION SEND CALLED!")
+        when (intent?.type) {
+            "text/plain", "*/*" -> {
+                Log.d("INTENTDEBUG", "INTENT TYPE: ${intent.type}")
+                intent.getStringExtra(Intent.EXTRA_TEXT)?.let { inputString ->
+                    Log.d("INTENTDEBUG", "SHARED TEXT: $inputString")
+                    handleIntentTextTypes(inputString)
+                }
+            }
+            else -> {
+                Log.d("INTENTDEBUG", "INTENT EXTRA: ${Intent.EXTRA_TEXT}" )
+            }
+        }
+    }
+
+    @ExperimentalCoroutinesApi
+    private fun handleIntentTextTypes(inputString: String) {
+        when(Utils.parseInputString(inputString)) {
+            InputStringType.Sentence -> {
+                dictViewModel.setSharedSentence(inputString)
+                startDestination = "sentence_form_screen"
+                fromLookup = true
+            }
+            InputStringType.ArticleUrl -> {
+                reviewViewModel.setArticle(inputString)
+                startDestination = "article_screen"
+            }
+            InputStringType.YoutubeUrl -> {
+                Log.d("YOUTUBEDEBUG", "URL: $inputString")
+                ytViewModel.setVideoModel(inputString)
+                startDestination = "video_screen"
+            }
+        }
+    }
+
+    private fun onHandleQueryTextTypes(inputString: String, navController: NavController) {
+        lifecycleScope.launch{
+            if(dictViewModel.isTextWord(inputString)) {
+                dictViewModel.onTriggerEvent(DictionaryEvent.SearchWordEvent)
+                navController.navigate("detail_screen")
+            } else {
                 when(Utils.parseInputString(inputString)) {
                     InputStringType.Sentence -> {
                         dictViewModel.setSharedSentence(inputString)
-                        startDestination = "sentence_form_screen"
-                        fromLookup = true
+                        navController.navigate("sentence_form_screen")
                     }
                     InputStringType.ArticleUrl -> {
                         reviewViewModel.setArticle(inputString)
-                        startDestination = "article_screen"
+                        navController.navigate("article_screen")
                     }
                     InputStringType.YoutubeUrl -> {
-                        Log.d("YOUTUBEDEBUG", "URL: $inputString")
                         ytViewModel.setVideoModel(inputString)
-                        startDestination = "video_screen"
+                        navController.navigate("video_screen")
                     }
                 }
             }
-        } else {
-            Log.d("SHARED", "DIDNT PROCESS TEXT!")
         }
     }
 

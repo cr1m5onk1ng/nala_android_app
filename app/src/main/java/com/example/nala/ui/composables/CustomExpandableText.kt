@@ -1,5 +1,6 @@
 package com.example.nala.ui.composables
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -17,9 +18,16 @@ fun CustomExpandableText(
     maxLines: Int = 5,
     style: TextStyle? = null,
     overflow: TextOverflow = TextOverflow.Ellipsis,
+    onClickText: (() -> Unit)?,
 ) {
-    var isExpanded = remember { mutableStateOf(false) }
-    modifier.clickable { isExpanded.value = !isExpanded.value }
+    val isExpanded = remember { mutableStateOf(false) }
+    modifier.clickable {
+        isExpanded.value = !isExpanded.value
+        onClickText?.let{
+            Log.d("COMMENTSDEBUG", "Function called!")
+            it()
+        }
+    }
     Text(
         text = text,
         style = style ?: MaterialTheme.typography.body1,

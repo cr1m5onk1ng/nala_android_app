@@ -4,15 +4,14 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.nala.R
 import com.example.nala.network.model.menus.ActionModel
 import com.example.nala.ui.theme.Blue500
 import kotlinx.coroutines.CoroutineScope
@@ -28,11 +27,13 @@ fun CustomTopBar(
     iconColor: Color? = null,
     textStyle: TextStyle? = null,
     actions: List<ActionModel>? = null,
-    scope: CoroutineScope,
+    elevation: Dp? = null,
+    scope: CoroutineScope? = null,
     scaffoldState: ScaffoldState,
     navController: NavController,
 ){
     TopAppBar(
+        elevation = elevation ?: 0.dp,
         title = {
             Text(
                 text = title,
@@ -45,7 +46,7 @@ fun CustomTopBar(
                 if(navIconAction != null) {
                     navIconAction()
                 } else {
-                    scope.launch{
+                    scope?.launch{
                         scaffoldState.drawerState.open()
                     }
                 }

@@ -1,5 +1,6 @@
 package com.example.nala.ui.composables.yt
 
+import android.util.Log
 import android.view.View
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -13,6 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIos
+import androidx.compose.material.icons.filled.ArrowCircleDown
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -40,6 +42,7 @@ import com.example.nala.domain.model.utils.DataState
 import com.example.nala.ui.composables.*
 import com.example.nala.ui.composables.dialogs.LoadingDialog
 import com.example.nala.ui.composables.dialogs.SentenceLookupDialog
+import com.example.nala.ui.composables.menus.CustomDrawer
 import com.example.nala.ui.composables.menus.CustomTopBar
 import com.example.nala.ui.theme.Blue500
 import com.example.nala.ui.yt.YoutubePlaybackListener
@@ -104,7 +107,6 @@ fun VideoScreen(
     onShowSavedSnackBar: () -> Unit,
     onShowRemovedSnackBar: () -> Unit,
     onRetry: () -> Unit,
-    authState: AuthState<UserModel?>,
     onRequestLogin: () -> Unit,
     onTakeScreenshot: () -> Unit,
     onSetView: (View) -> Unit,
@@ -115,15 +117,20 @@ fun VideoScreen(
     sentenceDialogOpen: Boolean,
     onSaveSentence: (String, String) -> Unit,
     onShowAddedSentenceSnackbar: () -> Unit,
+    authState: AuthState<UserModel?>,
+    onSignIn: () -> Unit,
+    onSignOut: () -> Unit,
     scaffoldState: ScaffoldState,
     navController: NavController
 ){
     val scope = rememberCoroutineScope()
     Scaffold(
+        scaffoldState = scaffoldState,
         topBar = {
             CustomTopBar(
                 title = stringResource(R.string.video_screen_header),
                 scope = scope,
+                backgroundColor = MaterialTheme.colors.primary,
                 scaffoldState = scaffoldState,
                 navController = navController,
                 actions = listOf(
@@ -151,6 +158,17 @@ fun VideoScreen(
                         isActive = false,
                     ),
                 )
+            )
+        },
+        drawerContent = {
+            CustomDrawer(
+                modifier = Modifier.background(color = Color.White),
+                scope = scope,
+                authState = authState,
+                onSignIn = onSignIn,
+                onSignOut = onSignOut,
+                scaffoldState = scaffoldState,
+                navController = navController,
             )
         },
     ) { paddingValues ->
@@ -354,16 +372,10 @@ private fun CaptionsCard(
 
     Card(modifier = Modifier
         .fillMaxWidth()
-        .padding(bottom = 3.dp)
-        .clickable {
-            caption.start?.let {
-               onSeekTo(it)
-            }
-        },
-        //shape = MaterialTheme.shapes.large,
+        .padding(bottom = 3.dp),
         backgroundColor =
             if(isActive) Color.LightGray else Color.White,
-        border = if(isFocused) BorderStroke(Dp.Hairline, Blue500) else null,
+        border = if(isFocused) BorderStroke(1.dp, MaterialTheme.colors.primary) else null,
     ) {
         Row(
             modifier = Modifier
@@ -372,7 +384,7 @@ private fun CaptionsCard(
             verticalAlignment = Alignment.CenterVertically,
         ) {
                 Column(
-                    modifier = Modifier.fillMaxWidth(0.80f)
+                    modifier = Modifier.fillMaxWidth(0.7f)
                 ) {
                     if(inspectedCaption == caption) {
                         Text(
@@ -405,13 +417,16 @@ private fun CaptionsCard(
                         )
                     }
                 }
+            Row(
+                modifier = Modifier.padding(5.dp),
+                horizontalArrangement = Arrangement.End
+            ) {
                 IconButton(
                     modifier = Modifier
-                        .padding(end = 5.dp)
-                        .size(24.dp),
+                        .size(24.dp)
+                        .padding(end = 5.dp),
                     onClick = {
                         onAddToFavorites(caption.caption)
-                        onSetPlayerPosition(caption.start ?: 0f)
                         navController.navigate("sentence_form_screen")
                     }) {
                     Icon(
@@ -420,9 +435,25 @@ private fun CaptionsCard(
                             .width(20.dp),
                         imageVector = Icons.Rounded.Add,
                         tint = Color.DarkGray,
-                        contentDescription = "search"
+                        contentDescription = "study"
                     )
                 }
+                IconButton(
+                    modifier = Modifier
+                        .size(24.dp),
+                    onClick = {
+                        onSetPlayerPosition(caption.start ?: 0f)
+                    }) {
+                    Icon(
+                        modifier = Modifier
+                            .height(20.dp)
+                            .width(20.dp),
+                        imageVector = Icons.Rounded.PlayCircleOutline,
+                        tint = Color.DarkGray,
+                        contentDescription = "seek"
+                    )
+                }
+            }
         }
     }
 }
@@ -496,36 +527,52 @@ private fun CommentsSection(
                     )
                 }
                 is DataState.Success<YoutubeCommentsList> -> {
+                    val comments = commentsState.data.comments
+                    /*if(listState.isLastVisibleItem(comments.size -1) && listState.isScrollInProgress) {
+                        onUpdateComments()
+                    }*/
                     if(displayedRepliesThread.value.isEmpty()) {
                         if(isUpdatingComments) {
                             LoadingIndicator()
                         } else {
-                            LazyColumn(state = listState) {
-                                val comments = commentsState.data.comments
-                                if(listState.isLastVisibleItem(comments.size -1) && listState.isScrollInProgress) {
-                                    onUpdateComments()
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Top,
+                            ){
+                                LazyColumn(
+                                    state = listState,
+                                ) {
+                                    items(
+                                        count = comments.size,
+                                    ) { pos ->
+                                        val isFocused = comments[pos] == inspectedComment
+                                        //Log.d("COMMENTSDEBUG", "Current comment: $item")
+                                        //Log.d("COMMENTSDEBUG", "Inspected comment: $inspectedComment")
+                                        //Log.d("COMMENTSDEBUG", "Is focused: $isFocused")
+                                        CommentCard(
+                                            comment = comments[pos],
+                                            commentPos = pos,
+                                            currentDisplayedThread = displayedRepliesThread,
+                                            currentDisplayedThreadIndex = displayedRepliesThreadIndex,
+                                            isFocused = isFocused,
+                                            onAddCommentToFavorites = onAddCommentToFavorites,
+                                            tokens = tokens,
+                                            tokensMap = tokensMap,
+                                            selectedWord = selectedWord,
+                                            onSetSelectedWord = onSetSelectedWord,
+                                            onSetInspectedComment = onSetInspectedComment,
+                                            onSearchWord = onSearchWord,
+                                            navController = navController,
+                                        )
+                                    }
                                 }
-                                itemsIndexed(
-                                    items = comments,
-                                    key = { _, item ->
-                                        item.commentId
-                                    },
-                                ) { pos, item ->
-                                    val isFocused = comments[pos] == inspectedComment
-                                    CommentCard(
-                                        comment = item,
-                                        commentPos = pos,
-                                        currentDisplayedThread = displayedRepliesThread,
-                                        currentDisplayedThreadIndex = displayedRepliesThreadIndex,
-                                        isFocused = isFocused,
-                                        onAddCommentToFavorites = onAddCommentToFavorites,
-                                        tokens = tokens,
-                                        tokensMap = tokensMap,
-                                        selectedWord = selectedWord,
-                                        onSetSelectedWord = onSetSelectedWord,
-                                        onSetInspectedComment = onSetInspectedComment,
-                                        onSearchWord = onSearchWord,
-                                        navController = navController,
+                                IconButton(onClick = {
+                                    onUpdateComments()
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.ArrowCircleDown,
+                                        contentDescription = "",
                                     )
                                 }
                             }
@@ -679,10 +726,7 @@ private fun CommentCard(
                 modifier = Modifier
                     .padding(3.dp)
                     .fillMaxWidth(0.65f)
-                    .fillMaxHeight()
-                    .clickable {
-                        onSetInspectedComment(comment)
-                    },
+                    .fillMaxHeight(),
                 horizontalAlignment = Alignment.Start,
             ) {
                 // author + date
@@ -694,17 +738,30 @@ private fun CommentCard(
                 if(isFocused) {
                     CustomClickableText(
                         modifier = Modifier.padding(horizontal = 5.dp),
+                        textDecoration = TextDecoration.Underline,
                         tokensMap = tokensMap,
                         tokens = tokens,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Light,
                         selectedToken = selectedWord,
                         onSelectWord = onSetSelectedWord,
-                        onClick = { onSearchWord() }
+                        onClick = {
+                            Log.d("COMMENTSDEBUG", "CLICKED!")
+                            onSearchWord()
+                        }
                     )
                 } else {
+                    /*
                     CustomExpandableText(
                         modifier = Modifier.padding(3.dp),
+                        text = comment.content,
+                        onClickText = { onSetInspectedComment(comment) }
+                    ) */
+                    Text(
+                        modifier = Modifier.padding(3.dp)
+                            .clickable{
+                                onSetInspectedComment(comment)
+                                      },
                         text = comment.content,
                     )
                 }
