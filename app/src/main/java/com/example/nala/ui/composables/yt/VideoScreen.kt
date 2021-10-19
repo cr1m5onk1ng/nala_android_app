@@ -8,7 +8,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
@@ -75,7 +74,6 @@ fun VideoScreen(
     checkNetworkAvailable: () -> Boolean,
     videoLoading: Boolean,
     onPause: () -> Unit,
-    onSeekTo: (Float) -> Unit,
     selectedTab: Int,
     captionsState: DataState<List<YoutubeCaptionModel>>,
     commentsState: DataState<YoutubeCommentsList>,
@@ -118,6 +116,7 @@ fun VideoScreen(
     onSaveSentence: (String, String) -> Unit,
     onShowAddedSentenceSnackbar: () -> Unit,
     authState: AuthState<UserModel?>,
+    authPending: Boolean,
     onSignIn: () -> Unit,
     onSignOut: () -> Unit,
     scaffoldState: ScaffoldState,
@@ -229,7 +228,6 @@ fun VideoScreen(
                             scope = scope,
                             authState = authState,
                             onRequestLogin = onRequestLogin,
-                            onSeekTo = onSeekTo,
                             navController = navController,
                         )
                     }
@@ -260,6 +258,9 @@ fun VideoScreen(
                         onSaveSentence = onSaveSentence,
                         onShowAddedSentenceSnackbar = onShowAddedSentenceSnackbar,
                     )
+                }
+                if(authPending) {
+                    LoadingDialog(text = "Logging in...", setLoadingDialogOpen = {})
                 }
             }
             val snackbar = createRef()
@@ -294,7 +295,6 @@ private fun CaptionsSection(
     onSetPlayerPosition: (Float) -> Unit,
     onSetInspectedCaption: (YoutubeCaptionModel) -> Unit,
     onSearchWord: () -> Unit,
-    onSeekTo: (Float) -> Unit,
     navController: NavController,
 ) {
     when(captionsState) {
@@ -343,7 +343,6 @@ private fun CaptionsSection(
                         onSetPlayerPosition = onSetPlayerPosition,
                         onSearchWord = onSearchWord,
                         onSetInspectedCaption = onSetInspectedCaption,
-                        onSeekTo = onSeekTo,
                         navController = navController,
                     )
                 }
@@ -366,7 +365,6 @@ private fun CaptionsCard(
     onSetPlayerPosition: (Float) -> Unit,
     onSetInspectedCaption: (YoutubeCaptionModel) -> Unit,
     onSearchWord: () -> Unit,
-    onSeekTo: (Float) -> Unit,
     navController: NavController,
 ) {
 
@@ -431,8 +429,7 @@ private fun CaptionsCard(
                     }) {
                     Icon(
                         modifier = Modifier
-                            .height(20.dp)
-                            .width(20.dp),
+                            .size(22.dp),
                         imageVector = Icons.Rounded.Add,
                         tint = Color.DarkGray,
                         contentDescription = "study"
@@ -446,8 +443,7 @@ private fun CaptionsCard(
                     }) {
                     Icon(
                         modifier = Modifier
-                            .height(20.dp)
-                            .width(20.dp),
+                            .size(22.dp),
                         imageVector = Icons.Rounded.PlayCircleOutline,
                         tint = Color.DarkGray,
                         contentDescription = "seek"
@@ -566,14 +562,19 @@ private fun CommentsSection(
                                             navController = navController,
                                         )
                                     }
-                                }
-                                IconButton(onClick = {
-                                    onUpdateComments()
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.Filled.ArrowCircleDown,
-                                        contentDescription = "",
-                                    )
+                                    item() {
+                                        Row(modifier = Modifier.fillMaxWidth().height(24.dp)) {
+                                            IconButton(onClick = {
+                                                onUpdateComments()
+                                            }) {
+                                                Icon(
+                                                    imageVector = Icons.Filled.ArrowCircleDown,
+                                                    contentDescription = "",
+                                                    tint = Color.Black,
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -758,10 +759,11 @@ private fun CommentCard(
                         onClickText = { onSetInspectedComment(comment) }
                     ) */
                     Text(
-                        modifier = Modifier.padding(3.dp)
-                            .clickable{
+                        modifier = Modifier
+                            .padding(3.dp)
+                            .clickable {
                                 onSetInspectedComment(comment)
-                                      },
+                            },
                         text = comment.content,
                     )
                 }
@@ -880,7 +882,6 @@ private fun SelectionTabSection(
     scope: CoroutineScope,
     onRequestLogin: () -> Unit,
     authState: AuthState<UserModel?>,
-    onSeekTo: (Float) -> Unit,
     navController: NavController
 ) {
     CustomTabMenu(
@@ -907,7 +908,6 @@ private fun SelectionTabSection(
                 onSetPlayerPosition = onSetPlayerPosition,
                 onSearchWord = onSearchWord,
                 onSetInspectedCaption = onSetInspectedCaption,
-                onSeekTo = onSeekTo,
                 navController = navController,
             )
         }

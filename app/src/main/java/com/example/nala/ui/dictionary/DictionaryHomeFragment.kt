@@ -45,6 +45,7 @@ class DictionaryHomeFragment : Fragment() {
                         query = viewModel.query.value,
                         mightForgetItemsState = viewModel.mightForgetItemsState.value,
                         authState = AuthState.AuthError(ErrorType.OAUTH_ERROR),
+                        authPending = false,
                         onQueryChange = viewModel::onQueryChanged,
                         onClick = {viewModel.onTriggerEvent(DictionaryEvent.SearchWordEvent)},
                         onSignIn = {},

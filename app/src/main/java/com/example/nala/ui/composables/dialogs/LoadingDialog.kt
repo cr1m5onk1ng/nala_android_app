@@ -14,7 +14,7 @@ import androidx.compose.ui.window.DialogProperties
 
 @Composable
 fun LoadingDialog(
-    text: String,
+    text: String? = null,
     setLoadingDialogOpen: (Boolean) -> Unit,
 ) {
     Dialog(
@@ -37,7 +37,7 @@ fun LoadingDialog(
             ) {
                 CircularProgressIndicator()
                 Text(
-                    text = "Capturing text...",
+                    text = text ?: "Capturing text...",
                     style = MaterialTheme.typography.subtitle1
                 )
             }

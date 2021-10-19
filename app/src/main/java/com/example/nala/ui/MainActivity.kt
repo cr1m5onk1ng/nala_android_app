@@ -63,6 +63,7 @@ import android.widget.Toast
 import androidx.navigation.NavController
 import com.example.nala.services.audio.MediaCaptureService
 import com.example.nala.ui.ocr.OCRViewModel
+import com.example.nala.utils.NetworkConstants
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -95,12 +96,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mediaProjectionManager: MediaProjectionManager
 
     // ROUTING VARIABLES
-    var startDestination = "home_screen"
+    private var startDestination = "home_screen"
     // flag that checks if the dictionary was called from an article
     var fromLookup = false
 
-    @ExperimentalCoroutinesApi
-    @RequiresApi(Build.VERSION_CODES.M)
     @ExperimentalComposeUiApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -122,7 +121,9 @@ class MainActivity : AppCompatActivity() {
         when (intent?.action) {
             Intent.ACTION_PROCESS_TEXT -> {
                 println("ACTION PROCESS TEXT")
-                handleSharedWord()
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    handleSharedWord()
+                }
             }
             Intent.ACTION_SEND -> {
                 println("ACTION SEND")
@@ -150,6 +151,7 @@ class MainActivity : AppCompatActivity() {
                             query = dictViewModel.query.value,
                             mightForgetItemsState = dictViewModel.mightForgetItemsState.value,
                             authState = authViewModel.account.value,
+                            authPending = authViewModel.authRequestPending.value,
                             onQueryChange = dictViewModel::onQueryChanged,
                             onClick = {dictViewModel.onTriggerEvent(DictionaryEvent.SearchWordEvent)},
                             onSignIn = googleAuthenticator::signIn,
@@ -332,7 +334,6 @@ class MainActivity : AppCompatActivity() {
                             videoId = ytViewModel.currentVideoId.value,
                             videoLoading = ytViewModel.videoDataLoading.value,
                             onPause = ytViewModel::setPause,
-                            onSeekTo = ytViewModel::seekTo,
                             selectedTab = ytViewModel.selectedTab.value,
                             playerPosition = ytViewModel.currentPlayerPosition,
                             onInitPlayer = ytViewModel::initPlayer,
@@ -361,6 +362,7 @@ class MainActivity : AppCompatActivity() {
                             onTakeScreenshot = ocrViewModel::getTextFromView,
                             onSetView = ocrViewModel::setView,
                             authState = authViewModel.account.value,
+                            authPending = authViewModel.authRequestPending.value,
                             onSignIn = googleAuthenticator::signIn,
                             onSignOut = { onLogOut() },
                             activeCaption = ytViewModel.activeCaption.value,
@@ -453,6 +455,7 @@ class MainActivity : AppCompatActivity() {
             if (resultCode == Activity.RESULT_OK) {
                 val task = GoogleSignIn.getSignedInAccountFromIntent(data)
                 try {
+                    authViewModel.setAuthRequestPending(true)
                     val account = task.getResult(ApiException::class.java)
                     Log.d("AUTHDEBUG", "User: ${account?.displayName}")
                     Log.d("AUTHDEBUG", "Email: ${account?.email}")
@@ -465,7 +468,8 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             // AUDIO RECORDING ACTIVITY RESULT
-        } else if (requestCode == MEDIA_PROJECTION_REQUEST_CODE) {
+        }
+        if (requestCode == MEDIA_PROJECTION_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
                 Toast.makeText(
                     this,
@@ -491,7 +495,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        //ocrService.dispose()
+        ocrViewModel.dispose()
     }
 
     // OCR
@@ -753,20 +757,25 @@ class MainActivity : AppCompatActivity() {
         val gso =
             GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestServerAuthCode(BuildConfig.OAUTH_ID)
-                .requestScopes(Scope("https://www.googleapis.com/auth/youtube.force-ssl"))
+                .requestScopes(Scope(NetworkConstants.YT_SCOPE_ENTRY_POINT))
                 .requestEmail()
                 .build()
-        googleSignInClient = GoogleSignIn.getClient(this, gso)
+        googleSignInClient = GoogleSignIn.getClient(this@MainActivity, gso)
         googleAuthenticator = GoogleAuthenticator(
-            this,
-            googleSignInClient,
-            authViewModel::invalidateAccount
+            activity = this@MainActivity,
+            googleSignInClient = googleSignInClient,
+            onSignIn = { authViewModel.setAuthRequestPending(true) },
+            onSignOut = authViewModel::invalidateAccount,
         )
     }
 
     private fun onLogOut() {
         googleAuthenticator.signOut()
         authViewModel.invalidateAccount()
+        Toast.makeText(
+            this, "Logged out",
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     /*

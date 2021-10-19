@@ -45,4 +45,8 @@ class ViewOCRService @Inject constructor(
         tesseractOcr!!.init()
     }
 
+    fun dispose() {
+        tesseractOcr?.close()
+    }
+
 }

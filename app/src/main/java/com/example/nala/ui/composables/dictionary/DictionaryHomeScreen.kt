@@ -1,5 +1,6 @@
 package com.example.nala.ui.composables.dictionary
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -38,6 +39,7 @@ import com.example.nala.domain.model.utils.AuthState
 import com.example.nala.domain.model.utils.DataState
 import com.example.nala.ui.composables.BottomBar
 import com.example.nala.ui.composables.LoadingIndicator
+import com.example.nala.ui.composables.dialogs.LoadingDialog
 import com.example.nala.ui.composables.menus.CustomDrawer
 import com.example.nala.ui.theme.*
 import kotlinx.coroutines.CoroutineScope
@@ -50,6 +52,7 @@ fun HomeScreen(
     query: String,
     mightForgetItemsState: DataState<List<WordReviewModel>>,
     authState: AuthState<UserModel?>,
+    authPending: Boolean,
     onQueryChange: (String) -> Unit,
     onClick: () -> Unit,
     onSignIn: () -> Unit,
@@ -222,6 +225,10 @@ fun HomeScreen(
                         }
                     )
                 )
+                if(authPending) {
+                    Log.d("AUTHDEBUG", "AUTH PENDING")
+                    LoadingDialog(text = "Logging in..", setLoadingDialogOpen = {} )
+                }
             }
         }
     }
@@ -258,7 +265,9 @@ private fun TopBar(
         }
         // LOGO SECTION
         Row(
-            modifier = Modifier.fillMaxWidth().height(50.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
             horizontalArrangement = Arrangement.Center,
         ){
             Text(

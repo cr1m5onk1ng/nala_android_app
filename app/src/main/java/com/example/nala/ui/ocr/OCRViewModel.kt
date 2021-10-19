@@ -60,6 +60,10 @@ class OCRViewModel @Inject constructor(
         }
     }
 
+    fun dispose(){
+        ocrService.dispose()
+    }
+
     @ExperimentalCoroutinesApi
     fun getTextFromView() {
         viewModelScope.launch(Dispatchers.IO) {

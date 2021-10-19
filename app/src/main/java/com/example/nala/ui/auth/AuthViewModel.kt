@@ -26,10 +26,13 @@ class AuthViewModel @Inject constructor() : ViewModel() {
     val account: MutableState<AuthState<UserModel?>> =
         mutableStateOf(AuthState.Unauthenticated(null))
 
+    val authRequestPending = mutableStateOf(false)
+
     val tokenRequestPending = mutableStateOf(false)
 
     fun setAccount(gAccount: GoogleSignInAccount?) {
         viewModelScope.launch{
+            authRequestPending.value = true
             tokenRequestPending.value = true
             val authCode = gAccount?.serverAuthCode
             if(authCode == null) {
@@ -48,6 +51,7 @@ class AuthViewModel @Inject constructor() : ViewModel() {
                         )
                     )
                 }
+                authRequestPending.value = false
             }
             tokenRequestPending.value = false
         }
@@ -59,6 +63,10 @@ class AuthViewModel @Inject constructor() : ViewModel() {
 
     fun setAuthError() {
         this.account.value = AuthState.AuthError(ErrorType.LOGIN_ERROR)
+    }
+
+    fun setAuthRequestPending(value: Boolean) {
+        authRequestPending.value = value
     }
 
     private suspend fun requestAccessToken(authCode: String) : String? {
