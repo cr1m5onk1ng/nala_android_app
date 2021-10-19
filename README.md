@@ -24,16 +24,17 @@ The app makes also use of the incredibly useful [Jisho](https://jisho.org/) API 
 ## ✨ Features
 
 - [x] Look up words in the dictionary
-- [x] Search for a Japanese word everywhere on your phone
+- [x] Look up japanese words from any page using your phone's browser
 - [x] Import articles and other textual media from the web
-- [x] Import videos from youtube with captions and comments in your target language(s)
+- [x] Import videos from youtube and look up captions and comments 
 - [x] Add sentences with a target word to study/review them
 - [x] Starting from a sentence, search for the most similar/dissimilar sentences
-- [x] Automatically organize your sentences/documents by category/topic
+- [x] Share words/sentences with AnkiDroid
+- [x] OCR functionality for non-textual content (feature to improve)
+- [ ] Record audio snippets with ease and annotate and save them
 - [ ] Find the most frequent words that use a certain kanji
 - [ ] Search for semantically related words saved locally
-- [ ] Share words/sentences with AnkiDroid
-- [ ] OCR functionality for non-textual content
+
 
 ## 📸 Screenshots
 
