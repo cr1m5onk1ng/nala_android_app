@@ -1,11 +1,14 @@
 package com.example.nala.db.models.review
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import androidx.room.*
+import com.example.nala.db.converters.TimeConverter
+import java.util.*
 
-@Entity(tableName = "kanji_review")
-data class KanjiReviewModel (
+@Entity(
+    tableName = "kanji_review",
+    indices = [Index(value = ["added_at"]), Index(value=["interval"])]
+)
+data class KanjiReviewCache (
     @PrimaryKey
     @ColumnInfo(name="kanji")
     val kanji: String,
@@ -30,4 +33,8 @@ data class KanjiReviewModel (
 
     @ColumnInfo(name="interval")
     val interval: Int = 0,
+
+    @TypeConverters(TimeConverter::class)
+    @ColumnInfo(name="added_at")
+    val addedAt: Date = Date(),
     ) : ReviewModel()

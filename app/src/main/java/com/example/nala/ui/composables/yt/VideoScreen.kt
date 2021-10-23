@@ -14,6 +14,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIos
 import androidx.compose.material.icons.filled.ArrowCircleDown
+import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -45,23 +46,13 @@ import com.example.nala.ui.composables.menus.CustomDrawer
 import com.example.nala.ui.composables.menus.CustomTopBar
 import com.example.nala.ui.theme.Blue500
 import com.example.nala.ui.yt.YoutubePlaybackListener
+import com.example.nala.utils.extensions.isItemVisible
+import com.example.nala.utils.extensions.isLastVisibleItem
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerCallback
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-
-fun LazyListState.isLastVisibleItem(index: Int) =
-    layoutInfo.visibleItemsInfo.lastOrNull()?.index == index
-
-fun LazyListState.isItemVisible(index: Int): Boolean {
-    val firstVisible = layoutInfo.visibleItemsInfo.firstOrNull()?.index
-    val lastVisible = layoutInfo.visibleItemsInfo.lastOrNull()?.index
-    if(firstVisible != null && lastVisible != null) {
-        return index >= firstVisible && index < lastVisible
-    }
-    return false
-}
 
 
 @Composable
@@ -543,9 +534,6 @@ private fun CommentsSection(
                                         count = comments.size,
                                     ) { pos ->
                                         val isFocused = comments[pos] == inspectedComment
-                                        //Log.d("COMMENTSDEBUG", "Current comment: $item")
-                                        //Log.d("COMMENTSDEBUG", "Inspected comment: $inspectedComment")
-                                        //Log.d("COMMENTSDEBUG", "Is focused: $isFocused")
                                         CommentCard(
                                             comment = comments[pos],
                                             commentPos = pos,
@@ -563,12 +551,18 @@ private fun CommentsSection(
                                         )
                                     }
                                     item() {
-                                        Row(modifier = Modifier.fillMaxWidth().height(24.dp)) {
-                                            IconButton(onClick = {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth().height(30.dp),
+                                            horizontalArrangement = Arrangement.Center,
+                                        ) {
+                                            IconButton(
+                                                modifier = Modifier.size(24.dp),
+                                                onClick = {
                                                 onUpdateComments()
                                             }) {
                                                 Icon(
-                                                    imageVector = Icons.Filled.ArrowCircleDown,
+                                                    modifier = Modifier.size(24.dp),
+                                                    imageVector = Icons.Filled.ArrowDownward,
                                                     contentDescription = "",
                                                     tint = Color.Black,
                                                 )

@@ -20,8 +20,6 @@ class GoogleAuthenticator(
 
     override fun signIn() {
         onSignIn()
-        val intent = googleSignInClient.signInIntent
-        startActivityForResult(activity, intent, RC_SIGN_IN, null)
     }
 
     override fun signOut() {

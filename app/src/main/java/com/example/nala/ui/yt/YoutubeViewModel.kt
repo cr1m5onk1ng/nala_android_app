@@ -12,7 +12,7 @@ import com.example.nala.repository.DictionaryRepository
 import com.example.nala.repository.YouTubeRepository
 import com.example.nala.domain.model.utils.DataState
 import com.example.nala.domain.model.utils.ErrorType
-import com.example.nala.utils.ConnectionChecker
+import com.example.nala.utils.utilities.ConnectionChecker
 import com.example.nala.utils.Utils
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import dagger.hilt.android.lifecycle.HiltViewModel

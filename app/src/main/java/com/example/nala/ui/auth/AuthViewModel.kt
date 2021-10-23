@@ -1,5 +1,6 @@
 package com.example.nala.ui.auth
 
+import android.content.Intent
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -9,7 +10,9 @@ import com.example.nala.BuildConfig
 import com.example.nala.domain.model.auth.UserModel
 import com.example.nala.domain.model.utils.AuthState
 import com.example.nala.domain.model.utils.ErrorType
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.common.api.ApiException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -67,6 +70,22 @@ class AuthViewModel @Inject constructor() : ViewModel() {
 
     fun setAuthRequestPending(value: Boolean) {
         authRequestPending.value = value
+    }
+
+    fun onGetActivityResult(intent: Intent?) {
+        val task = GoogleSignIn.getSignedInAccountFromIntent(intent)
+        try {
+            setAuthRequestPending(true)
+            val account = task.getResult(ApiException::class.java)
+            Log.d("AUTHDEBUG", "User: ${account?.displayName}")
+            Log.d("AUTHDEBUG", "Email: ${account?.email}")
+            Log.d("AUTHDEBUG", "Profile pic: ${account?.photoUrl}")
+            Log.d("AUTHDEBUG", "Auth Code: ${account?.serverAuthCode ?: "Account is NULL"}")
+            setAccount(account)
+        } catch (e: ApiException) {
+            Log.d("AUTHDEBUG", "ERROR: $e")
+            setAuthError()
+        }
     }
 
     private suspend fun requestAccessToken(authCode: String) : String? {

@@ -38,8 +38,8 @@ class ReviewRepositoryImpl @Inject constructor(
 
     override fun getNSentenceReviewItems(n: Int): Flow<List<SentenceReviewModel>> {
         val allReviews = reviewDao.getNSentenceReviews(n)
-        return allReviews.map {
-            it.map{
+        return allReviews.map { sentences ->
+            sentences.map{
                 SentenceReviewModel(
                     sentence = it.sentence,
                     targetWord = it.targetWord
@@ -50,8 +50,8 @@ class ReviewRepositoryImpl @Inject constructor(
 
     override fun getAllSentenceReviewItems(): Flow<List<SentenceReviewModel>> {
         val allReviews =  reviewDao.getAllSentenceReviews()
-        return allReviews.map {
-            it.map {
+        return allReviews.map { sentences ->
+            sentences.map {
                 SentenceReviewModel(
                     sentence = it.sentence,
                     targetWord = it.targetWord
@@ -60,16 +60,32 @@ class ReviewRepositoryImpl @Inject constructor(
         }
     }
 
+
     override suspend fun addSentenceToReview(sentenceReview: SentenceReviewModel) {
-        val reviewDto = com.example.nala.db.models.review.SentenceReviewModel(
+        val reviewDto = com.example.nala.db.models.review.SentenceReviewCache(
             sentence = sentenceReview.sentence,
             targetWord = sentenceReview.targetWord
         )
         return reviewDao.insertSentenceReview(reviewDto)
     }
 
+    override fun getSentenceReviewsPaged(): Flow<List<SentenceReviewCache>> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getKanjiReviewsPaged(): Flow<List<KanjiReviewCache>> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getWordReviewsPaged(nextPageId: Date?, limit: Int): Flow<List<WordReviewModel>> {
+        if(nextPageId == null) {
+            return reviewDao.getNReviews(limit)
+        }
+        return reviewDao.getWordReviewsPaged(nextPageId, limit)
+    }
+
     override suspend fun removeSentenceReview(sentenceReview: SentenceReviewModel) {
-        val reviewDto = com.example.nala.db.models.review.SentenceReviewModel(
+        val reviewDto = com.example.nala.db.models.review.SentenceReviewCache(
             sentence = sentenceReview.sentence,
             targetWord = sentenceReview.targetWord
         )
@@ -78,22 +94,22 @@ class ReviewRepositoryImpl @Inject constructor(
 
     override suspend fun updateSentenceReviewParameters(
         quality: Int,
-        sentenceModel: SentenceReviewModel
+        sentenceReview: SentenceReviewModel
     ) {
-        val sentenceReview = com.example.nala.db.models.review.SentenceReviewModel(
-            sentence = sentenceModel.sentence,
-            targetWord = sentenceModel.targetWord
+        val sr = com.example.nala.db.models.review.SentenceReviewCache(
+            sentence = sentenceReview.sentence,
+            targetWord = sentenceReview.targetWord
         )
         val updatedParams = SuperMemo2.updateParams(
             quality = quality,
-            previousRepetitions = sentenceReview.repetitions,
-            previousEaseFactor = sentenceReview.easeFactor,
-            previousInterval = sentenceReview.interval,
+            previousRepetitions = sr.repetitions,
+            previousEaseFactor = sr.easeFactor,
+            previousInterval = sr.interval,
         )
 
-        val updatedSentenceReview = SentenceReviewModel(
-            sentence = sentenceReview.sentence,
-            targetWord = sentenceReview.targetWord,
+        val updatedSentenceReview = SentenceReviewCache(
+            sentence = sr.sentence,
+            targetWord = sr.targetWord,
             repetitions = updatedParams.repetitions,
             easeFactor = updatedParams.easeFactor,
             interval = updatedParams.interval,
@@ -101,15 +117,15 @@ class ReviewRepositoryImpl @Inject constructor(
         reviewDao.updateSentenceReviewItem(updatedSentenceReview)
     }
 
-    override suspend fun getKanjiReviewItem(kanji: String): KanjiReviewModel {
+    override suspend fun getKanjiReviewItem(kanji: String): KanjiReviewCache {
         return reviewDao.getKanjiReview(kanji).first()
     }
 
-    override fun getNKanjiReviewItems(n: Int): Flow<List<KanjiReviewModel>> {
+    override fun getNKanjiReviewItems(n: Int): Flow<List<KanjiReviewCache>> {
         return reviewDao.getNKanjiReviews(n)
     }
 
-    override fun getAllKanjiReviewItems() : Flow<List<KanjiReviewModel>> {
+    override fun getAllKanjiReviewItems() : Flow<List<KanjiReviewCache>> {
         return reviewDao.getKanjiReviewsAsFlow()
     }
 
@@ -118,7 +134,7 @@ class ReviewRepositoryImpl @Inject constructor(
     }
 
     override suspend fun addKanjiToReview(kanjiModel: KanjiModel) {
-        val kanjiReviewDao = KanjiReviewModel(
+        val kanjiReviewDao = KanjiReviewCache(
             kanji = kanjiModel.kanji,
             freq = kanjiModel.freq,
             grade = kanjiModel.grade,
@@ -162,6 +178,10 @@ class ReviewRepositoryImpl @Inject constructor(
         reviewDao.insertKanjiKunReadings(*readingsList.toTypedArray())
     }
 
+    override suspend fun restoreKanjiToReview(kanjiReviewCache: KanjiReviewCache) {
+        reviewDao.insertKanjiReview(kanjiReviewCache)
+    }
+
     override suspend fun addKanjiOnReadingsToReview(readings: List<String>, kanji: String) {
         val readingsList = mutableListOf<KanjiOn>()
         readings.forEach {
@@ -179,8 +199,8 @@ class ReviewRepositoryImpl @Inject constructor(
         return reviewDao.getMatchingWords(word)
     }
 
-    override suspend fun removeKanjiReviewItem(kanjiModel: KanjiReviewModel) {
-        reviewDao.deleteKanjiReview(kanjiModel)
+    override suspend fun removeKanjiReviewItem(kanjiCache: KanjiReviewCache) {
+        reviewDao.deleteKanjiReview(kanjiCache)
     }
 
     override suspend fun removeKanjiReviewItemFromId(kanji: String) {
@@ -193,21 +213,21 @@ class ReviewRepositoryImpl @Inject constructor(
 
     override suspend fun updateKanjiReviewParameters(
         quality: Int,
-        kanjiModel: KanjiReviewModel
+        kanjiCache: KanjiReviewCache
     ) {
         val updatedParams = SuperMemo2.updateParams(
             quality = quality,
-            previousRepetitions = kanjiModel.repetitions,
-            previousEaseFactor = kanjiModel.easeFactor,
-            previousInterval = kanjiModel.interval,
+            previousRepetitions = kanjiCache.repetitions,
+            previousEaseFactor = kanjiCache.easeFactor,
+            previousInterval = kanjiCache.interval,
         )
 
-        val updatedKanjiReview = KanjiReviewModel(
-            kanji = kanjiModel.kanji,
-            freq = kanjiModel.freq,
-            grade = kanjiModel.grade,
-            jlpt = kanjiModel.jlpt,
-            strokes = kanjiModel.strokes,
+        val updatedKanjiReview = KanjiReviewCache(
+            kanji = kanjiCache.kanji,
+            freq = kanjiCache.freq,
+            grade = kanjiCache.grade,
+            jlpt = kanjiCache.jlpt,
+            strokes = kanjiCache.strokes,
             repetitions = updatedParams.repetitions,
             easeFactor = updatedParams.easeFactor,
             interval = updatedParams.interval,
@@ -232,6 +252,10 @@ class ReviewRepositoryImpl @Inject constructor(
         reviewDao.addWordReview(wordReview)
         addWordTagsToReview(wordModel.dataTags, wordModel.word)
         addWordSensesToReview(wordModel.senses, wordModel.word)
+    }
+
+    override suspend fun restoreRemovedWordToReview(wordReview: WordReviewModel) {
+        reviewDao.addWordReview(wordReview)
     }
 
     override suspend fun addWordTagsToReview(tags: List<String>, word: String) {

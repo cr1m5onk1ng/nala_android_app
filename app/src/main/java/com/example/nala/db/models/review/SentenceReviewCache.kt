@@ -1,11 +1,14 @@
 package com.example.nala.db.models.review
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.Fts4
+import androidx.room.*
+import com.example.nala.db.converters.TimeConverter
+import java.util.*
 
-@Entity(tableName = "sentence_review", primaryKeys = ["sentence", "word"])
-data class SentenceReviewModel(
+@Entity(
+    tableName = "sentence_review", primaryKeys = ["sentence", "word"],
+    indices = [Index(value = ["added_at"]), Index(value=["interval"])]
+)
+data class SentenceReviewCache(
 
     @ColumnInfo(name="sentence")
     val sentence: String,
@@ -21,11 +24,15 @@ data class SentenceReviewModel(
 
     @ColumnInfo(name="interval")
     val interval: Int = 0,
+
+    @TypeConverters(TimeConverter::class)
+    @ColumnInfo(name="added_at")
+    val addedAt: Date = Date(),
 ) : ReviewModel()
 
 @Entity(tableName = "sentence_review_fts")
-@Fts4(contentEntity = SentenceReviewModel::class)
-data class SentenceReviewModelFts(
+@Fts4(contentEntity = SentenceReviewCache::class)
+data class SentenceReviewCacheFts(
     @ColumnInfo(name="sentence")
     val sentence: String,
 

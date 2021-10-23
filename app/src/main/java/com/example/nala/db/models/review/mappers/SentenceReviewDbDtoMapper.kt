@@ -3,18 +3,18 @@ package com.example.nala.db.models.review.mappers
 import com.example.nala.domain.model.review.SentenceReviewModel
 import com.example.nala.domain.util.DomainMapper
 
-class SentenceReviewDbDtoMapper : DomainMapper<com.example.nala.db.models.review.SentenceReviewModel, SentenceReviewModel> {
+class SentenceReviewDbDtoMapper : DomainMapper<com.example.nala.db.models.review.SentenceReviewCache, SentenceReviewModel> {
 
 
-    override fun mapToDomainModel(model: com.example.nala.db.models.review.SentenceReviewModel): SentenceReviewModel {
+    override fun mapToDomainModel(cache: com.example.nala.db.models.review.SentenceReviewCache): SentenceReviewModel {
         return SentenceReviewModel(
-            sentence = model.sentence,
-            targetWord = model.targetWord
+            sentence = cache.sentence,
+            targetWord = cache.targetWord
         )
     }
 
-    override fun mapFromDomainModel(model: SentenceReviewModel): com.example.nala.db.models.review.SentenceReviewModel {
-        return com.example.nala.db.models.review.SentenceReviewModel(
+    override fun mapFromDomainModel(model: SentenceReviewModel): com.example.nala.db.models.review.SentenceReviewCache {
+        return com.example.nala.db.models.review.SentenceReviewCache(
             sentence = model.sentence,
             targetWord = model.targetWord
         )

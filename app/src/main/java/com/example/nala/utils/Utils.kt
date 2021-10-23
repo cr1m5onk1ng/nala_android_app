@@ -2,6 +2,7 @@ package com.example.nala.utils
 
 import android.util.Log
 import android.webkit.URLUtil
+import com.example.nala.utils.types.InputStringType
 
 object Utils {
 

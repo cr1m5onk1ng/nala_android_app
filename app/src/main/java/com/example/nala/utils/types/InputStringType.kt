@@ -1,4 +1,4 @@
-package com.example.nala.utils
+package com.example.nala.utils.types
 
 enum class InputStringType {
     YoutubeUrl,

@@ -21,7 +21,7 @@
         <service
             android:name=".ui.dictionary.DictionaryForegroundService"
             android:enabled="true"
-            android:exported="false"
+            android:exported="true"
             android:foregroundServiceType="mediaProjection" />
         <activity
             android:name="com.example.nala.ui.MainActivity"
@@ -41,7 +41,7 @@
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="*/*" />
+                <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
     </application>

@@ -92,6 +92,7 @@ class DictionaryWindow (
         bindWordData()
         removeView(loadingScreenView)
         addView(windowDictionaryView, mParams)
+        Log.d("DICTDEBUG", "DICTIONARY OPENED")
     }
 
     fun openKanjiDict() {
@@ -100,17 +101,21 @@ class DictionaryWindow (
         bindKanjiData()
         removeView(loadingScreenView)
         addView(kanjiScreenView, mParams)
+        Log.d("DICTDEBUG", "KANJI OPENED")
     }
 
     fun setLoadingScreen() {
         addView(loadingScreenView, mParams)
+        Log.d("DICTDEBUG", "LOADING SCREEN SET")
     }
 
     fun setErrorScreen() {
         addView(errorScreenView, mParams)
+        Log.d("DICTDEBUG", "ERROR SCREEN SET")
     }
 
     fun closeKanjiView() {
+        Log.d("DICTDEBUG", "KANJI VIEW CLOSED")
         try {
             // remove the view from the window
             (context.getSystemService(WINDOW_SERVICE) as WindowManager).removeView(kanjiScreenView)
@@ -127,6 +132,7 @@ class DictionaryWindow (
     }
 
     fun closeErrorView() {
+        Log.d("DICTDEBUG", "ERROR VIEW CLOSED")
         try {
             // remove the view from the window
             (context.getSystemService(WINDOW_SERVICE) as WindowManager).removeView(errorScreenView)
@@ -143,6 +149,7 @@ class DictionaryWindow (
     }
 
     fun closeDictionaryView() {
+        Log.d("DICTDEBUG", "DICT VIEW CLOSED")
         try {
             // remove the view from the window
             (context.getSystemService(WINDOW_SERVICE) as WindowManager).removeView(windowDictionaryView)
@@ -153,6 +160,16 @@ class DictionaryWindow (
 
             // the above steps are necessary when you are adding and removing
             // the view simultaneously, it might give some exceptions
+        } catch (e: Exception) {
+            Log.d("DICTWINDOWDEBUG", "Error while closing window: $e")
+        }
+    }
+
+    fun close() {
+        try {
+            closeDictionaryView()
+            closeErrorView()
+            closeKanjiView()
         } catch (e: Exception) {
             Log.d("DICTWINDOWDEBUG", "Error while closing window: $e")
         }

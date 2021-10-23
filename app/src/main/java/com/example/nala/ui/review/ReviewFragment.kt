@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.activityViewModels
@@ -26,8 +27,7 @@ class ReviewFragment : CustomFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        reviewViewModel.loadWordReviewItems()
+    ): View {
         return ComposeView(requireContext()).apply {
             setContent {
                 val scaffoldState = rememberScaffoldState()
@@ -35,9 +35,10 @@ class ReviewFragment : CustomFragment() {
                     ReviewListScreen(
                         selectedCategory = reviewViewModel.selectedCategory.value,
                         setCategory = reviewViewModel::setCategory,
-                        wordReviewItems = reviewViewModel.wordReviewItems.value,
-                        sentenceReviewItems = reviewViewModel.sentenceReviewItems.value,
-                        kanjiReviewItems = reviewViewModel.kanjiReviewItems.value,
+                        wordReviewItems = reviewViewModel.wordReviewItemsState.collectAsState().value,
+                        sentenceReviewItems = reviewViewModel.sentenceReviewItemsState.collectAsState().value,
+                        kanjiReviewItems = reviewViewModel.kanjiReviewItemsState.collectAsState().value,
+                        wordsEndReached = reviewViewModel.wordsEndReached.value,
                         setWordItem = viewModel::setCurrentWordFromReview,
                         setSentenceItem = studyViewModel::setStudyContext,
                         setTargetWordItem = studyViewModel::setStudyTargetWord,
@@ -45,9 +46,9 @@ class ReviewFragment : CustomFragment() {
                         removeWordReview = reviewViewModel::removeWordReviewItem,
                         removeSentenceReview = reviewViewModel::removeSentenceReviewItem,
                         removeKanjiReview = reviewViewModel::removeKanjiReviewItem,
-                        dismissWordReview = {},
-                        dismissSentenceReview = {},
-                        dismissKanjiReview = {},
+                        addWordToReview = reviewViewModel::restoreWordFromReview,
+                        addSentenceToReview =reviewViewModel::restoreSentenceFromReview,
+                        addKanjiToReview = reviewViewModel::restoreKanjiFromReview,
                         isHomeSelected = viewModel.isHomeSelected.value,
                         isReviewsSelected = viewModel.isReviewSelected.value,
                         toggleHome = viewModel::toggleHome,
@@ -57,8 +58,9 @@ class ReviewFragment : CustomFragment() {
                         updateKanjiReviewItem = reviewViewModel::updateKanjiReviewItem,
                         navController = findNavController(),
                         onShare = {},
-                        onSearch = reviewViewModel::search,
+                        onSearch = reviewViewModel::searchFlow,
                         onRestore = reviewViewModel::restore,
+                        onUpdateWordReviews = {},
                         showSnackbar = {
                             showSnackbar(
                                 scaffoldState,

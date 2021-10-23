@@ -15,14 +15,14 @@ import com.example.nala.db.models.review.*
     WordSenseDb::class,
     WordSenseTagDb::class,
     WordSenseDefinitionDb::class,
-    SentenceReviewModel::class,
-    SentenceReviewModelFts::class,
-    KanjiReviewModel::class,
+    SentenceReviewCache::class,
+    SentenceReviewCacheFts::class,
+    KanjiReviewCache::class,
     KanjiMeanings::class,
     KanjiOn::class,
     KanjiKun::class,
     ArticlesCache::class],
-    version=6)
+    version=8)
 @TypeConverters(TimeConverter::class)
 abstract class ReviewDatabase : RoomDatabase() {
     abstract  fun reviewDao() : ReviewDao

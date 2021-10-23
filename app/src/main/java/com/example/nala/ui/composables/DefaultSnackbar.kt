@@ -9,7 +9,8 @@ import androidx.compose.ui.graphics.Color
 fun DefaultSnackbar(
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier,
-    onDismiss: () -> Unit?
+    onDismiss: (() -> Unit)? = null,
+    onAction: (() -> Unit)? = null,
 ) {
     SnackbarHost(
         hostState = snackbarHostState,
@@ -20,7 +21,12 @@ fun DefaultSnackbar(
                     data.actionLabel?.let { actionLabel ->
                         TextButton(
                             onClick = {
-                                onDismiss()
+                                onDismiss?.let{
+                                    it()
+                                }
+                                onAction?.let{
+                                    it()
+                                }
                             }
                         ) {
                             Text(

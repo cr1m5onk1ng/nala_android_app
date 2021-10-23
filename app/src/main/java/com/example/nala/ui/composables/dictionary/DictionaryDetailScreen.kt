@@ -1,6 +1,5 @@
 package com.example.nala.ui.composables.dictionary
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,7 +8,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.Share
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,7 +38,7 @@ fun DictionaryDetailScreen(
     setCurrentKanji: (String) -> Unit,
     setCurrentStory: (String) -> Unit,
     addToReview: (DictionaryModel) -> Unit,
-    loadWordReviews: () -> Unit,
+    removeFromReview: (String) -> Unit,
     scaffoldState: ScaffoldState,
     onShare: (String?) -> Unit,
     showSnackbar: (ScaffoldState) -> Unit
@@ -111,7 +109,6 @@ fun DictionaryDetailScreen(
                                         setCurrentKanji,
                                         setCurrentStory,
                                         addToReview,
-                                        loadWordReviews,
                                         scaffoldState,
                                         onShare,
                                         showSnackbar
@@ -132,6 +129,9 @@ fun DictionaryDetailScreen(
                             snackbarHostState = scaffoldState.snackbarHostState,
                             onDismiss = {
                                 scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                            },
+                            onAction = {
+                                removeFromReview(searchState.data.word)
                             }
                         )
                     }
@@ -149,7 +149,6 @@ fun DataSection(
     setCurrentKanji: (String) -> Unit,
     setCurrentStory: (String) -> Unit,
     addToReview: (DictionaryModel) -> Unit,
-    loadWordReviews: () -> Unit,
     scaffoldState: ScaffoldState,
     onShare: (String?) -> Unit,
     onShowSnackbar: (ScaffoldState) -> Unit
@@ -172,7 +171,12 @@ fun DataSection(
         Spacer(
             modifier = Modifier.padding(vertical=5.dp)
         )
-        ButtonSection(wordModel, addToReview, loadWordReviews, scaffoldState, onShowSnackbar)
+        ButtonSection(
+            wordModel = wordModel,
+            addToReview = addToReview,
+            scaffoldState = scaffoldState,
+            onShowSnackbar = onShowSnackbar,
+        )
         Spacer(modifier = Modifier.padding(vertical = 5.dp) )
         val isCommon: Boolean = wordModel.common ?: false
         val isCommonTag: String = if(isCommon) stringResource(R.string.common_tag) else ""
@@ -264,7 +268,6 @@ fun KanjiRow(
 fun ButtonSection(
     wordModel: DictionaryModel,
     addToReview: (DictionaryModel) -> Unit,
-    loadWordReviews: () -> Unit,
     scaffoldState: ScaffoldState,
     onShowSnackbar: (ScaffoldState) -> Unit
 ) {
@@ -278,7 +281,6 @@ fun ButtonSection(
             onClick = {
                 addToReview(wordModel)
                 onShowSnackbar(scaffoldState)
-                loadWordReviews()
                       },
             modifier = Modifier
                 .fillMaxWidth()

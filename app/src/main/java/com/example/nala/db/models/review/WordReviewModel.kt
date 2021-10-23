@@ -1,13 +1,15 @@
 package com.example.nala.db.models.review
 
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.Fts4
-import androidx.room.PrimaryKey
+import androidx.room.*
+import com.example.nala.db.converters.TimeConverter
 import com.example.nala.db.models.DatabaseModel
+import java.util.*
 
-@Entity(tableName = "word_review")
+@Entity(
+    tableName = "word_review",
+    indices = [Index(value = ["added_at"]), Index(value=["interval"])]
+)
 data class WordReviewModel (
     @PrimaryKey(autoGenerate = false)
     @ColumnInfo(name="word")
@@ -33,6 +35,10 @@ data class WordReviewModel (
 
     @ColumnInfo(name="interval")
     val interval: Int = 0,
+
+    @TypeConverters(TimeConverter::class)
+    @ColumnInfo(name="added_at")
+    val addedAt: Date = Date(),
 ) : ReviewModel()
 
 @Entity(tableName = "word_review_fts")

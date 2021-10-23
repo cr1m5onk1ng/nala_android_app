@@ -37,7 +37,7 @@ class DictionaryDetailFragment : CustomFragment() {
                         setCurrentKanji = viewModel::setCurrentKanji,
                         setCurrentStory = viewModel::setCurrentStory,
                         addToReview =  viewModel::addWordToReview,
-                        loadWordReviews = reviewViewModel::loadWordReviewItems,
+                        removeFromReview = {},
                         scaffoldState = scaffoldState,
                         onShare = {},
                         showSnackbar = {showSnackbar(scaffoldState, message="Added to review")},

@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -29,13 +30,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.example.nala.R
-import com.example.nala.db.models.review.KanjiReviewModel
+import com.example.nala.db.models.review.KanjiReviewCache
 import com.example.nala.db.models.review.WordReviewModel
 import com.example.nala.domain.model.review.ReviewCategory
 import com.example.nala.domain.model.review.SentenceReviewModel
 import com.example.nala.domain.model.utils.DataState
 import com.example.nala.ui.composables.*
+import com.example.nala.ui.composables.dialogs.LoadingDialog
 import com.example.nala.ui.theme.*
+import com.example.nala.utils.extensions.isLastVisibleItem
+import kotlinx.coroutines.launch
 
 val specialReviewStyle = SpanStyle(
     fontWeight = FontWeight.Bold,
@@ -58,27 +62,29 @@ fun ReviewListScreen(
     setCategory: (ReviewCategory) -> Unit,
     wordReviewItems: DataState<List<WordReviewModel>>,
     sentenceReviewItems: DataState<List<SentenceReviewModel>>,
-    kanjiReviewItems: DataState<List<KanjiReviewModel>>,
+    kanjiReviewItems: DataState<List<KanjiReviewCache>>,
+    wordsEndReached: Boolean,
     setWordItem: (WordReviewModel) -> Unit,
     setSentenceItem: (String) -> Unit,
     setTargetWordItem: (String) -> Unit,
     setKanjiItem: (String) -> Unit,
     removeWordReview: (WordReviewModel) -> Unit,
     removeSentenceReview: (SentenceReviewModel) -> Unit,
-    removeKanjiReview: (KanjiReviewModel) -> Unit,
-    dismissKanjiReview: (String) -> Unit,
-    dismissWordReview: (String) -> Unit,
-    dismissSentenceReview: (String) -> Unit,
+    removeKanjiReview: (KanjiReviewCache) -> Unit,
+    addWordToReview: (WordReviewModel) -> Unit,
+    addSentenceToReview: (SentenceReviewModel) -> Unit,
+    addKanjiToReview: (KanjiReviewCache) -> Unit,
     isHomeSelected: Boolean,
     isReviewsSelected: Boolean,
     toggleHome: (Boolean) -> Unit,
     toggleReviews: (Boolean) -> Unit,
     updateWordReviewItem: (quality: Int, reviewItem: WordReviewModel) -> Unit,
     updateSentenceReviewItem: (quality: Int, sentenceReview: SentenceReviewModel) -> Unit,
-    updateKanjiReviewItem: (quality: Int, kanjiReview: KanjiReviewModel) -> Unit,
+    updateKanjiReviewItem: (quality: Int, kanjiReview: KanjiReviewCache) -> Unit,
     onSearch: (String) -> Unit,
     onRestore: () -> Unit,
     onShare: (String?) -> Unit,
+    onUpdateWordReviews: () -> Unit,
     navController: NavController,
     scaffoldState: ScaffoldState,
     showSnackbar: (ScaffoldState) -> Unit
@@ -86,6 +92,15 @@ fun ReviewListScreen(
 
     val searchOpen = remember { mutableStateOf(false) }
     val searchQuery = remember { mutableStateOf("") }
+
+    val removedWordReview = remember { mutableStateOf<WordReviewModel?>(null) }
+    val removedSentenceReview = remember { mutableStateOf<SentenceReviewModel?>(null) }
+    val removedKanjiReview = remember { mutableStateOf<KanjiReviewCache?>(null) }
+
+    val scope = rememberCoroutineScope()
+
+    val wordListState = rememberLazyListState()
+    var lastWordItem = remember { 0 }
 
     Scaffold(
         topBar = {
@@ -148,7 +163,7 @@ fun ReviewListScreen(
                     when(selectedCategory) {
                         ReviewCategory.Word -> {
                             when(wordReviewItems){
-                                is DataState.Initial<*>, DataState.Loading  -> {
+                                is DataState.Initial<*> -> {
                                     LoadingIndicator()
                                 }
                                 is DataState.Error -> {
@@ -158,19 +173,31 @@ fun ReviewListScreen(
                                     )
                                 }
                                 is DataState.Success<List<WordReviewModel>>  -> {
-                                    LazyColumn() {
-                                        items(count = wordReviewItems.data.size) { index ->
+                                    val items = wordReviewItems.data
+                                    lastWordItem = items.size - 1
+                                    LazyColumn(state = wordListState) {
+                                        items(count = items.size) { index ->
                                             WordReviewCard(
-                                                wordReviewItems.data[index],
+                                                items[index],
+                                                removedWordReview,
                                                 setWordItem,
                                                 updateWordReviewItem,
                                                 removeWordReview,
-                                                dismissWordReview,
                                                 onShare,
-                                                navController
+                                                scaffoldState,
+                                                showSnackbar,
+                                                navController,
                                             )
                                         }
+                                        if(wordListState.isLastVisibleItem(items.size - 1) &&
+                                            wordListState.isScrollInProgress && (!wordsEndReached)
+                                        ) {
+                                            onUpdateWordReviews()
+                                        }
                                     }
+                                }
+                                is DataState.Loading -> {
+                                    LoadingIndicator()
                                 }
                             }
                         }
@@ -190,12 +217,14 @@ fun ReviewListScreen(
                                         items(count = sentenceReviewItems.data.size) { index ->
                                             SentenceReviewCard(
                                                 sentenceReviewItems.data[index],
+                                                removedSentenceReview,
                                                 setSentenceItem,
                                                 setTargetWordItem,
                                                 updateSentenceReviewItem,
                                                 removeSentenceReview,
-                                                dismissSentenceReview,
                                                 onShare,
+                                                scaffoldState,
+                                                showSnackbar,
                                                 navController
                                             )
                                         }
@@ -214,16 +243,18 @@ fun ReviewListScreen(
                                         subtitle = ""
                                     )
                                 }
-                                is DataState.Success<List<KanjiReviewModel>>  -> {
+                                is DataState.Success<List<KanjiReviewCache>>  -> {
                                     LazyColumn() {
                                         items(count = kanjiReviewItems.data.size) { index ->
                                             KanjiReviewCard(
                                                 kanjiReviewItems.data[index],
+                                                removedKanjiReview,
                                                 setKanjiItem,
                                                 updateKanjiReviewItem,
                                                 removeKanjiReview,
-                                                dismissKanjiReview,
                                                 onShare,
+                                                scaffoldState,
+                                                showSnackbar,
                                                 navController
                                             )
                                         }
@@ -246,6 +277,25 @@ fun ReviewListScreen(
                 snackbarHostState = scaffoldState.snackbarHostState,
                 onDismiss = {
                     scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                },
+                onAction = {
+                    when(selectedCategory){
+                        ReviewCategory.Word -> {
+                            removedWordReview.value?.let{
+                                addWordToReview(it)
+                            }
+                        }
+                        ReviewCategory.Sentence -> {
+                            removedSentenceReview.value?.let{
+                                addSentenceToReview(it)
+                            }
+                        }
+                        ReviewCategory.Kanji -> {
+                            removedKanjiReview.value?.let{
+                                addKanjiToReview(it)
+                            }
+                        }
+                    }
                 }
             )
         }
@@ -254,12 +304,14 @@ fun ReviewListScreen(
 
 @Composable
 fun KanjiReviewCard(
-    item: KanjiReviewModel,
+    item: KanjiReviewCache,
+    removedItem: MutableState<KanjiReviewCache?>,
     setKanjiItem: (String) -> Unit,
-    updateKanjiReviewItem: (quality: Int, kanjiReview: KanjiReviewModel) -> Unit,
-    removeKanjiReview: (KanjiReviewModel) -> Unit,
-    dismissKanjiReview: (String) -> Unit,
+    updateKanjiReviewItem: (quality: Int, kanjiReview: KanjiReviewCache) -> Unit,
+    removeKanjiReview: (KanjiReviewCache) -> Unit,
     onShare: (String?) -> Unit,
+    scaffoldState: ScaffoldState,
+    onShowSnackBar: (ScaffoldState) -> Unit,
     navController: NavController,
 ){
     val isEasyChecked = remember { mutableStateOf(false) }
@@ -312,15 +364,15 @@ fun KanjiReviewCard(
                         isEasyChecked,
                     )
                     updateKanjiReviewItem(quality, item)
-                    dismissKanjiReview(item.kanji)
                 }
             )
             //BUTTONS SECTION
             ButtonsRow(
                 text = item.kanji,
                 removeAction = {
+                    removedItem.value = item
                     removeKanjiReview(item)
-                    dismissKanjiReview(item.kanji)
+                    onShowSnackBar(scaffoldState)
                 },
                 onShare = onShare,
             )
@@ -331,12 +383,14 @@ fun KanjiReviewCard(
 @Composable
 fun SentenceReviewCard(
     item: SentenceReviewModel,
+    removedItem: MutableState<SentenceReviewModel?>,
     setSentenceItem: (String) -> Unit,
     setTargetWordItem: (String) -> Unit,
     updateSentenceReviewItem: (quality: Int, sentenceReview: SentenceReviewModel) -> Unit,
     removeSentenceReview: (SentenceReviewModel) -> Unit,
-    dismissSentenceReview: (String) -> Unit,
     onShare: (String?) -> Unit,
+    scaffoldState: ScaffoldState,
+    onShowSnackBar: (ScaffoldState) -> Unit,
     navController: NavController,
 ){
     val isEasyChecked = remember { mutableStateOf(false) }
@@ -393,15 +447,15 @@ fun SentenceReviewCard(
                         isEasyChecked,
                     )
                     updateSentenceReviewItem(quality, item)
-                    dismissSentenceReview(item.sentence)
                 }
             )
             //BUTTONS SECTION
             ButtonsRow(
                 text = item.sentence,
                 removeAction = {
+                    removedItem.value = item
                     removeSentenceReview(item)
-                    dismissSentenceReview(item.sentence)
+                    onShowSnackBar(scaffoldState)
                 },
                 onShare = onShare,
             )
@@ -412,11 +466,13 @@ fun SentenceReviewCard(
 @Composable
 fun WordReviewCard(
     item: WordReviewModel,
+    removedItem: MutableState<WordReviewModel?>,
     setWordItem: (WordReviewModel) -> Unit,
     updateWordReviewItem: (quality: Int, reviewItem: WordReviewModel) -> Unit,
     removeWordReview: (WordReviewModel) -> Unit,
-    dismissWordReview: (String) -> Unit,
     onShare: (String?) -> Unit,
+    scaffoldState: ScaffoldState,
+    onShowSnackBar: (ScaffoldState) -> Unit,
     navController: NavController,
     ) {
 
@@ -469,15 +525,15 @@ fun WordReviewCard(
                         isEasyChecked,
                     )
                     updateWordReviewItem(quality, item)
-                    dismissWordReview(item.word)
                 }
             )
             //BUTTONS SECTION
             ButtonsRow(
                 text = item.word,
                 removeAction = {
+                    removedItem.value = item
                     removeWordReview(item)
-                    dismissWordReview(item.word)
+                    onShowSnackBar(scaffoldState)
                 },
                 onShare = onShare,
             )

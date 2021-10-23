@@ -1,16 +1,11 @@
-package com.example.nala.utils
+package com.example.nala.utils.utilities
 
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
-import dagger.hilt.android.qualifiers.ActivityContext
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import retrofit2.http.Url
-import java.net.URL
 import javax.inject.Inject
 
 class ConnectionChecker @Inject constructor(

@@ -16,7 +16,7 @@ import com.example.nala.domain.model.utils.ErrorType
 import com.example.nala.ui.BaseApplication
 import com.example.nala.ui.composables.dictionary.HomeScreen
 import com.example.nala.ui.theme.AppTheme
-import com.example.nala.utils.InputStringType
+import com.example.nala.utils.types.InputStringType
 import com.example.nala.utils.Utils
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject

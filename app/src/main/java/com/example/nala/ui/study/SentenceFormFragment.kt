@@ -37,7 +37,7 @@ class SentenceFormFragment : CustomFragment() {
                     onWordAdd = studyViewModel::setStudyTargetWord,
                     onWordSelect = studyViewModel::setSelectedWord,
                     addSentenceToReview = viewModel::addSentenceToReview,
-                    loadSentenceReviews = reviewViewModel::loadSentenceReviewItems,
+                    loadSentenceReviews = reviewViewModel::loadSentenceReviewItemsFlow,
                     unsetSelectedWord = studyViewModel::unsetSelectedWord,
                     unsetSharedSentence = viewModel::unsetSharedSentence,
                     showSnackbar = {showSnackbar(scaffoldState, message="Added to review")},

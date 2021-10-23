@@ -1,13 +1,16 @@
 package com.example.nala.repository
 
+import androidx.paging.PagingData
 import com.example.nala.db.models.review.ArticlesCache
-import com.example.nala.db.models.review.KanjiReviewModel
+import com.example.nala.db.models.review.KanjiReviewCache
+import com.example.nala.db.models.review.SentenceReviewCache
 import com.example.nala.db.models.review.WordReviewModel
 import com.example.nala.domain.model.dictionary.DictionaryModel
 import com.example.nala.domain.model.dictionary.Sense
 import com.example.nala.domain.model.kanji.KanjiModel
 import com.example.nala.domain.model.review.SentenceReviewModel
 import kotlinx.coroutines.flow.Flow
+import java.util.*
 
 interface ReviewRepository {
 
@@ -18,6 +21,8 @@ interface ReviewRepository {
 
     fun getAllSentenceReviewItems() : Flow<List<SentenceReviewModel>>
 
+    fun getSentenceReviewsPaged() : Flow<List<SentenceReviewCache>>
+
     suspend fun addSentenceToReview(sentenceReview: SentenceReviewModel)
 
     suspend fun removeSentenceReview(sentenceReview: SentenceReviewModel)
@@ -27,15 +32,19 @@ interface ReviewRepository {
     suspend fun getMatchingSentences(sentence: String) : List<SentenceReviewModel>
 
     // KANJI REVIEWS SECTION
-    suspend fun getKanjiReviewItem(kanji: String) : KanjiReviewModel
+    suspend fun getKanjiReviewItem(kanji: String) : KanjiReviewCache
 
-    fun getNKanjiReviewItems(n: Int) : Flow<List<KanjiReviewModel>>
+    fun getNKanjiReviewItems(n: Int) : Flow<List<KanjiReviewCache>>
 
-    fun getAllKanjiReviewItems() : Flow<List<KanjiReviewModel>>
+    fun getAllKanjiReviewItems() : Flow<List<KanjiReviewCache>>
+
+    fun getKanjiReviewsPaged() : Flow<List<KanjiReviewCache>>
 
     suspend fun getKanjiReviewsAsString() : List<String>
 
     suspend fun addKanjiToReview(kanjiModel: KanjiModel)
+
+    suspend fun restoreKanjiToReview(kanjiReviewCache: KanjiReviewCache)
 
     suspend fun addKanjiMeaningsToReview(meanings: List<String>, kanji: String)
 
@@ -43,16 +52,18 @@ interface ReviewRepository {
 
     suspend fun addKanjiOnReadingsToReview(readings: List<String>, kanji: String)
 
-    suspend fun removeKanjiReviewItem(kanjiModel: KanjiReviewModel)
+    suspend fun removeKanjiReviewItem(kanjiCache: KanjiReviewCache)
 
     suspend fun removeKanjiReviewItemFromId(kanji: String)
 
-    suspend fun updateKanjiReviewParameters(quality: Int, kanjiModel: KanjiReviewModel)
+    suspend fun updateKanjiReviewParameters(quality: Int, kanjiCache: KanjiReviewCache)
 
     suspend fun isKanjiInReview(kanji: KanjiModel) : Boolean
 
     // WORD REVIEWS SECTION
     suspend fun addWordToReview(wordModel: DictionaryModel)
+
+    suspend fun restoreRemovedWordToReview(wordReview: WordReviewModel)
 
     suspend fun addWordTagsToReview(tags: List<String>, word: String)
 
@@ -67,6 +78,8 @@ interface ReviewRepository {
     suspend fun getWordReviewsAsString() : List<String>
 
     fun getWordReviews() : Flow<List<WordReviewModel>>
+
+    fun getWordReviewsPaged(nextPageId: Date?, limit: Int) : Flow<List<WordReviewModel>>
 
     fun getNWordReviews(n: Int) : Flow<List<WordReviewModel>>
 

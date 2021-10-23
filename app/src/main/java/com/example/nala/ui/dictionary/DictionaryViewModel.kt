@@ -5,10 +5,8 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
 import com.example.nala.db.models.review.*
 import com.example.nala.domain.model.dictionary.DictionaryModel
-import com.example.nala.domain.model.dictionary.Japanese
 import com.example.nala.domain.model.kanji.KanjiModel
 import com.example.nala.domain.model.review.SentenceReviewModel
 import com.example.nala.repository.DictionaryRepository
@@ -17,10 +15,8 @@ import com.example.nala.repository.ReviewRepository
 import com.example.nala.domain.model.utils.DataState
 import com.example.nala.domain.model.utils.ErrorType
 import com.example.nala.services.tokenization.JapaneseTokenizerService
-import com.example.nala.services.tokenization.TokenizerService
-import com.example.nala.utils.ConnectionChecker
-import com.example.nala.utils.Constants.TAG
-import com.example.nala.utils.InputStringType
+import com.example.nala.utils.utilities.ConnectionChecker
+import com.example.nala.utils.constants.Constants.TAG
 import com.example.nala.utils.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
@@ -78,9 +74,6 @@ class DictionaryViewModel @Inject constructor(
     // DICTIONARY STATE
 
     val currentWordKanjis: MutableState<List<String>> = mutableStateOf(listOf())
-
-    //QUERY STATE
-    val isQueryAWord: MutableState<Boolean> = mutableStateOf(true)
 
 
     private suspend fun searchWord() {

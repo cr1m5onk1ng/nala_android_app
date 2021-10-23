@@ -51,30 +51,44 @@ import com.example.nala.ui.composables.yt.VideoScreen
 import com.example.nala.ui.favorites.FavoritesViewModel
 import com.example.nala.ui.settings.SettingsViewModel
 import com.example.nala.ui.yt.YoutubeViewModel
-import com.example.nala.utils.InputStringType
+import com.example.nala.utils.types.InputStringType
 import com.example.nala.utils.Utils
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.Scope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import android.widget.Toast
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.collectAsState
 import androidx.navigation.NavController
 import com.example.nala.services.audio.MediaCaptureService
 import com.example.nala.ui.ocr.OCRViewModel
-import com.example.nala.utils.NetworkConstants
+import com.example.nala.utils.constants.NetworkConstants
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     companion object {
-        private const val MEDIA_PROJECTION_REQUEST_CODE = 13
+        //private const val MEDIA_PROJECTION_REQUEST_CODE = 13
         private const val RECORD_AUDIO_PERMISSION_REQUEST_CODE = 42
     }
 
     @Inject
     lateinit var app: BaseApplication
+
+    //ACTIVITY RESULTS CONTRACTS
+
+    private val authActivityResultContract =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            authViewModel.onGetActivityResult(it.data)
+        }
+
+    private val mediaProjectionResultContract =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            onMediaProjectionActivityResultReceived(it)
+        }
 
     // VIEW MODELS
     private val dictViewModel: DictionaryViewModel by viewModels()
@@ -85,8 +99,6 @@ class MainActivity : AppCompatActivity() {
     private val settingsViewModel: SettingsViewModel by viewModels()
     private val authViewModel: AuthViewModel by viewModels()
     private val ocrViewModel: OCRViewModel by viewModels()
-
-    //private lateinit var ocrService: FallbackScreenshotService
 
     // GOOGLE AUTH SERVICE
     private lateinit var googleSignInClient: GoogleSignInClient
@@ -111,8 +123,8 @@ class MainActivity : AppCompatActivity() {
         settingsViewModel.loadSharedPreferences()
         favoritesViewModel.loadSavedVideos()
         favoritesViewModel.loadSavedArticles()
+        reviewViewModel.loadPagedWordReviewItems()
         ocrViewModel.initModel()
-        //ocrService = FallbackScreenshotService(this)
         val targetLangs =
             getSharedPreferences("langs", Context.MODE_PRIVATE)
                 .getStringSet("target_langs", setOf())?.toSet() ?: setOf()
@@ -120,13 +132,11 @@ class MainActivity : AppCompatActivity() {
         // INTENT MATCHING
         when (intent?.action) {
             Intent.ACTION_PROCESS_TEXT -> {
-                println("ACTION PROCESS TEXT")
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     handleSharedWord()
                 }
             }
             Intent.ACTION_SEND -> {
-                println("ACTION SEND")
                 handleSharedText(intent)
             }
             else -> {
@@ -178,13 +188,14 @@ class MainActivity : AppCompatActivity() {
                             setCurrentKanji = dictViewModel::setCurrentKanji,
                             setCurrentStory = dictViewModel::setCurrentStory,
                             addToReview =  dictViewModel::addWordToReview,
-                            loadWordReviews = reviewViewModel::loadWordReviewItems,
+                            removeFromReview = reviewViewModel::removeWordFromString,
                             scaffoldState = scaffoldState,
                             onShare = this@MainActivity::shareText,
                             showSnackbar = {
                                 showSnackbar(
                                     scaffoldState,
                                     message = getString(R.string.added_to_review),
+                                    actionLabel = "UNDO",
                                 )
                             },
                         )
@@ -215,9 +226,10 @@ class MainActivity : AppCompatActivity() {
                         ReviewListScreen(
                             selectedCategory = reviewViewModel.selectedCategory.value,
                             setCategory = reviewViewModel::setCategory,
-                            wordReviewItems = reviewViewModel.wordReviewItems.value,
-                            sentenceReviewItems = reviewViewModel.sentenceReviewItems.value,
-                            kanjiReviewItems = reviewViewModel.kanjiReviewItems.value,
+                            wordReviewItems = reviewViewModel.wordReviewItemsState.collectAsState().value,
+                            sentenceReviewItems = reviewViewModel.sentenceReviewItemsState.collectAsState().value,
+                            kanjiReviewItems = reviewViewModel.kanjiReviewItemsState.collectAsState().value,
+                            wordsEndReached = reviewViewModel.wordsEndReached.value,
                             setWordItem = dictViewModel::setCurrentWordFromReview,
                             setSentenceItem = studyViewModel::setStudyContext,
                             setTargetWordItem = studyViewModel::setStudyTargetWord,
@@ -225,9 +237,9 @@ class MainActivity : AppCompatActivity() {
                             removeWordReview = reviewViewModel::removeWordReviewItem,
                             removeSentenceReview = reviewViewModel::removeSentenceReviewItem,
                             removeKanjiReview = reviewViewModel::removeKanjiReviewItem,
-                            dismissWordReview = {},
-                            dismissSentenceReview = {},
-                            dismissKanjiReview = {},
+                            addWordToReview = reviewViewModel::restoreWordFromReview,
+                            addSentenceToReview =reviewViewModel::restoreSentenceFromReview,
+                            addKanjiToReview = reviewViewModel::restoreKanjiFromReview,
                             isHomeSelected = dictViewModel.isHomeSelected.value,
                             isReviewsSelected = dictViewModel.isReviewSelected.value,
                             toggleHome = dictViewModel::toggleHome,
@@ -236,14 +248,15 @@ class MainActivity : AppCompatActivity() {
                             updateSentenceReviewItem= reviewViewModel::updateSentenceReviewItem,
                             updateKanjiReviewItem = reviewViewModel::updateKanjiReviewItem,
                             onShare = this@MainActivity::shareText,
-                            onSearch = reviewViewModel::search,
+                            onSearch = reviewViewModel::searchFlow,
                             onRestore = reviewViewModel::restore,
+                            onUpdateWordReviews = reviewViewModel::loadPagedWordReviewItems,
                             navController = navController,
                             showSnackbar = {
                                 showSnackbar(
                                     scaffoldState,
-                                    message = R.string.review_removed.toString(),
-                                    actionLabel="Undo",
+                                    message = this@MainActivity.getString(R.string.review_removed),
+                                    actionLabel="UNDO",
                                 )},
                             scaffoldState = scaffoldState,
                         )
@@ -261,7 +274,7 @@ class MainActivity : AppCompatActivity() {
                             onWordAdd = studyViewModel::setStudyTargetWord,
                             onWordSelect = studyViewModel::setSelectedWord,
                             addSentenceToReview = dictViewModel::addSentenceToReview,
-                            loadSentenceReviews = reviewViewModel::loadSentenceReviewItems,
+                            loadSentenceReviews = reviewViewModel::loadSentenceReviewItemsFlow,
                             unsetSelectedWord = studyViewModel::unsetSelectedWord,
                             unsetSharedSentence = dictViewModel::unsetSharedSentence,
                             showSnackbar = {
@@ -448,161 +461,6 @@ class MainActivity : AppCompatActivity() {
         setIntent(intent)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        // AUTH ACTIVITY RESULT
-        if (requestCode == GoogleAuthenticator.RC_SIGN_IN) {
-            if (resultCode == Activity.RESULT_OK) {
-                val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-                try {
-                    authViewModel.setAuthRequestPending(true)
-                    val account = task.getResult(ApiException::class.java)
-                    Log.d("AUTHDEBUG", "User: ${account?.displayName}")
-                    Log.d("AUTHDEBUG", "Email: ${account?.email}")
-                    Log.d("AUTHDEBUG", "Profile pic: ${account?.photoUrl}")
-                    Log.d("AUTHDEBUG", "Auth Code: ${account?.serverAuthCode ?: "Account is NULL"}")
-                    authViewModel.setAccount(account)
-                } catch (e: ApiException) {
-                    Log.d("AUTHDEBUG", "ERROR: $e")
-                    authViewModel.setAuthError()
-                }
-            }
-            // AUDIO RECORDING ACTIVITY RESULT
-        }
-        if (requestCode == MEDIA_PROJECTION_REQUEST_CODE) {
-            if (resultCode == Activity.RESULT_OK) {
-                Toast.makeText(
-                    this,
-                    "MediaProjection permission obtained. Foreground service will be started to capture audio.",
-                    Toast.LENGTH_LONG
-                ).show()
-
-                val audioCaptureIntent = Intent(this, MediaCaptureService::class.java).apply {
-                    action = MediaCaptureService.ACTION_START
-                    putExtra(MediaCaptureService.EXTRA_RESULT_DATA, data!!)
-                }
-                ContextCompat.startForegroundService(this, audioCaptureIntent)
-
-                //setButtonsEnabled(isCapturingAudio = true)
-            }
-        } else {
-            Toast.makeText(
-               this, "Request to obtain MediaProjection denied.",
-                Toast.LENGTH_LONG
-            ).show()
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        ocrViewModel.dispose()
-    }
-
-    // OCR
-    /*
-    private fun recognizeText( ){
-        ocrLoading.value = true
-        ocrService.recognize()
-        Log.d("OCR_DEBUG", "RETURNED TEXT: ${ocrService.getResult()}")
-        ocrLoading.value = false
-    } */
-
-    // PERMISSIONS
-
-    private fun checkOverlayPermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (!Settings.canDrawOverlays(this)) {
-                showOverlayPermissionsDialog()
-            }
-        }
-    }
-
-
-    @RequiresApi(Build.VERSION_CODES.M)
-    private fun showOverlayPermissionsDialog() {
-        val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
-
-        dialogBuilder.apply{
-            setMessage(R.string.dialog_message)
-            setTitle(R.string.dialog_title)
-            setPositiveButton(R.string.ok
-            ) { _, _ ->
-                val permIntent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
-                startActivity(permIntent)
-            }
-            setNegativeButton(R.string.cancel
-            ) { dialog, _ ->
-                dialog.dismiss()
-            }
-        }
-        dialogBuilder.show()
-    }
-
-    // AUDIO RECORDING FUNCTIONS
-    /*
-    private fun checkRecordingPermissions() {
-        if (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.RECORD_AUDIO
-            ) != PackageManager.PERMISSION_GRANTED &&
-            ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ) != PackageManager.PERMISSION_GRANTED &&
-            ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.READ_EXTERNAL_STORAGE
-            ) != PackageManager.PERMISSION_GRANTED) {
-
-            val permissions = arrayOf(
-                Manifest.permission.RECORD_AUDIO,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.READ_EXTERNAL_STORAGE
-            )
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                requestPermissions(permissions,0)
-            }
-        }
-    }
-
-    private fun startCapturing() {
-        Toast.makeText(this, "start recording", Toast.LENGTH_LONG).show()
-        if (!isRecordAudioPermissionGranted()) {
-            requestRecordAudioPermission()
-        } else {
-            startMediaProjectionRequest()
-        }
-    }
-
-    private fun stopCapturing() {
-        Toast.makeText(this, "stop recording", Toast.LENGTH_LONG).show()
-        //setButtonsEnabled(isCapturingAudio = false)
-        val captureIntent = Intent(this, MediaCaptureService::class.java).apply {
-            action = MediaCaptureService.ACTION_STOP
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(captureIntent)
-        } else {
-            startService(captureIntent)
-        }
-    } */
-
-
-    private fun isRecordAudioPermissionGranted(): Boolean {
-        return ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.RECORD_AUDIO
-        ) == PackageManager.PERMISSION_GRANTED
-    }
-
-    private fun requestRecordAudioPermission() {
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(Manifest.permission.RECORD_AUDIO),
-            RECORD_AUDIO_PERMISSION_REQUEST_CODE
-        )
-    }
-
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -625,9 +483,137 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // PERMISSIONS
+
+    private fun checkOverlayPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Settings.canDrawOverlays(this)) {
+                showOverlayPermissionsDialog()
+            }
+        }
+    }
+
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    private fun showOverlayPermissionsDialog() {
+        val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
+
+        dialogBuilder.apply{
+            setMessage(R.string.dialog_message)
+            setTitle(R.string.dialog_title)
+            setPositiveButton(R.string.ok) { _, _ ->
+                val permIntent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
+                startActivity(permIntent)
+            }
+            setNegativeButton(R.string.cancel) { dialog, _ ->
+                dialog.dismiss()
+            }
+        }
+        dialogBuilder.show()
+    }
+
+    // AUDIO RECORDING FUNCTIONS
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    private fun checkRecordingPermissions() {
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) !=
+                PackageManager.PERMISSION_GRANTED &&
+            checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) !=
+                PackageManager.PERMISSION_GRANTED &&
+            checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) !=
+                PackageManager.PERMISSION_GRANTED) {
+                    val permissions = arrayOf(
+                        Manifest.permission.RECORD_AUDIO,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE
+                    )
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        requestPermissions(permissions,0)
+                    }
+        }
+    }
+
+    private fun startCapturing() {
+        Toast.makeText(this, "recording...", Toast.LENGTH_LONG).show()
+        if (!isRecordAudioPermissionGranted()) {
+            requestRecordAudioPermission()
+        } else {
+            startMediaProjectionRequest()
+        }
+    }
+
+    private fun stopCapturing() {
+        Toast.makeText(this, "stop recording", Toast.LENGTH_LONG).show()
+        //setButtonsEnabled(isCapturingAudio = false)
+        val captureIntent = Intent(this, MediaCaptureService::class.java).apply {
+            action = MediaCaptureService.ACTION_STOP
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(captureIntent)
+        } else {
+            startService(captureIntent)
+        }
+    }
+
+    private fun isRecordAudioPermissionGranted(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.RECORD_AUDIO
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun requestRecordAudioPermission() {
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(Manifest.permission.RECORD_AUDIO),
+            RECORD_AUDIO_PERMISSION_REQUEST_CODE
+        )
+    }
+
+    // THIS SUBSTITUTES onRequestPermissionsResult
+    private fun onRecordPermissionsGranted(granted: Boolean) {
+        if(granted) {
+            Toast.makeText(
+                this,
+                "Permissions to capture audio granted.",
+                Toast.LENGTH_SHORT
+            ).show()
+        } else {
+            Toast.makeText(
+                this, "Permissions to capture audio denied.",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    private fun onMediaProjectionActivityResultReceived(result: ActivityResult?) {
+        result?.let{
+            if (it.resultCode == Activity.RESULT_OK) {
+                Toast.makeText(
+                    this,
+                    "MediaProjection permission obtained. Foreground service will be started to capture audio.",
+                    Toast.LENGTH_LONG
+                ).show()
+
+                val audioCaptureIntent = Intent(this, MediaCaptureService::class.java).apply {
+                    action = MediaCaptureService.ACTION_START
+                    putExtra(MediaCaptureService.EXTRA_RESULT_DATA, data!!)
+                }
+                ContextCompat.startForegroundService(this, audioCaptureIntent)
+
+                //setButtonsEnabled(isCapturingAudio = true)
+            } else {
+                Toast.makeText(
+                    this, "Request to obtain MediaProjection denied.",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
     private fun startMediaProjectionRequest() {
         mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-        startActivityForResult(mediaProjectionManager.createScreenCaptureIntent(), MEDIA_PROJECTION_REQUEST_CODE)
+        mediaProjectionResultContract.launch(mediaProjectionManager.createScreenCaptureIntent())
     }
 
     // DICTIONARY POP UP
@@ -670,7 +656,7 @@ class MainActivity : AppCompatActivity() {
     private fun handleSharedText(intent: Intent?) {
         Log.d("INTENTDEBUG", "ACTION SEND CALLED!")
         when (intent?.type) {
-            "text/plain", "*/*" -> {
+            "text/plain" -> {
                 Log.d("INTENTDEBUG", "INTENT TYPE: ${intent.type}")
                 intent.getStringExtra(Intent.EXTRA_TEXT)?.let { inputString ->
                     Log.d("INTENTDEBUG", "SHARED TEXT: $inputString")
@@ -738,7 +724,7 @@ class MainActivity : AppCompatActivity() {
             //checkOverlayPermissions()
             val word = intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT) ?: ""
             startDictionaryWindowService(word)
-            this.finish()
+            finish()
         }
     }
 
@@ -753,6 +739,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
+    // AUTH LOGIC
     private fun initGoogleAuth() {
         val gso =
             GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -764,7 +752,11 @@ class MainActivity : AppCompatActivity() {
         googleAuthenticator = GoogleAuthenticator(
             activity = this@MainActivity,
             googleSignInClient = googleSignInClient,
-            onSignIn = { authViewModel.setAuthRequestPending(true) },
+            onSignIn = {
+                val intent = googleSignInClient.signInIntent
+                authViewModel.setAuthRequestPending(true)
+                authActivityResultContract.launch(intent)
+                       },
             onSignOut = authViewModel::invalidateAccount,
         )
     }

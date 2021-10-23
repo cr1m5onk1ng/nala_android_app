@@ -9,10 +9,10 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.nala.R
 import com.example.nala.ui.theme.Blue700
-import java.time.format.TextStyle
 
 @Composable
 fun ErrorScreen(
@@ -30,7 +30,7 @@ fun ErrorScreen(
     ){
         Text(
             text,
-            style = MaterialTheme.typography.h6
+            style = MaterialTheme.typography.body1
         )
         if(subtitle.isNotEmpty()) {
             Text(
@@ -41,7 +41,7 @@ fun ErrorScreen(
         action?.let{
             Spacer(modifier = Modifier.height(16.dp))
             SmallerButton(
-                text = actionName ?: R.string.snackbar_retry.toString(),
+                text = actionName ?: stringResource(R.string.snackbar_retry),
                 backgroundColor = Blue700,
                 onCLick = { action() },
                 height = 50.dp,

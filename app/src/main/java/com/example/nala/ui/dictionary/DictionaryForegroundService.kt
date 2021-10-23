@@ -14,7 +14,7 @@ import com.example.nala.db.models.kanji.KanjiStories
 import com.example.nala.repository.DictionaryRepository
 import com.example.nala.repository.KanjiRepository
 import com.example.nala.repository.ReviewRepository
-import com.example.nala.utils.Constants
+import com.example.nala.utils.constants.Constants
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -41,41 +41,41 @@ class DictionaryForegroundService : LifecycleService() {
         super.onStartCommand(intent, flags, startId)
         intent?.let{
             if(it.action == Constants.ACTION_STOP_DICTIONARY) {
+                Log.d("DICTDEBUG", "STOP DICTIONARY CALLED")
                 stopForeground(true)
                 stopSelf()
                 return START_NOT_STICKY
             }
         }
         val word = intent?.getStringExtra("word") ?: ""
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
             startCustomForeground()
-        else
+        }
+        else{
             startForeground(1, Notification())
+        }
         lifecycleScope.launch{
             dictionaryWindow.setLoadingScreen()
             val wordData = dictRepository.search(word)
-            if(wordData.isEmpty()) {
-                dictionaryWindow.setWordData(wordData, listOf(), listOf(), mutableListOf(), mutableListOf())
-                dictionaryWindow.setErrorScreen()
-            } else {
-                val kanjis = kanjiRepository.getWordKanjis(wordData.word)
-                val stories = mutableListOf<KanjiStories>()
-                val wordReviews = reviewRepository.getWordReviewsAsString() as MutableList<String>
-                val kanjiReviews = reviewRepository.getKanjiReviewsAsString() as MutableList<String>
-                kanjis.forEach {
-                    val story = kanjiRepository.getKanjiStory(it.kanji)
-                    stories.add(KanjiStories(kanji=it.kanji, story=story))
-                }
-                dictionaryWindow.setWordData(wordData, kanjis, stories, wordReviews, kanjiReviews)
-                dictionaryWindow.openWordDict()
+            val kanjis = kanjiRepository.getWordKanjis(wordData.word)
+            val stories = mutableListOf<KanjiStories>()
+            val wordReviews = reviewRepository.getWordReviewsAsString() as MutableList<String>
+            val kanjiReviews = reviewRepository.getKanjiReviewsAsString() as MutableList<String>
+            kanjis.forEach {
+                val story = kanjiRepository.getKanjiStory(it.kanji)
+                stories.add(KanjiStories(kanji=it.kanji, story=story))
             }
+            dictionaryWindow.setWordData(wordData, kanjis, stories, wordReviews, kanjiReviews)
+            dictionaryWindow.openWordDict()
+            Log.d("DICTDEBUG", "DICTIONARY OPENED FROM SERVICE")
         }
         return START_STICKY
     }
 
     override fun onDestroy() {
+        Log.d("DICTDEBUG", "ON DESTROY CALLED")
         super.onDestroy()
-        dictionaryWindow.closeDictionaryView()
+        dictionaryWindow.close()
     }
 
     private fun startCustomForeground() {
@@ -110,7 +110,6 @@ class DictionaryForegroundService : LifecycleService() {
             startForeground(2, notification)
         }
     }
-
 }
 
 
