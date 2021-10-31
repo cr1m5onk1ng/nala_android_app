@@ -23,42 +23,58 @@ class FavoritesViewModel @Inject constructor(
     private val youtubeRepository: YouTubeRepository,
 ) : ViewModel() {
 
-    val savedVideosState: MutableState<DataState<List<YoutubeVideoModel>>> =
+    /*val savedVideosState: MutableState<DataState<List<YoutubeVideoModel>>> =
         mutableStateOf(DataState.Initial(listOf()))
 
     val savedArticlesState: MutableState<DataState<List<ArticlesCache>>> =
-        mutableStateOf(DataState.Initial(listOf()))
+        mutableStateOf(DataState.Initial(listOf())) */
+
+    private val _savedVideoStateFlow =
+        MutableStateFlow<DataState<List<YoutubeVideoModel>>>(DataState.Initial(listOf()))
+
+    private val _savedArticlesStateFlow =
+        MutableStateFlow<DataState<List<ArticlesCache>>>(DataState.Initial(listOf()))
+
+    val savedVideosState: StateFlow<DataState<List<YoutubeVideoModel>>>
+        get() = _savedVideoStateFlow.asStateFlow()
+
+    val savedArticlesState: StateFlow<DataState<List<ArticlesCache>>>
+        get() = _savedArticlesStateFlow.asStateFlow()
 
     private val savedVideosFlow =
-        youtubeRepository.getSavedVideos()
+        _savedVideoStateFlow.flatMapLatest {
+            youtubeRepository.getSavedVideos()
+        }
 
     private val savedArticlesFlow =
-        reviewRepository.getSavedArticles()
+        _savedArticlesStateFlow.flatMapLatest {
+            reviewRepository.getSavedArticles()
+        }
 
-    fun addVideoToFavorites(videoId: String, videoUrl: String) =
+    fun restoreVideo(video: YoutubeVideoModel) =
         viewModelScope.launch{
-            youtubeRepository.addVideoToFavorites(videoId, videoUrl)
+            youtubeRepository.restoreVideo(video)
         }
 
     fun loadSavedArticles() = viewModelScope.launch(Dispatchers.IO) {
-        savedArticlesState.value = DataState.Loading
+        _savedArticlesStateFlow.value = DataState.Loading
         try{
             savedArticlesFlow.collect{
-                savedArticlesState.value = DataState.Success(it)
+                _savedArticlesStateFlow.value = DataState.Success(it)
             }
         } catch (e: Exception) {
-            savedArticlesState.value = DataState.Error(ErrorType.DATA_NOT_AVAILABLE)
+            _savedArticlesStateFlow.value = DataState.Error(ErrorType.DATA_NOT_AVAILABLE)
         }
     }
 
     fun loadSavedVideos() = viewModelScope.launch(Dispatchers.IO) {
-        savedVideosState.value = DataState.Loading
+        _savedVideoStateFlow.value = DataState.Loading
         try{
             savedVideosFlow.collect{
-                savedVideosState.value = DataState.Success(it)
+                _savedVideoStateFlow.value = DataState.Success(it)
             }
         } catch (e: Exception) {
-            savedVideosState.value = DataState.Error(ErrorType.DATA_NOT_AVAILABLE)
+            _savedVideoStateFlow.value = DataState.Error(ErrorType.DATA_NOT_AVAILABLE)
         }
     }
 
@@ -67,9 +83,9 @@ class FavoritesViewModel @Inject constructor(
             youtubeRepository.removeVideoFromFavorites(videoUrl)
         }
 
-    fun addArticleToFavorites(articleUrl: String) =
+    fun restoreArticle(article: ArticlesCache) =
         viewModelScope.launch {
-            reviewRepository.addArticleToFavorites(articleUrl)
+            reviewRepository.restoreArticle(article)
         }
 
     fun removeArticleFromFavorites(url: String) =

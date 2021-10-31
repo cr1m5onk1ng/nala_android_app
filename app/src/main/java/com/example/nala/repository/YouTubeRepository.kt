@@ -19,6 +19,8 @@ interface YouTubeRepository {
 
     suspend fun removeVideoFromFavorites(videoUrl: String)
 
+    suspend fun restoreVideo(video: YoutubeVideoModel)
+
     fun getSavedVideo(videoId: String) : Flow<YoutubeVideoModel>
 
     fun getSavedVideos() : Flow<List<YoutubeVideoModel>>

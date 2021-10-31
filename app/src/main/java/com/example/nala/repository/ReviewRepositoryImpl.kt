@@ -62,19 +62,28 @@ class ReviewRepositoryImpl @Inject constructor(
 
 
     override suspend fun addSentenceToReview(sentenceReview: SentenceReviewModel) {
-        val reviewDto = com.example.nala.db.models.review.SentenceReviewCache(
+        val reviewDto = SentenceReviewCache(
             sentence = sentenceReview.sentence,
             targetWord = sentenceReview.targetWord
         )
         return reviewDao.insertSentenceReview(reviewDto)
     }
 
-    override fun getSentenceReviewsPaged(): Flow<List<SentenceReviewCache>> {
-        TODO("Not yet implemented")
+    override fun getSentenceReviewsPaged(nextPageId: Date?, limit: Int): Flow<List<SentenceReviewCache>> {
+
+        return if(nextPageId ==  null) {
+           reviewDao.getNSentenceReviews(limit)
+        } else {
+            reviewDao.getSentenceReviewsPaged(nextPageId, limit)
+        }
     }
 
-    override fun getKanjiReviewsPaged(): Flow<List<KanjiReviewCache>> {
-        TODO("Not yet implemented")
+    override fun getKanjiReviewsPaged(nextPageId: Date?, limit: Int): Flow<List<KanjiReviewCache>> {
+        return if(nextPageId == null) {
+            reviewDao.getNKanjiReviews(limit)
+        } else {
+            reviewDao.getKanjiReviewsPaged(nextPageId, limit)
+        }
     }
 
     override fun getWordReviewsPaged(nextPageId: Date?, limit: Int): Flow<List<WordReviewModel>> {
@@ -85,18 +94,22 @@ class ReviewRepositoryImpl @Inject constructor(
     }
 
     override suspend fun removeSentenceReview(sentenceReview: SentenceReviewModel) {
-        val reviewDto = com.example.nala.db.models.review.SentenceReviewCache(
+        val reviewDto = SentenceReviewCache(
             sentence = sentenceReview.sentence,
             targetWord = sentenceReview.targetWord
         )
         reviewDao.deleteSentenceReview(reviewDto)
     }
 
+    override suspend fun restoreArticle(article: ArticlesCache) {
+        reviewDao.addArticleToFavorites(article)
+    }
+
     override suspend fun updateSentenceReviewParameters(
         quality: Int,
         sentenceReview: SentenceReviewModel
     ) {
-        val sr = com.example.nala.db.models.review.SentenceReviewCache(
+        val sr = SentenceReviewCache(
             sentence = sentenceReview.sentence,
             targetWord = sentenceReview.targetWord
         )
@@ -252,6 +265,10 @@ class ReviewRepositoryImpl @Inject constructor(
         reviewDao.addWordReview(wordReview)
         addWordTagsToReview(wordModel.dataTags, wordModel.word)
         addWordSensesToReview(wordModel.senses, wordModel.word)
+    }
+
+    override suspend fun getMightForgetItems(): Flow<List<WordReviewModel>> {
+        return reviewDao.getMightForgetItems()
     }
 
     override suspend fun restoreRemovedWordToReview(wordReview: WordReviewModel) {

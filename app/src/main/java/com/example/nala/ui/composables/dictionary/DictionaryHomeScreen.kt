@@ -41,6 +41,7 @@ import com.example.nala.ui.composables.BottomBar
 import com.example.nala.ui.composables.LoadingIndicator
 import com.example.nala.ui.composables.dialogs.LoadingDialog
 import com.example.nala.ui.composables.menus.CustomDrawer
+import com.example.nala.ui.composables.menus.NalaBottomBar
 import com.example.nala.ui.theme.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -83,13 +84,7 @@ fun HomeScreen(
     Scaffold(
         scaffoldState = scaffoldState,
         bottomBar = {
-            BottomBar(
-                navController,
-                isHomeSelected,
-                isReviewsSelected,
-                toggleHome,
-                toggleReviews
-            )
+            NalaBottomBar(navController = navController)
         },
         drawerContent = {
             CustomDrawer(

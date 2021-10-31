@@ -41,7 +41,6 @@ import com.example.nala.ui.composables.articles.ArticleScreen
 import com.example.nala.ui.composables.dictionary.DictionaryDetailScreen
 import com.example.nala.ui.composables.dictionary.HomeScreen
 import com.example.nala.ui.composables.dictionary.KanjiDetailScreen
-import com.example.nala.ui.composables.review.ReviewListScreen
 import com.example.nala.ui.composables.saved.SavedArticlesScreen
 import com.example.nala.ui.composables.saved.SavedVideosScreen
 import com.example.nala.ui.composables.settings.SettingsScreen
@@ -63,7 +62,9 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.collectAsState
 import androidx.navigation.NavController
+import coil.annotation.ExperimentalCoilApi
 import com.example.nala.services.audio.MediaCaptureService
+import com.example.nala.ui.composables.review.ReviewsScreen
 import com.example.nala.ui.ocr.OCRViewModel
 import com.example.nala.utils.constants.NetworkConstants
 
@@ -112,6 +113,7 @@ class MainActivity : AppCompatActivity() {
     // flag that checks if the dictionary was called from an article
     var fromLookup = false
 
+    @ExperimentalCoilApi
     @ExperimentalComposeUiApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -123,7 +125,9 @@ class MainActivity : AppCompatActivity() {
         settingsViewModel.loadSharedPreferences()
         favoritesViewModel.loadSavedVideos()
         favoritesViewModel.loadSavedArticles()
-        reviewViewModel.loadPagedWordReviewItems()
+        reviewViewModel.loadWordReviewItemsFlow()
+        reviewViewModel.loadSentenceReviewItemsFlow()
+        reviewViewModel.loadKanjiReviewItemsFlow()
         ocrViewModel.initModel()
         val targetLangs =
             getSharedPreferences("langs", Context.MODE_PRIVATE)
@@ -223,13 +227,18 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     composable("review_screen") {
-                        ReviewListScreen(
-                            selectedCategory = reviewViewModel.selectedCategory.value,
-                            setCategory = reviewViewModel::setCategory,
+                        ReviewsScreen(
+                            selectedTab = reviewViewModel.selectedTab.value,
+                            setSelectedTab = reviewViewModel::setTab,
                             wordReviewItems = reviewViewModel.wordReviewItemsState.collectAsState().value,
                             sentenceReviewItems = reviewViewModel.sentenceReviewItemsState.collectAsState().value,
                             kanjiReviewItems = reviewViewModel.kanjiReviewItemsState.collectAsState().value,
                             wordsEndReached = reviewViewModel.wordsEndReached.value,
+                            sentencesEndReached = reviewViewModel.sentencesEndReached.value,
+                            kanjisEndReached = reviewViewModel.kanjisEndReached.value,
+                            wordsListState = reviewViewModel.wordsListState,
+                            sentencesListState = reviewViewModel.sentencesListState,
+                            kanjisListState = reviewViewModel.kanjisListState,
                             setWordItem = dictViewModel::setCurrentWordFromReview,
                             setSentenceItem = studyViewModel::setStudyContext,
                             setTargetWordItem = studyViewModel::setStudyTargetWord,
@@ -251,6 +260,8 @@ class MainActivity : AppCompatActivity() {
                             onSearch = reviewViewModel::searchFlow,
                             onRestore = reviewViewModel::restore,
                             onUpdateWordReviews = reviewViewModel::loadPagedWordReviewItems,
+                            onUpdateSentenceReviews = reviewViewModel::loadPagedSentenceReviewItems,
+                            onUpdateKanjiReviews = reviewViewModel::loadPagedKanjiReviewItems,
                             navController = navController,
                             showSnackbar = {
                                 showSnackbar(
@@ -413,27 +424,41 @@ class MainActivity : AppCompatActivity() {
                     
                     composable("videos") {
                         SavedVideosScreen(
-                            videos = favoritesViewModel.savedVideosState.value,
+                            videos = favoritesViewModel.savedVideosState.collectAsState().value,
                             onRemoveVideo = favoritesViewModel::removeVideoFromFavorites,
                             onSetVideo = ytViewModel::setVideoModelFromCache,
+                            onRestoreVideo = favoritesViewModel::restoreVideo,
                             authState = authViewModel.account.value,
                             onSignIn = googleAuthenticator::signIn,
                             onSignOut = { onLogOut() },
                             scaffoldState = scaffoldState,
                             navController = navController,
+                            showSnackbar = {
+                                showSnackbar(
+                                    scaffoldState,
+                                    message = this@MainActivity.getString(R.string.favorites_removed),
+                                    actionLabel="UNDO",
+                                )},
                         )
                     }
 
                     composable("articles") {
                         SavedArticlesScreen(
-                            articles = favoritesViewModel.savedArticlesState.value,
+                            articles = favoritesViewModel.savedArticlesState.collectAsState().value,
                             onRemoveArticle = favoritesViewModel::removeArticleFromFavorites,
                             onSetArticle = reviewViewModel::setArticleFromCache,
+                            onRestoreArticle = favoritesViewModel::restoreArticle,
                             authState = authViewModel.account.value,
                             onSignIn = googleAuthenticator::signIn,
                             onSignOut = { onLogOut() },
                             scaffoldState = scaffoldState,
                             navController = navController,
+                            showSnackbar = {
+                                showSnackbar(
+                                    scaffoldState,
+                                    message = this@MainActivity.getString(R.string.favorites_removed),
+                                    actionLabel="UNDO",
+                                )},
                         )
                     }
 

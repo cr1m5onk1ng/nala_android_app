@@ -74,4 +74,8 @@
     <string name="tvNoWordFound">No word found in Jiisho</string>
     <string name="select_a_word">Select a word</string>
     <string name="reviews_screen_title">Reviews</string>
+    <string name="favorites_removed">Removed from favorites</string>
+    <string name="word_reviews_title">Words</string>
+    <string name="sentence_reviews_title">Sentences</string>
+    <string name="kanji_reviews_title">Kanjis</string>
 </resources>

@@ -1,6 +1,5 @@
 package com.example.nala.ui.composables.saved
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,16 +13,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.example.nala.db.models.review.ArticlesCache
 import com.example.nala.domain.model.yt.YoutubeVideoModel
 import com.github.marlonlom.utilities.timeago.TimeAgo
 
+@ExperimentalCoilApi
 @Composable
 fun SavedVideoCard(
     video: YoutubeVideoModel,
     onRemove: (String) -> Unit,
     onSetVideo: (YoutubeVideoModel) -> Unit,
+    onSetRemovedItem: (YoutubeVideoModel) -> Unit,
+    onShowSnackbar: (ScaffoldState) -> Unit,
+    scaffoldState: ScaffoldState,
     navController: NavController,
 ) {
     Card(
@@ -48,9 +52,9 @@ fun SavedVideoCard(
             }
             IconButton(
                 onClick = {
-                    Log.d("VIDEODEBUG", "CLICKED")
-                    Log.d("VIDEODEBUG", "URL: ${video.url}")
                     onRemove(video.url)
+                    onSetRemovedItem(video)
+                    onShowSnackbar(scaffoldState)
                 }
             ) {
                 Icon(
@@ -64,11 +68,15 @@ fun SavedVideoCard(
     }
 }
 
+@ExperimentalCoilApi
 @Composable
 fun SavedArticleCard(
     article: ArticlesCache,
     onRemove: (String) -> Unit,
     onSetArticle: (ArticlesCache) -> Unit,
+    onSetRemovedItem: (ArticlesCache) -> Unit,
+    onShowSnackbar: (ScaffoldState) -> Unit,
+    scaffoldState: ScaffoldState,
     navController: NavController,
 ) {
     Card(
@@ -87,7 +95,11 @@ fun SavedArticleCard(
                 DomainAndAddTime(article.domain ?: "", TimeAgo.using(article.timeAdded.time))
             }
             IconButton(
-                onClick = { onRemove(article.url) }
+                onClick = {
+                    onRemove(article.url)
+                    onSetRemovedItem(article)
+                    onShowSnackbar(scaffoldState)
+                }
             ) {
                 Icon(
                     modifier = Modifier.size(18.dp),
@@ -100,6 +112,7 @@ fun SavedArticleCard(
     }
 }
 
+@ExperimentalCoilApi
 @Composable
 fun SavedItemImage(imageUrl: String, modifier: Modifier = Modifier) {
     Image(

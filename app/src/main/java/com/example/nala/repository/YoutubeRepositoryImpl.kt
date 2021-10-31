@@ -11,7 +11,6 @@ import com.example.nala.domain.model.yt.*
 import com.example.nala.network.model.yt.captions.CaptionsList
 import com.example.nala.network.services.YouTubeApiService
 import com.example.nala.network.services.YoutubeCaptionsService
-import com.example.nala.services.metadata.AsyncExtractorService
 import com.example.nala.services.metadata.ExtractorService
 import com.example.nala.utils.Utils
 import kotlinx.coroutines.Dispatchers
@@ -83,6 +82,21 @@ class YoutubeRepositoryImpl @Inject constructor(
             cacheVideoComments(comments.comments)
             return comments
         }
+    }
+
+    override suspend fun restoreVideo(video: YoutubeVideoModel) {
+        videoDao.addVideoToFavorites(
+            YoutubeDataCache(
+                videoId = video.id,
+                videoUrl = video.url,
+                publishedAt = video.publishedAt,
+                title = video.title,
+                description = video.description,
+                thumbnailUrl = video.thumbnailUrl,
+                channelTitle = video.channelTitle,
+                timeAdded = if(video.addedAt != null) Date(video.addedAt) else Date()
+            )
+        )
     }
 
     override suspend fun getVideoData(videoId: String): YoutubeVideoModel {

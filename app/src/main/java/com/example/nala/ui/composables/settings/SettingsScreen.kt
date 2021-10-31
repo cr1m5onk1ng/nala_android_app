@@ -2,11 +2,8 @@ package com.example.nala.ui.composables.settings
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -84,21 +81,24 @@ fun SettingsScreen(
                 isChecked = isEnglishSelected,
                 onChecked = {
                     setLangSelected("en", it)
-                }
+                },
+                enabled = false,
             )
             SettingCard(
                 lang = stringResource(R.string.french),
                 isChecked = isFrenchSelected,
                 onChecked = {
                     setLangSelected("fr", it)
-                }
+                },
+                enabled = false,
             )
             SettingCard(
                 lang = stringResource(R.string.spanish),
                 isChecked = isSpanishSelected,
                 onChecked = {
                     setLangSelected("es", it)
-                }
+                },
+                enabled = false,
             )
         }
     }
@@ -109,6 +109,7 @@ fun SettingCard(
     lang: String,
     isChecked: Boolean,
     onChecked: (Boolean) -> Unit,
+    enabled: Boolean? = null,
 ) {
     Card(
         modifier = Modifier
@@ -153,7 +154,8 @@ fun SettingCard(
                     checked = isChecked,
                     onCheckedChange = {
                         onChecked(it)
-                    }
+                    },
+                    enabled = enabled ?: true,
                 )
             }
         }

@@ -69,12 +69,12 @@ interface ReviewDao : DatabaseDao{
 
     @Query(
         """SELECT * FROM kanji_review 
-                WHERE interval > :nextPageId 
-                ORDER BY interval, added_at
+                WHERE added_at > :nextPageId 
+                ORDER BY added_at, interval
                 LIMIT :limit
              """
     )
-    fun getKanjiReviewsPaged(nextPageId: Int, limit: Int) : Flow<List<KanjiReviewCache>>
+    fun getKanjiReviewsPaged(nextPageId: Date?, limit: Int) : Flow<List<KanjiReviewCache>>
 
     @Query("SELECT * FROM kanji_review")
     suspend fun getKanjiReviews() : List<KanjiReviewCache>
@@ -115,12 +115,12 @@ interface ReviewDao : DatabaseDao{
 
     @Query(
         """SELECT * FROM sentence_review 
-                WHERE interval > :nextPageId 
-                ORDER BY interval, added_at
+                WHERE added_at > :nextPageId 
+                ORDER BY added_at, interval
                 LIMIT :limit
              """
     )
-    fun getSentenceReviewsPaged(nextPageId: Int, limit: Int) : Flow<List<SentenceReviewCache>>
+    fun getSentenceReviewsPaged(nextPageId: Date?, limit: Int) : Flow<List<SentenceReviewCache>>
 
     @Query("SELECT * FROM sentence_review ORDER BY interval LIMIT :n")
     fun getNSentenceReviews(n: Int) : Flow<List<SentenceReviewCache>>
@@ -224,6 +224,9 @@ interface ReviewDao : DatabaseDao{
         """
     )
     suspend fun getMatchingWords(query: String) : List<WordReviewModel>
+
+    @Query("SELECT * FROM word_review ORDER BY interval")
+    fun getMightForgetItems() : Flow<List<WordReviewModel>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addWordReview(word: WordReviewModel)

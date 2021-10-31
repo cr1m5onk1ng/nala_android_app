@@ -21,7 +21,7 @@ interface ReviewRepository {
 
     fun getAllSentenceReviewItems() : Flow<List<SentenceReviewModel>>
 
-    fun getSentenceReviewsPaged() : Flow<List<SentenceReviewCache>>
+    fun getSentenceReviewsPaged(nextPageId: Date?, limit: Int) : Flow<List<SentenceReviewCache>>
 
     suspend fun addSentenceToReview(sentenceReview: SentenceReviewModel)
 
@@ -38,7 +38,7 @@ interface ReviewRepository {
 
     fun getAllKanjiReviewItems() : Flow<List<KanjiReviewCache>>
 
-    fun getKanjiReviewsPaged() : Flow<List<KanjiReviewCache>>
+    fun getKanjiReviewsPaged(nextPageId: Date?, limit: Int) : Flow<List<KanjiReviewCache>>
 
     suspend fun getKanjiReviewsAsString() : List<String>
 
@@ -95,11 +95,15 @@ interface ReviewRepository {
 
     suspend fun getMatchingWords(word: String) : List<WordReviewModel>
 
+    suspend fun getMightForgetItems() : Flow<List<WordReviewModel>>
+
     // ARTICLES
 
     suspend fun addArticleToFavorites(articleUrl: String)
 
     suspend fun removeArticleFromFavorites(url: String)
+
+    suspend fun restoreArticle(article: ArticlesCache)
 
     fun getSavedArticle(url: String) : Flow<ArticlesCache>
 

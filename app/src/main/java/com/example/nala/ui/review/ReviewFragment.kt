@@ -10,15 +10,17 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.findNavController
+import com.example.nala.R
 import com.example.nala.ui.CustomFragment
 import com.example.nala.ui.composables.review.ReviewListScreen
+import com.example.nala.ui.composables.review.ReviewsScreen
 import com.example.nala.ui.dictionary.DictionaryViewModel
 import com.example.nala.ui.study.StudyViewModel
 import com.example.nala.ui.theme.AppTheme
 
 class ReviewFragment : CustomFragment() {
 
-    private val viewModel: DictionaryViewModel by activityViewModels()
+    private val dictViewModel: DictionaryViewModel by activityViewModels()
     private val reviewViewModel: ReviewViewModel by activityViewModels()
     private val studyViewModel: StudyViewModel by activityViewModels()
 
@@ -32,40 +34,47 @@ class ReviewFragment : CustomFragment() {
             setContent {
                 val scaffoldState = rememberScaffoldState()
                 AppTheme(darkTheme = false) {
-                    ReviewListScreen(
-                        selectedCategory = reviewViewModel.selectedCategory.value,
-                        setCategory = reviewViewModel::setCategory,
+                    ReviewsScreen(
+                        selectedTab = reviewViewModel.selectedTab.value,
+                        setSelectedTab = reviewViewModel::setTab,
                         wordReviewItems = reviewViewModel.wordReviewItemsState.collectAsState().value,
                         sentenceReviewItems = reviewViewModel.sentenceReviewItemsState.collectAsState().value,
                         kanjiReviewItems = reviewViewModel.kanjiReviewItemsState.collectAsState().value,
                         wordsEndReached = reviewViewModel.wordsEndReached.value,
-                        setWordItem = viewModel::setCurrentWordFromReview,
+                        sentencesEndReached = reviewViewModel.sentencesEndReached.value,
+                        kanjisEndReached = reviewViewModel.kanjisEndReached.value,
+                        wordsListState = reviewViewModel.wordsListState,
+                        sentencesListState = reviewViewModel.sentencesListState,
+                        kanjisListState = reviewViewModel.kanjisListState,
+                        setWordItem = dictViewModel::setCurrentWordFromReview,
                         setSentenceItem = studyViewModel::setStudyContext,
                         setTargetWordItem = studyViewModel::setStudyTargetWord,
-                        setKanjiItem = viewModel::setCurrentKanji,
+                        setKanjiItem = dictViewModel::setCurrentKanji,
                         removeWordReview = reviewViewModel::removeWordReviewItem,
                         removeSentenceReview = reviewViewModel::removeSentenceReviewItem,
                         removeKanjiReview = reviewViewModel::removeKanjiReviewItem,
                         addWordToReview = reviewViewModel::restoreWordFromReview,
                         addSentenceToReview =reviewViewModel::restoreSentenceFromReview,
                         addKanjiToReview = reviewViewModel::restoreKanjiFromReview,
-                        isHomeSelected = viewModel.isHomeSelected.value,
-                        isReviewsSelected = viewModel.isReviewSelected.value,
-                        toggleHome = viewModel::toggleHome,
-                        toggleReviews = viewModel::toggleReviews,
+                        isHomeSelected = dictViewModel.isHomeSelected.value,
+                        isReviewsSelected = dictViewModel.isReviewSelected.value,
+                        toggleHome = dictViewModel::toggleHome,
+                        toggleReviews = dictViewModel::toggleReviews,
                         updateWordReviewItem = reviewViewModel::updateWordReviewItem,
                         updateSentenceReviewItem= reviewViewModel::updateSentenceReviewItem,
                         updateKanjiReviewItem = reviewViewModel::updateKanjiReviewItem,
-                        navController = findNavController(),
                         onShare = {},
                         onSearch = reviewViewModel::searchFlow,
                         onRestore = reviewViewModel::restore,
-                        onUpdateWordReviews = {},
+                        onUpdateWordReviews = reviewViewModel::loadPagedWordReviewItems,
+                        onUpdateSentenceReviews = reviewViewModel::loadPagedSentenceReviewItems,
+                        onUpdateKanjiReviews = reviewViewModel::loadPagedKanjiReviewItems,
+                        navController = findNavController(),
                         showSnackbar = {
                             showSnackbar(
                                 scaffoldState,
-                                message="Review removed",
-                                actionLabel="Undo",
+                                message = getString(R.string.review_removed),
+                                actionLabel="UNDO",
                             )},
                         scaffoldState = scaffoldState,
                     )

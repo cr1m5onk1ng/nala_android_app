@@ -1,20 +1,24 @@
 package com.example.nala.ui.review
 
 import android.util.Log
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nala.db.models.review.ArticlesCache
 import com.example.nala.db.models.review.KanjiReviewCache
+import com.example.nala.db.models.review.SentenceReviewCache
 import com.example.nala.db.models.review.WordReviewModel
-import com.example.nala.domain.model.review.ReviewCategory
 import com.example.nala.domain.model.review.SentenceReviewModel
 import com.example.nala.repository.ReviewRepository
 import com.example.nala.domain.model.utils.DataState
 import com.example.nala.domain.model.utils.ErrorType
+import com.example.nala.utils.utilities.KanjiReviewsPager
+import com.example.nala.utils.utilities.SentenceReviewsPager
 import com.example.nala.utils.utilities.WordReviewsPager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -25,6 +29,8 @@ import kotlinx.coroutines.flow.*
 class ReviewViewModel @Inject constructor(
     private val reviewRepository: ReviewRepository,
     private val wordReviewsPager: WordReviewsPager,
+    private val sentenceReviewsPager: SentenceReviewsPager,
+    private val kanjiReviewsPager: KanjiReviewsPager,
 ) : ViewModel() {
 
     // WORD REVIEWS STATE VARIABLES
@@ -33,8 +39,8 @@ class ReviewViewModel @Inject constructor(
     val wordReviewItemsState: StateFlow<DataState<List<WordReviewModel>>>
         get() = _wordReviewItemsStateFlow.asStateFlow()
     private var currentWordItems = mutableListOf<WordReviewModel>()
-    val loadingNextWordReviews = mutableStateOf(false)
     val wordsEndReached = mutableStateOf(false)
+    val wordsListState = LazyListState()
 
 
     // SENTENCE REVIEWS STATE VARIABLES
@@ -42,6 +48,9 @@ class ReviewViewModel @Inject constructor(
         MutableStateFlow<DataState<List<SentenceReviewModel>>>(DataState.Initial(listOf()))
     val sentenceReviewItemsState: StateFlow<DataState<List<SentenceReviewModel>>>
         get() = _sentenceReviewItemsStateFlow.asStateFlow()
+    private var currentSentenceItems = mutableListOf<SentenceReviewCache>()
+    val sentencesEndReached = mutableStateOf(false)
+    val sentencesListState = LazyListState()
 
 
     // KANJI REVIEWS STATE VARIABLES
@@ -49,13 +58,11 @@ class ReviewViewModel @Inject constructor(
         MutableStateFlow<DataState<List<KanjiReviewCache>>>(DataState.Initial(listOf()))
     val kanjiReviewItemsState: StateFlow<DataState<List<KanjiReviewCache>>>
         get() = _kanjiReviewItemsStateFlow.asStateFlow()
+    private var currentKanjiItems = mutableListOf<KanjiReviewCache>()
+    val kanjisEndReached = mutableStateOf(false)
+    val kanjisListState = LazyListState()
 
-    /*private val _selectedCategoryStateFlow =
-        MutableStateFlow(ReviewCategory.Word)
-    val selectedCategoryState: StateFlow<ReviewCategory>
-        get() = _selectedCategoryStateFlow.asStateFlow()*/
-
-    val selectedCategory: MutableState<ReviewCategory> = mutableStateOf(ReviewCategory.Word)
+    val selectedTab = mutableStateOf(0)
 
     private val _searchQueryStateFlow = MutableStateFlow("")
     //val searchQueryState = _searchQueryStateFlow.asStateFlow()
@@ -77,12 +84,6 @@ class ReviewViewModel @Inject constructor(
 
     val addedToReview: MutableState<Boolean> = mutableStateOf(false)
 
-    private val wordReviewItemsCache: MutableState<List<WordReviewModel>> = mutableStateOf(listOf())
-
-    private val sentenceReviewItemsCache: MutableState<List<SentenceReviewModel>> = mutableStateOf(listOf())
-
-    private val kanjiReviewItemsCache: MutableState<List<KanjiReviewCache>> = mutableStateOf(listOf())
-
     val isArticleLoaded = mutableStateOf(false)
 
     val currentArticleUrl = mutableStateOf("")
@@ -100,8 +101,8 @@ class ReviewViewModel @Inject constructor(
     fun searchFlow(inputQuery: String) {
         viewModelScope.launch{
             _searchQueryStateFlow.value = inputQuery
-            when(selectedCategory.value) {
-                ReviewCategory.Word -> {
+            when(selectedTab.value) {
+                0 -> {
                     _wordReviewItemsStateFlow.value = DataState.Loading
                     wordLoadingStateFlow.collect{ result ->
                         Log.d("SEARCHDEBUG", "Search result is: $result")
@@ -112,7 +113,7 @@ class ReviewViewModel @Inject constructor(
                         }
                     }
                 }
-                ReviewCategory.Sentence -> {
+                1 -> {
                     _sentenceReviewItemsStateFlow.value = DataState.Loading
                     sentenceLoadingStateFlow.collect{ matches ->
                         if(matches.isEmpty()) {
@@ -123,7 +124,7 @@ class ReviewViewModel @Inject constructor(
                         }
                     }
                 }
-                ReviewCategory.Kanji -> {
+                2 -> {
                     _kanjiReviewItemsStateFlow.value = DataState.Loading
                     kanjiLoadingStateFlow.collect{ matches ->
                         if(matches.kanji == "") {
@@ -139,7 +140,7 @@ class ReviewViewModel @Inject constructor(
     }
 
     fun loadWordReviewItemsFlow() {
-        viewModelScope.launch{
+        viewModelScope.launch(Dispatchers.IO){
             _wordReviewItemsStateFlow.value = DataState.Loading
             reviewRepository.getWordReviews().collect{
                 if(it.isEmpty()) {
@@ -152,7 +153,7 @@ class ReviewViewModel @Inject constructor(
     }
 
     fun loadPagedWordReviewItems() {
-        viewModelScope.launch{
+        viewModelScope.launch(Dispatchers.IO){
             _wordReviewItemsStateFlow.value = DataState.Loading
             delay(1000)
             try {
@@ -164,7 +165,11 @@ class ReviewViewModel @Inject constructor(
                         wordsEndReached.value = true
                     }
                     currentWordItems.addAll(data)
-                    _wordReviewItemsStateFlow.value = DataState.Success(currentWordItems)
+                    if(currentWordItems.isEmpty()) {
+                        _wordReviewItemsStateFlow.value = DataState.Error(ErrorType.ERROR_FETCHING_DATA)
+                    } else {
+                        _wordReviewItemsStateFlow.value = DataState.Success(currentWordItems)
+                    }
                 }
             } catch(e: Exception) {
                 _wordReviewItemsStateFlow.value = DataState.Error(ErrorType.ERROR_FETCHING_DATA)
@@ -174,7 +179,7 @@ class ReviewViewModel @Inject constructor(
 
 
     fun loadSentenceReviewItemsFlow() {
-        viewModelScope.launch{
+        viewModelScope.launch(Dispatchers.IO){
             _sentenceReviewItemsStateFlow.value = DataState.Loading
             reviewRepository.getAllSentenceReviewItems().collect{
                 if(it.isEmpty()) {
@@ -186,8 +191,40 @@ class ReviewViewModel @Inject constructor(
         }
     }
 
+    fun loadPagedSentenceReviewItems() {
+        viewModelScope.launch(Dispatchers.IO){
+            _sentenceReviewItemsStateFlow.value = DataState.Loading
+            delay(1000)
+            try {
+                sentenceReviewsPager.getNextResult().collect{
+                    Log.d("PAGINATIONDEBUG", "Current Results: $it")
+                    val data = it.data
+                    if(it.hasReachedEnd){
+                        Log.d("PAGINATIONDEBUG", "End Of Results Reached")
+                        sentencesEndReached.value = true
+                    }
+                    currentSentenceItems.addAll(data)
+                    if(currentSentenceItems.isEmpty()) {
+                        _sentenceReviewItemsStateFlow.value = DataState.Error(ErrorType.ERROR_FETCHING_DATA)
+                    } else {
+                        _sentenceReviewItemsStateFlow.value = DataState.Success(
+                            currentSentenceItems.map{ sent ->
+                                SentenceReviewModel(
+                                    sentence = sent.sentence,
+                                    targetWord = sent.targetWord,
+                                )
+                            }
+                        )
+                    }
+                }
+            } catch(e: Exception) {
+                _sentenceReviewItemsStateFlow.value = DataState.Error(ErrorType.ERROR_FETCHING_DATA)
+            }
+        }
+    }
+
     fun loadKanjiReviewItemsFlow(){
-        viewModelScope.launch{
+        viewModelScope.launch(Dispatchers.IO){
             _kanjiReviewItemsStateFlow.value = DataState.Loading
             reviewRepository.getAllKanjiReviewItems().collect{
                 if(it.isEmpty()) {
@@ -199,7 +236,29 @@ class ReviewViewModel @Inject constructor(
         }
     }
 
-    // OLD METHODS
+    fun loadPagedKanjiReviewItems() {
+        viewModelScope.launch(Dispatchers.IO){
+            _kanjiReviewItemsStateFlow.value = DataState.Loading
+            try {
+                kanjiReviewsPager.getNextResult().collect{
+                    Log.d("PAGINATIONDEBUG", "Current Results: $it")
+                    val data = it.data
+                    if(it.hasReachedEnd){
+                        Log.d("PAGINATIONDEBUG", "End Of Results Reached")
+                        kanjisEndReached.value = true
+                    }
+                    currentKanjiItems.addAll(data)
+                    if(currentKanjiItems.isEmpty()) {
+                        _kanjiReviewItemsStateFlow.value = DataState.Error(ErrorType.ERROR_FETCHING_DATA)
+                    }else {
+                        _kanjiReviewItemsStateFlow.value = DataState.Success(currentKanjiItems)
+                    }
+                }
+            } catch(e: Exception) {
+                _kanjiReviewItemsStateFlow.value = DataState.Error(ErrorType.ERROR_FETCHING_DATA)
+            }
+        }
+    }
 
     @ExperimentalCoroutinesApi
     fun setArticle(url: String) {
@@ -260,20 +319,8 @@ class ReviewViewModel @Inject constructor(
         }
     }
 
-    fun setCategory (category: ReviewCategory) {
-        selectedCategory.value = category
-        when(selectedCategory.value) {
-            ReviewCategory.Word -> {
-                //loadWordReviewItemsFlow()
-                loadPagedWordReviewItems()
-            }
-            ReviewCategory.Sentence -> {
-                loadSentenceReviewItemsFlow()
-            }
-            ReviewCategory.Kanji -> {
-                loadKanjiReviewItemsFlow()
-            }
-        }
+    fun setTab(tab: Int) {
+        selectedTab.value = tab
     }
 
     fun restoreWordFromReview(wordReview: WordReviewModel) =
@@ -310,29 +357,47 @@ class ReviewViewModel @Inject constructor(
     }
 
     fun restore() {
-        when(selectedCategory.value) {
-            ReviewCategory.Word -> {
-                restoreWordItems()
+        when(selectedTab.value) {
+            0 -> {
+                loadWordReviewItemsFlow()
             }
-            ReviewCategory.Sentence -> {
-                restoreSentenceItems()
+            1 -> {
+                loadSentenceReviewItemsFlow()
             }
-            ReviewCategory.Kanji -> {
-                restoreKanjiItems()
+            2 -> {
+                loadKanjiReviewItemsFlow()
             }
         }
     }
 
     private fun restoreWordItems() {
-        _wordReviewItemsStateFlow.value = DataState.Success(wordReviewItemsCache.value)
+        if(currentWordItems.isNotEmpty()) {
+            _wordReviewItemsStateFlow.value = DataState.Success(currentWordItems)
+        } else {
+            _wordReviewItemsStateFlow.value = DataState.Error(ErrorType.ERROR_FETCHING_DATA)
+        }
+
     }
 
     private fun restoreSentenceItems() {
-        _sentenceReviewItemsStateFlow.value = DataState.Success(sentenceReviewItemsCache.value)
+        if(currentWordItems.isNotEmpty()) {
+            _sentenceReviewItemsStateFlow.value = DataState.Success(currentSentenceItems.map{
+                SentenceReviewModel(
+                    sentence = it.sentence,
+                    targetWord = it.targetWord
+                )
+            })
+        } else {
+            _sentenceReviewItemsStateFlow.value = DataState.Error(ErrorType.ERROR_FETCHING_DATA)
+        }
     }
 
     private fun restoreKanjiItems() {
-        _kanjiReviewItemsStateFlow.value = DataState.Success(kanjiReviewItemsCache.value)
+        if(currentWordItems.isNotEmpty()) {
+            _kanjiReviewItemsStateFlow.value = DataState.Success(currentKanjiItems)
+        } else {
+            _kanjiReviewItemsStateFlow.value = DataState.Error(ErrorType.ERROR_FETCHING_DATA)
+        }
     }
 
     @ExperimentalCoroutinesApi

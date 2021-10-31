@@ -4,7 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -16,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -36,10 +37,8 @@ import com.example.nala.domain.model.review.ReviewCategory
 import com.example.nala.domain.model.review.SentenceReviewModel
 import com.example.nala.domain.model.utils.DataState
 import com.example.nala.ui.composables.*
-import com.example.nala.ui.composables.dialogs.LoadingDialog
 import com.example.nala.ui.theme.*
 import com.example.nala.utils.extensions.isLastVisibleItem
-import kotlinx.coroutines.launch
 
 val specialReviewStyle = SpanStyle(
     fontWeight = FontWeight.Bold,
@@ -64,6 +63,11 @@ fun ReviewListScreen(
     sentenceReviewItems: DataState<List<SentenceReviewModel>>,
     kanjiReviewItems: DataState<List<KanjiReviewCache>>,
     wordsEndReached: Boolean,
+    sentencesEndReached: Boolean,
+    kanjisEndReached: Boolean,
+    wordsListState: LazyListState,
+    sentencesListState: LazyListState,
+    kanjisListState: LazyListState,
     setWordItem: (WordReviewModel) -> Unit,
     setSentenceItem: (String) -> Unit,
     setTargetWordItem: (String) -> Unit,
@@ -85,6 +89,8 @@ fun ReviewListScreen(
     onRestore: () -> Unit,
     onShare: (String?) -> Unit,
     onUpdateWordReviews: () -> Unit,
+    onUpdateSentenceReviews: () -> Unit,
+    onUpdateKanjiReviews: () -> Unit,
     navController: NavController,
     scaffoldState: ScaffoldState,
     showSnackbar: (ScaffoldState) -> Unit
@@ -96,11 +102,6 @@ fun ReviewListScreen(
     val removedWordReview = remember { mutableStateOf<WordReviewModel?>(null) }
     val removedSentenceReview = remember { mutableStateOf<SentenceReviewModel?>(null) }
     val removedKanjiReview = remember { mutableStateOf<KanjiReviewCache?>(null) }
-
-    val scope = rememberCoroutineScope()
-
-    val wordListState = rememberLazyListState()
-    var lastWordItem = remember { 0 }
 
     Scaffold(
         topBar = {
@@ -174,8 +175,7 @@ fun ReviewListScreen(
                                 }
                                 is DataState.Success<List<WordReviewModel>>  -> {
                                     val items = wordReviewItems.data
-                                    lastWordItem = items.size - 1
-                                    LazyColumn(state = wordListState) {
+                                    LazyColumn(state = wordsListState) {
                                         items(count = items.size) { index ->
                                             WordReviewCard(
                                                 items[index],
@@ -189,8 +189,8 @@ fun ReviewListScreen(
                                                 navController,
                                             )
                                         }
-                                        if(wordListState.isLastVisibleItem(items.size - 1) &&
-                                            wordListState.isScrollInProgress && (!wordsEndReached)
+                                        if(wordsListState.isLastVisibleItem(items.size - 1) &&
+                                            wordsListState.isScrollInProgress && (!wordsEndReached)
                                         ) {
                                             onUpdateWordReviews()
                                         }
@@ -213,10 +213,11 @@ fun ReviewListScreen(
                                     )
                                 }
                                 is DataState.Success<List<SentenceReviewModel>>  -> {
-                                    LazyColumn() {
-                                        items(count = sentenceReviewItems.data.size) { index ->
+                                    val items = sentenceReviewItems.data
+                                    LazyColumn(state = sentencesListState) {
+                                        items(count = items.size) { index ->
                                             SentenceReviewCard(
-                                                sentenceReviewItems.data[index],
+                                                items[index],
                                                 removedSentenceReview,
                                                 setSentenceItem,
                                                 setTargetWordItem,
@@ -227,6 +228,11 @@ fun ReviewListScreen(
                                                 showSnackbar,
                                                 navController
                                             )
+                                        }
+                                        if(sentencesListState.isLastVisibleItem(items.size - 1) &&
+                                            sentencesListState.isScrollInProgress && (!sentencesEndReached)
+                                        ) {
+                                            onUpdateSentenceReviews()
                                         }
                                     }
                                 }
@@ -244,10 +250,11 @@ fun ReviewListScreen(
                                     )
                                 }
                                 is DataState.Success<List<KanjiReviewCache>>  -> {
-                                    LazyColumn() {
-                                        items(count = kanjiReviewItems.data.size) { index ->
+                                    val items = kanjiReviewItems.data
+                                    LazyColumn(state = kanjisListState) {
+                                        items(count = items.size) { index ->
                                             KanjiReviewCard(
-                                                kanjiReviewItems.data[index],
+                                                items[index],
                                                 removedKanjiReview,
                                                 setKanjiItem,
                                                 updateKanjiReviewItem,
@@ -257,6 +264,11 @@ fun ReviewListScreen(
                                                 showSnackbar,
                                                 navController
                                             )
+                                        }
+                                        if(kanjisListState.isLastVisibleItem(items.size - 1) &&
+                                            kanjisListState.isScrollInProgress && (!kanjisEndReached)
+                                        ) {
+                                            onUpdateKanjiReviews()
                                         }
                                     }
                                 }
@@ -753,67 +765,68 @@ fun FilterButtonsRow(
 
 @ExperimentalComposeUiApi
 @Composable
-private fun SearchField(
+fun SearchField(
     searchQuery: MutableState<String>,
     searchOpen: MutableState<Boolean>,
     onSearch: (String) -> Unit,
     onRestore: () -> Unit,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
-    Row(modifier = Modifier
-        .padding(horizontal = 3.dp)
-        .fillMaxWidth(0.6f)
-        .fillMaxHeight(0.8f)
-    ) {
-        TextField(
-            value = searchQuery.value,
-            onValueChange =  { searchQuery.value = it },
-            textStyle = TextStyle(color = MaterialTheme.colors.onSurface, fontSize = 10.sp),
-            colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = MaterialTheme.colors.surface,
-                focusedIndicatorColor =  Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent),
-            shape = RoundedCornerShape(32.dp),
-            placeholder = {
-                Text(
-                    text = stringResource(R.string.search_in_review),
-                    style = TextStyle(color = MaterialTheme.colors.onSurface, fontSize = 10.sp),
-                )
-            },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Rounded.Search,
-                    contentDescription = "search",
-                    tint = MaterialTheme.colors.onSurface
-                )
-            },
-            trailingIcon = {
-                IconButton(
-                    onClick = {
-                        onRestore()
-                        searchQuery.value = ""
-                        searchOpen.value = false
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Close,
-                        contentDescription = "reset",
-                        tint = MaterialTheme.colors.onSurface
-                    )
-                }
-            },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Text,
-                imeAction = ImeAction.Search,
-            ),
-            keyboardActions = KeyboardActions (
-                onSearch = {
-                    onSearch(searchQuery.value)
-                    keyboardController?.hide()
-                }
+    TextField(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 5.dp),
+        value = searchQuery.value,
+        onValueChange =  {
+            searchQuery.value = it
+            onSearch(searchQuery.value)
+                         },
+        textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
+        colors = TextFieldDefaults.textFieldColors(
+            backgroundColor = MaterialTheme.colors.primary,
+            focusedIndicatorColor =  Color.White,
+            unfocusedIndicatorColor = Color.White),
+        placeholder = {
+            Text(
+                text = stringResource(R.string.search_in_review),
+                style = TextStyle(color = Color.White, fontSize = 16.sp),
             )
+        },
+        leadingIcon = {
+            Icon(
+                modifier = Modifier.padding(start = 5.dp),
+                imageVector = Icons.Rounded.Search,
+                contentDescription = "search",
+                tint = Color.White
+            )
+        },
+        trailingIcon = {
+            IconButton(
+                modifier = Modifier.padding(end = 5.dp),
+                onClick = {
+                    onRestore()
+                    searchQuery.value = ""
+                    searchOpen.value = false
+                }
+            ) {
+                Icon(
+                    modifier = Modifier.size(20.dp),
+                    imageVector = Icons.Rounded.Close,
+                    contentDescription = "reset",
+                    tint = Color.White
+                )
+            }
+        },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Text,
+            imeAction = ImeAction.Search,
+        ),
+        keyboardActions = KeyboardActions (
+            onSearch = {
+                onSearch(searchQuery.value)
+                keyboardController?.hide()
+            }
         )
-    }
+    )
+
 
 }
 

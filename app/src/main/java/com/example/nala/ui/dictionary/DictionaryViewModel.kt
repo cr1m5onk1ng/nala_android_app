@@ -288,7 +288,7 @@ class DictionaryViewModel @Inject constructor(
     fun loadMightForgetItems() {
         viewModelScope.launch(Dispatchers.IO) {
             mightForgetItemsState.value = DataState.Loading
-            reviewRepository.getWordReviews().collect{
+            reviewRepository.getMightForgetItems().collect{
                 if(it.isEmpty()) {
                     mightForgetItemsState.value = DataState.Error(ErrorType.DATA_NOT_AVAILABLE)
                 } else {
